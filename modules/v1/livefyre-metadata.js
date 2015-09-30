@@ -14,7 +14,7 @@ exports.getCollectionDetails = function (config, callback) {
 	try {
 		var stream_type = config.stream_type || 'livecomments';
 
-		var siteId = 378157;
+		var siteId = process.env.defaultSiteId;
 		var site = network.getSite(siteId, process.env['livefyreSiteKey_' + siteId]);
 
 		var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);

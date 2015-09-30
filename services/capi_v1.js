@@ -5,7 +5,7 @@ var ftApiClient = require('ft-api-client')(process.env.CAPI_KEY, {
 });
 
 
-exports.getArticleData = function (uuid, callback) {
+var getArticleData = function (uuid, callback) {
 	ftApiClient.get(uuid)
 		.then(function (article) {
 			callback(null, article);
@@ -17,7 +17,7 @@ exports.getArticleData = function (uuid, callback) {
 };
 
 exports.getFilteredTags = function (uuid, callback) {
-	exports.getArticleData(uuid, function (err, article) {
+	getArticleData(uuid, function (err, article) {
 		if (err) {
 			callback(err);
 

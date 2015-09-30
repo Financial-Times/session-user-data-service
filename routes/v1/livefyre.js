@@ -2,7 +2,7 @@
 
 var express = require('express');
 var router = express.Router();
-var articleMetadata = require('../../modules/v1/article-metadata.js');
+var capi_v1 = require('../../services/capi_v1.js');
 var livefyreMetadata = require('../../modules/v1/livefyre-metadata.js');
 
 /* GET home page. */
@@ -12,7 +12,7 @@ router.get('/metadata', function(req, res, next) {
 		return;
 	}
 
-	articleMetadata.getFilteredTags(req.query.articleId, function (err, tags) {
+	capi_v1.getFilteredTags(req.query.articleId, function (err, tags) {
 		if (err) {
 			console.log('/v1/livefyre/metadata', 'Error', err);
 

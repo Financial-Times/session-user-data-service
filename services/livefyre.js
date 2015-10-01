@@ -2,7 +2,7 @@
 
 var livefyre = require('livefyre');
 
-var network = livefyre.getNetwork(process.env.livefyreNetwork, process.env.livefyreNetworkKey);
+var network = livefyre.getNetwork(process.env.livefyreNetwork + '@fyre.co', process.env.livefyreNetworkKey);
 
 
 exports.getCollectionDetails = function (config, callback) {
@@ -18,6 +18,9 @@ exports.getCollectionDetails = function (config, callback) {
 		var site = network.getSite(siteId, process.env['livefyreSiteKey_' + siteId]);
 
 		var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);
+		if (config.tags) {
+			collection.data.tags = config.tags;
+		}
 		var collectionMeta = collection.buildCollectionMetaToken();
 
 		if (collectionMeta) {

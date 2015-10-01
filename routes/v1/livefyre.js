@@ -3,7 +3,7 @@
 var express = require('express');
 var router = express.Router();
 var capi_v1 = require('../../services/capi_v1.js');
-var livefyreMetadata = require('../../modules/v1/livefyre-metadata.js');
+var livefyre = require('../../services/livefyre.js');
 
 /* GET home page. */
 router.get('/metadata', function(req, res, next) {
@@ -35,22 +35,32 @@ router.get('/getcollectiondetails', function (req, res, next) {
 		title: req.query.title,
 		url: req.query.url
 	};
-	if (req.query.tags) {
-		config.tags = req.query.tags;
-	}
-	if (req.query.stream_type) {
-		config.stream_type = req.query.stream_type;
-	}
 
-	livefyreMetadata.getCollectionDetails(config, function (err, collectionDetails) {
+	capi_v1.getFilteredTags(req.query.articleId, function (err, tags) {
 		if (err) {
-			console.log('/v1/livefyre/getcollectiondetails', 'Error', err);
-
-			res.send(503);
-			return;
+			tags = [];
 		}
 
-		res.json(collectionDetails);
+		config.tags = tags.join(',');
+
+		if (req.query.tags) {
+			config.tags += ',' + req.query.tags;
+		}
+
+		if (req.query.stream_type) {
+			config.stream_type = req.query.stream_type;
+		}
+
+		livefyre.getCollectionDetails(config, function (err, collectionDetails) {
+			if (err) {
+				console.log('/v1/livefyre/getcollectiondetails', 'Error', err);
+
+				res.send(503);
+				return;
+			}
+
+			res.json(collectionDetails);
+		});
 	});
 });
 

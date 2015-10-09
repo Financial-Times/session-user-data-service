@@ -5,6 +5,8 @@ var path = require('path');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var cors = require('cors');
+var consoleLogger = require('./modules/consoleLogger');
 
 var routes = {
 	index: require('./routes/index'),
@@ -14,7 +16,39 @@ var routes = {
 };
 
 
+if (process.env.LOGGER_LEVEL) {
+	consoleLogger.setLevel(process.env.LOGGER_LEVEL);
+}
+
+if (process.env.LOGGER_FILTER) {
+	var filters = process.env.LOGGER_FILTER.split(',').map(function (item) {return item.trim();});
+
+	consoleLogger.addFilter(filters);
+}
+
+
+consoleLogger.enable();
+consoleLogger.setLevel('log');
+
+
 var app = express();
+
+var corsOptions = {
+	origin: function(origin, callback) {
+		if (origin) {
+			var allowed = 'ft.com';
+			var hostname = origin.parse(origin).hostname;
+
+			callback(null, hostname.indexOf(allowed, hostname.length - allowed.length) !== -1);
+
+			return;
+		}
+
+		callback(null, false);
+	}
+};
+
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

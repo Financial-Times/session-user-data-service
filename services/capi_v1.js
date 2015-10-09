@@ -6,6 +6,10 @@ var ftApiClient = require('ft-api-client')(process.env.CAPI_KEY, {
 
 
 var getArticleData = function (uuid, callback) {
+	if (typeof callback !== 'function') {
+		throw new Error("capi_v1.getArticleData: callback not provided");
+	}
+
 	ftApiClient.get(uuid)
 		.then(function (article) {
 			callback(null, article);
@@ -16,7 +20,13 @@ var getArticleData = function (uuid, callback) {
 		});
 };
 
+exports.getArticleData = getArticleData;
+
 exports.getFilteredTags = function (uuid, callback) {
+	if (typeof callback !== 'function') {
+		throw new Error("capi_v1.getFilteredTags: callback not provided");
+	}
+
 	getArticleData(uuid, function (err, article) {
 		if (err) {
 			callback(err);

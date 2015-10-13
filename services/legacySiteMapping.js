@@ -3,7 +3,7 @@
 var db = require('../services/db');
 var consoleLogger = require('../modules/consoleLogger');
 
-var defaultSiteId = parseInt(process.env.defaultSiteId, 10);
+var defaultSiteId = parseInt(process.env.DEFAULT_SITE_ID, 10);
 
 exports.getSiteId = function (articleId, callback) {
 	if (typeof callback !== 'function') {

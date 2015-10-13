@@ -3,62 +3,86 @@
 var capi_v1 = require('../services/capi_v1');
 var db = require('../services/db');
 var livefyreService = require('../services/livefyre');
-var consoleLogger = require('./consoleLogger');
+var consoleLogger = require('../helpers/consoleLogger');
 var mongoSanitize = require('mongo-sanitize');
+var EventEmitter = require('events');
 
 var cacheConfig = {
-	expireHours: 0.01
+	expireHours: 24
 };
 
-var ArticleDataCache = function (articleId) {
-	var cachedData = null;
+var ArticleDataStore = function (articleId) {
+	var storedData = null;
 	var self = this;
+	var storeEvents = new EventEmitter();
 
-	function getCachedData (callback) {
+
+
+	var fetchingStoreInProgress = false;
+	function getStoredData (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataCache.getCachedData: callback not provided");
+			throw new Error("ArticleDataStore.getStoredData: callback not provided");
 		}
 
-		if (cachedData) {
+		if (storedData) {
 			consoleLogger.log(articleId, 'cached data retrieved from memory');
-			callback(null, cachedData);
+			callback(null, storedData);
 			return;
 		}
 
-		db.getConnection(function (errConn, connection) {
-			if (errConn) {
-				consoleLogger.log(articleId, 'error retrieving the cache');
-				consoleLogger.debug(articleId, errConn);
 
-				callback(errConn);
-				return;
-			}
+		storeEvents.once('cacheDataFetched', function (err, data) {
+			callback(err, data);
+		});
 
-			connection.collection('articles').find({
-				_id: mongoSanitize(articleId)
-			}).toArray(function (errDb, data) {
-				if (errDb) {
-					consoleLogger.log(articleId, 'cache retrieval failed');
-					consoleLogger.debug(articleId, errDb);
-					callback(errDb);
+
+		var done = function (err, data) {
+			fetchingStoreInProgress = false;
+			storeEvents.emit('cacheDataFetched', err, data);
+		};
+
+
+		if (!fetchingStoreInProgress) {
+			fetchingStoreInProgress = true;
+
+			db.getConnection(function (errConn, connection) {
+				if (errConn) {
+					consoleLogger.log(articleId, 'error retrieving the cache');
+					consoleLogger.debug(articleId, errConn);
+
+					fetchingStoreInProgress = false;
+					done(errConn);
 					return;
 				}
 
-				if (data && data.length) {
-					cachedData = data[0];
-					consoleLogger.log(articleId, 'cached data retrieved');
-					consoleLogger.debug(articleId, cachedData);
+				connection.collection('articles').find({
+					_id: mongoSanitize(articleId)
+				}).toArray(function (errDb, data) {
+					if (errDb) {
+						consoleLogger.log(articleId, 'cache retrieval failed');
+						consoleLogger.debug(articleId, errDb);
 
-					callback(null, cachedData);
-				} else {
-					consoleLogger.log(articleId, 'no cached data found');
-					callback(null, null);
-				}
+						done(errDb);
+						return;
+					}
+
+					if (data && data.length) {
+						storedData = data[0];
+
+						consoleLogger.log(articleId, 'cached data retrieved');
+						consoleLogger.debug(articleId, storedData);
+
+						done(null, storedData);
+					} else {
+						consoleLogger.log(articleId, 'no cached data found');
+						done(null, null);
+					}
+				});
 			});
-		});
+		}
 	}
 
-	function upsertCachedData (field, data) {
+	function upsertStoredData (field, data) {
 		try {
 			var setData = {};
 			setData[mongoSanitize(field)] = data;
@@ -87,7 +111,7 @@ var ArticleDataCache = function (articleId) {
 				});
 			});
 		} catch (e) {
-			console.error(articleId, 'Exception, upsertCachedData', e);
+			console.error(articleId, 'Exception, upsertStoredData', e);
 			return;
 		}
 	}
@@ -96,7 +120,7 @@ var ArticleDataCache = function (articleId) {
 
 	var fetchArticleTags = function (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataCache.fetchArticleTags: callback not provided");
+			throw new Error("ArticleDataStore.fetchArticleTags: callback not provided");
 		}
 
 		consoleLogger.log(articleId, 'fetch article tags');
@@ -104,30 +128,31 @@ var ArticleDataCache = function (articleId) {
 	};
 	var upsertArticleTags = function (tags) {
 		consoleLogger.log(articleId, 'upsert tags');
-		upsertCachedData("tags", {
+		upsertStoredData("tags", {
 			data: tags,
 			expires: new Date(new Date().getTime() + cacheConfig.expireHours * 1000 * 60 * 60)
 		});
 	};
 	this.getArticleTags = function (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataCache.getArticleTags: callback not provided");
+			throw new Error("ArticleDataStore.getArticleTags: callback not provided");
 		}
 
 		try {
-			getCachedData(function (errCache, cachedData) {
+			getStoredData(function (errCache, storedData) {
 				if (errCache) {
 					// fetch
 					consoleLogger.log(articleId, 'articleTags', 'error retrieving cache');
 					consoleLogger.debug(articleId, errCache);
 					fetchArticleTags(callback);
+					return;
 				}
 
-				if (cachedData && cachedData.tags) {
+				if (storedData && storedData.tags) {
 					consoleLogger.log(articleId, 'articleTags', 'data loaded from the cache');
-					callback(null, cachedData.tags.data);
+					callback(null, storedData.tags.data);
 
-					if (new Date(cachedData.tags.expires) < new Date()) {
+					if (new Date(storedData.tags.expires) < new Date()) {
 						// expired, fetch and update
 						consoleLogger.log(articleId, 'articleTags', 'data expired, refresh');
 						fetchArticleTags(function (errFetch, tags) {
@@ -163,7 +188,7 @@ var ArticleDataCache = function (articleId) {
 
 	var determineCollectionExists = function (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataCache.determineCollectionExists: callback not provided");
+			throw new Error("ArticleDataStore.determineCollectionExists: callback not provided");
 		}
 
 		consoleLogger.log(articleId, 'determine collection exists');
@@ -171,21 +196,22 @@ var ArticleDataCache = function (articleId) {
 	};
 	var upsertCollectionExists = function () {
 		consoleLogger.log(articleId, 'upsert collection exists');
-		upsertCachedData("livefyre.collectionExists", true);
+		upsertStoredData("livefyre.collectionExists", true);
 	};
 	this.livefyreCollectionExists = function (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataCache.livefyreCollectionExists: callback not provided");
+			throw new Error("ArticleDataStore.livefyreCollectionExists: callback not provided");
 		}
 
 		try {
-			getCachedData(function (errCache, cachedData) {
+			getStoredData(function (errCache, storedData) {
 				if (errCache) {
 					// fetch
 					determineCollectionExists(callback);
+					return;
 				}
 
-				if (cachedData && cachedData.livefyre && cachedData.livefyre.collectionExists) {
+				if (storedData && storedData.livefyre && storedData.livefyre.collectionExists) {
 					consoleLogger.log(articleId, 'collection exists, from cache');
 					callback(null, true);
 				} else {
@@ -213,7 +239,7 @@ var ArticleDataCache = function (articleId) {
 
 	var fetchLivefyreCollectionDetails = function (config, callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataCache.fetchLivefyreCollectionDetails: callback not provided");
+			throw new Error("ArticleDataStore.fetchLivefyreCollectionDetails: callback not provided");
 		}
 
 		consoleLogger.log(articleId, 'collectionDetails', 'fetch');
@@ -251,19 +277,19 @@ var ArticleDataCache = function (articleId) {
 		});
 	};
 	var upsertLivefyreCollectionDetails = function (collectionDetails, shortLifetime) {
-		upsertCachedData("livefyre.metadata", {
+		upsertStoredData("livefyre.metadata", {
 			data: collectionDetails,
 			expires: new Date(shortLifetime ? new Date().getTime() + 1000 * 60 * 5 : new Date().getTime() + cacheConfig.expireHours * 1000 * 60 * 60)
 		});
 	};
 	this.getLivefyreCollectionDetails = function (config, callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataCache.getLivefyreCollectionDetails: callback not provided");
+			throw new Error("ArticleDataStore.getLivefyreCollectionDetails: callback not provided");
 		}
 
 		if (config.articleId) {
 			if (config.articleId !== articleId) {
-				consoleLogger.error(articleId, 'ArticleID provided to the function is in conflict with the ArticleDataCache\'s articleId');
+				consoleLogger.error(articleId, 'ArticleID provided to the function is in conflict with the ArticleDataStore\'s articleId');
 				callback(new Error("Article ID provided is in conflict."));
 				return;
 			}
@@ -271,20 +297,21 @@ var ArticleDataCache = function (articleId) {
 		config.articleId = articleId;
 
 		try {
-			getCachedData(function (errCache, cachedData) {
+			getStoredData(function (errCache, storedData) {
 				if (errCache) {
 					// fetch
 					consoleLogger.log(articleId, 'collectionDetails', 'cache down');
 					consoleLogger.debug(articleId, errCache);
 
 					fetchLivefyreCollectionDetails(config, callback);
+					return;
 				}
 
-				if (cachedData && cachedData.livefyre && cachedData.livefyre.metadata) {
+				if (storedData && storedData.livefyre && storedData.livefyre.metadata) {
 					consoleLogger.log(articleId, 'collectionDetails', 'loaded from cache');
-					callback(null, cachedData.livefyre.metadata.data);
+					callback(null, storedData.livefyre.metadata.data);
 
-					if (new Date(cachedData.livefyre.metadata.expires) < new Date()) {
+					if (new Date(storedData.livefyre.metadata.expires) < new Date()) {
 						// expired, fetch and update
 						consoleLogger.log(articleId, 'collectionDetails', 'cache expired');
 						fetchLivefyreCollectionDetails(config, function (errFetch, collectionDetails, capiDown) {
@@ -316,7 +343,7 @@ var ArticleDataCache = function (articleId) {
 	};
 
 	this.destroy = function () {
-		cachedData = null;
+		storedData = null;
 	};
 };
-module.exports = ArticleDataCache;
+module.exports = ArticleDataStore;

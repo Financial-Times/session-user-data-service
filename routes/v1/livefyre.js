@@ -2,13 +2,12 @@
 
 var express = require('express');
 var router = express.Router();
-var ArticleDataCache = require('../../modules/ArticleDataCache');
-var SessionDataCache = require('../../modules/SessionDataCache');
-var userDataCache = require('../../modules/userDataCache');
+var ArticleDataStore = require('../../modules/ArticleDataStore');
+var SessionDataStore = require('../../modules/SessionDataStore');
 var livefyreService = require('../../services/livefyre');
 var _ = require('lodash');
 var async = require('async');
-var consoleLogger = require('../../modules/consoleLogger');
+var consoleLogger = require('../../helpers/consoleLogger');
 
 
 router.get('/metadata', function(req, res, next) {
@@ -17,17 +16,17 @@ router.get('/metadata', function(req, res, next) {
 		return;
 	}
 
-	var articleDataCache = new ArticleDataCache(req.query.articleId);
-	articleDataCache.getArticleTags(function (err, tags) {
+	var articleDataStore = new ArticleDataStore(req.query.articleId);
+	articleDataStore.getArticleTags(function (err, tags) {
 		if (err) {
 			console.log('/v1/livefyre/metadata', '\nArticleId:', req.query.articleId, '\nError:', err);
 
 			res.jsonp([]);
-			articleDataCache.destroy();
+			articleDataStore.destroy();
 			return;
 		}
 
-		articleDataCache.destroy();
+		articleDataStore.destroy();
 		res.jsonp(tags);
 	});
 });
@@ -57,13 +56,13 @@ router.get('/getcollectiondetails', function (req, res, next) {
 		userSession = req.query.session;
 	}
 
-	var articleDataCache = new ArticleDataCache(req.query.articleId);
-	var sessionDataCache;
+	var articleDataStore = new ArticleDataStore(req.query.articleId);
+	var sessionDataStore;
 	if (userSession) {
-		sessionDataCache = new SessionDataCache(userSession);
+		sessionDataStore = new SessionDataStore(userSession);
 	}
 
-	getLivefyreCollectionDetailsAuthRestricted(articleDataCache, sessionDataCache, config, function (err, data) {
+	getLivefyreCollectionDetailsAuthRestricted(articleDataStore, sessionDataStore, config, function (err, data) {
 		if (err) {
 			if (typeof err === 'object' && err.statusCode) {
 				res.sendStatus(err.statusCode);
@@ -108,16 +107,16 @@ router.get('/init', function (req, res, next) {
 		userSession = req.query.session;
 	}
 
-	var articleDataCache = new ArticleDataCache(req.query.articleId);
+	var articleDataStore = new ArticleDataStore(req.query.articleId);
 
-	var sessionDataCache;
+	var sessionDataStore;
 	if (userSession) {
-		sessionDataCache = new SessionDataCache(userSession);
+		sessionDataStore = new SessionDataStore(userSession);
 	}
 
 	async.parallel({
 		livefyre: function (callback) {
-			getLivefyreCollectionDetailsAuthRestricted(articleDataCache, sessionDataCache, config, function (err, data) {
+			getLivefyreCollectionDetailsAuthRestricted(articleDataStore, sessionDataStore, config, function (err, data) {
 				if (err) {
 					callback(err);
 					return;
@@ -128,7 +127,7 @@ router.get('/init', function (req, res, next) {
 		},
 		auth: function (callback) {
 			if (userSession) {
-				sessionDataCache.getLivefyreAuthToken(function (errAuth, data) {
+				sessionDataStore.getAuthMetadata(function (errAuth, data) {
 					if (errAuth) {
 						callback(null, {
 							servicesUp: false
@@ -137,9 +136,41 @@ router.get('/init', function (req, res, next) {
 					}
 
 					if (data) {
-						callback(null, data);
+						var returnData = {
+							token: data.token,
+							expires: data.expires,
+							displayName: data.pseudonym
+						};
+
+						if (data.emailPreferences && Object.keys(data.emailPreferences).length) {
+							returnData.settings = {};
+
+							if (data.emailPreferences.comments) {
+								returnData.settings.emailcomments = data.emailPreferences.comments;
+							}
+
+							if (data.emailPreferences.likes) {
+								returnData.settings.emaillikes = data.emailPreferences.likes;
+							}
+
+							if (data.emailPreferences.replies) {
+								returnData.settings.emailreplies = data.emailPreferences.replies;
+							}
+
+							if (data.emailPreferences.hasOwnProperty('autoFollow') && typeof data.emailPreferences.autoFollow === 'boolean') {
+								returnData.settings.emailautofollow = data.emailPreferences.autoFollow ? 'on' : 'off';
+							}
+						}
+
+						callback(null, returnData);
 					} else {
-						callback(null, null);
+						if (data === false) {
+							callback(null, {
+								pseudonym: false
+							});
+						} else {
+							callback(null, null);
+						}
 					}
 				});
 			} else {
@@ -170,8 +201,6 @@ router.get('/init', function (req, res, next) {
 	});
 });
 
-
-
 router.get('/get_lf_bootstrap', function (req, res, next) {
 	if (!req.query.uuid) {
 		res.status(400).send('"uuid" should be provided.');
@@ -200,33 +229,11 @@ router.get('/get_lf_bootstrap', function (req, res, next) {
 	});
 });
 
-
-
-var setPseudonym = function (req, res, next) {
-
-};
-router.get('/setPseudonym', setPseudonym);
-router.post('/setPseudonym', setPseudonym);
-
-var updateUser = function (req, res, next) {
-
-};
-router.get('/updateuser', updateUser);
-router.post('/updateuser', updateUser);
-
-
 router.get('/profile', function (req, res, next) {
 	if (!req.query.id) {
 		res.status(400).send('"id" (user ID) should be provided.');
+		return;
 	}
-
-	userDataCache.getUserInfo(req.query.id, function (err, userData) {
-
-	});
-});
-
-router.get('/emptypseudonym', function (req, res, next) {
-
 });
 
 
@@ -243,12 +250,12 @@ module.exports = router;
 
 
 /* helpers */
-function fetchLivefyreCollectionDetails (articleDataCache, config, callback) {
+function fetchLivefyreCollectionDetails (articleDataStore, config, callback) {
 	if (typeof callback !== 'function') {
 		throw new Error("v1/livefyre.fetchLivefyreCollectionDetails: callback not provided");
 	}
 
-	articleDataCache.getLivefyreCollectionDetails(_.pick(config, ['title', 'url', 'tags', 'stream_type']), function (err, livefyreData) {
+	articleDataStore.getLivefyreCollectionDetails(_.pick(config, ['title', 'url', 'tags', 'stream_type']), function (err, livefyreData) {
 		if (err) {
 			if (typeof err === 'object' && err['unclassified'] === true) {
 				callback(null, {
@@ -264,18 +271,18 @@ function fetchLivefyreCollectionDetails (articleDataCache, config, callback) {
 		callback(null, livefyreData);
 	});
 }
-function getLivefyreCollectionDetailsAuthRestricted (articleDataCache, sessionDataCache, config, callback) {
+function getLivefyreCollectionDetailsAuthRestricted (articleDataStore, sessionDataStore, config, callback) {
 	if (typeof callback !== 'function') {
 		throw new Error("v1/livefyre.getLivefyreCollectionDetailsAuthRestricted: callback not provided");
 	}
 
 
 	var callCallback = function () {
-		articleDataCache.destroy();
+		articleDataStore.destroy();
 		callback.apply(this, arguments);
 	};
 
-	articleDataCache.livefyreCollectionExists(function (err, exists) {
+	articleDataStore.livefyreCollectionExists(function (err, exists) {
 		if (err) {
 			callCallback(err);
 			return;
@@ -283,7 +290,7 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataCache, sessionDa
 
 		if (exists) {
 			consoleLogger.log(config.articleId, 'auth restricted collection creation, collection exists');
-			fetchLivefyreCollectionDetails(articleDataCache, config, function (errFetch, collectionDetails) {
+			fetchLivefyreCollectionDetails(articleDataStore, config, function (errFetch, collectionDetails) {
 				if (errFetch) {
 					callCallback(errFetch);
 					return;
@@ -294,15 +301,15 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataCache, sessionDa
 		} else {
 			consoleLogger.log(config.articleId, 'auth restricted collection creation, collection does not exist');
 
-			if (sessionDataCache) {
-				sessionDataCache.getSessionData(function (err, sessionData) {
+			if (sessionDataStore) {
+				sessionDataStore.getSessionData(function (err, sessionData) {
 					if (err) {
 						callCallback(err);
 						return;
 					}
 
 					if (sessionData) {
-						fetchLivefyreCollectionDetails(articleDataCache, config, function (errFetch, collectionDetails) {
+						fetchLivefyreCollectionDetails(articleDataStore, config, function (errFetch, collectionDetails) {
 							if (errFetch) {
 								callCallback(err);
 								return;

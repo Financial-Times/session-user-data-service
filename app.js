@@ -11,7 +11,8 @@ var consoleLogger = require('./modules/consoleLogger');
 var routes = {
 	index: require('./routes/index'),
 	v1: {
-		livefyre: require('./routes/v1/livefyre')
+		livefyre: require('./routes/v1/livefyre'),
+		user: require('./routes/v1/user')
 	}
 };
 
@@ -64,6 +65,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes.index);
 app.use('/v1/livefyre', routes.v1.livefyre);
+app.use('/v1/user', routes.v1.user);
 
 
 // catch 404 and forward to error handler

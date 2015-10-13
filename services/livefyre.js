@@ -4,7 +4,7 @@ var livefyre = require('livefyre');
 var legacySiteMapping = require('./legacySiteMapping');
 var needle = require('needle');
 
-var network = livefyre.getNetwork(process.env.livefyreNetwork + '@fyre.co', process.env.livefyreNetworkKey);
+var network = livefyre.getNetwork(process.env.LIVEFYRE_NETWORK + '@fyre.co', process.env.LIVEFYRE_NETWORK_KEY);
 
 
 exports.getCollectionDetails = function (config, callback) {
@@ -26,23 +26,27 @@ exports.getCollectionDetails = function (config, callback) {
 				return;
 			}
 
-			var site = network.getSite(siteId, process.env['livefyreSiteKey_' + siteId]);
+			if (process.env['LIVEFYRE_SITE_KEY_' + siteId]) {
+				var site = network.getSite(siteId, process.env['LIVEFYRE_SITE_KEY_' + siteId]);
 
-			var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);
-			if (config.tags) {
-				collection.data.tags = config.tags.join(',').replace(/ /g, '_');
-			}
+				var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);
+				if (config.tags) {
+					collection.data.tags = config.tags.join(',').replace(/ /g, '_');
+				}
 
-			var collectionMeta = collection.buildCollectionMetaToken();
-			var checksum = collection.buildChecksum();
+				var collectionMeta = collection.buildCollectionMetaToken();
+				var checksum = collection.buildChecksum();
 
-			if (collectionMeta) {
-				callback(null, {
-					siteId: siteId,
-					articleId: config.articleId,
-					collectionMeta: collectionMeta,
-					checksum: checksum
-				});
+				if (collectionMeta) {
+					callback(null, {
+						siteId: siteId,
+						articleId: config.articleId,
+						collectionMeta: collectionMeta,
+						checksum: checksum
+					});
+				}
+			} else {
+				callback(new Error("SiteID is not configured properly."));
 			}
 		});
 	} catch (err) {
@@ -115,6 +119,6 @@ exports.generateAuthToken = function (config, callback) {
 
 	callback(null, {
 		token: authToken,
-		expires: new Date(new Date().getTime() + expires * 1000)
+		expires: new Date(new Date().getTime() + expires * 1000).getTime()
 	});
 };

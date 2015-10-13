@@ -8,7 +8,7 @@ var mongoSanitize = require('mongo-sanitize');
 var EventEmitter = require('events');
 
 var cacheConfig = {
-	expireHours: 24
+	expireHours: process.env.ARTICLE_CACHE_EXPIRY || 12
 };
 
 var ArticleDataStore = function (articleId) {
@@ -31,14 +31,14 @@ var ArticleDataStore = function (articleId) {
 		}
 
 
-		storeEvents.once('cacheDataFetched', function (err, data) {
+		storeEvents.once('storedDataFetched', function (err, data) {
 			callback(err, data);
 		});
 
 
 		var done = function (err, data) {
 			fetchingStoreInProgress = false;
-			storeEvents.emit('cacheDataFetched', err, data);
+			storeEvents.emit('storedDataFetched', err, data);
 		};
 
 

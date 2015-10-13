@@ -7,6 +7,7 @@ var EventEmitter = require('events');
 var sanitizer = require('sanitizer');
 var eRightsToUuid = require('../services/eRightsToUuid');
 var async = require('async');
+var crypto = require('../helpers/crypto');
 
 var UserDataStore = function (userId) {
 	var storedData = null;
@@ -18,23 +19,23 @@ var UserDataStore = function (userId) {
 	var fetchingStoreInProgress = false;
 	function getStoredData (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataCache.getStoredData: callback not provided");
+			throw new Error("UserDataStore.getStoredData: callback not provided");
 		}
 
 		if (storedData) {
-			consoleLogger.log(userId, 'cached data retrieved from memory');
+			consoleLogger.log(userId, 'stored data retrieved from memory');
 			callback(null, storedData);
 			return;
 		}
 
-		storeEvents.once('cacheDataFetched', function (err, data) {
+		storeEvents.once('storedDataFetched', function (err, data) {
 			callback(err, data);
 		});
 
 
 		var done = function (err, data) {
 			fetchingStoreInProgress = false;
-			storeEvents.emit('cacheDataFetched', err, data);
+			storeEvents.emit('storedDataFetched', err, data);
 		};
 
 		if (!fetchingStoreInProgress) {
@@ -219,7 +220,7 @@ var UserDataStore = function (userId) {
 	};
 	this.getLivefyrePreferredUserId = function (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("UserDataCache.getLivefyrePreferredUserId: callback not provided");
+			throw new Error("UserDataStore.getLivefyrePreferredUserId: callback not provided");
 		}
 
 		try {
@@ -267,7 +268,7 @@ var UserDataStore = function (userId) {
 
 	this.getPseudonym = function (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("UserDataCache.getPseudonym: callback not provided");
+			throw new Error("UserDataStore.getPseudonym: callback not provided");
 		}
 
 		try {
@@ -287,7 +288,7 @@ var UserDataStore = function (userId) {
 					}
 
 					if (storedData && storedData.pseudonym) {
-						var sanitizedPseudonym = sanitizer.escape(storedData.pseudonym);
+						var sanitizedPseudonym = sanitizer.escape(crypto.decrypt(storedData.pseudonym));
 
 						consoleLogger.log(userId, 'getPseudonym', 'data loaded from the cache');
 						callback(null, sanitizedPseudonym);
@@ -305,7 +306,7 @@ var UserDataStore = function (userId) {
 
 	this.setPseudonym = function (pseudonym, callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("UserDataCache.setPseudonym: callback not provided");
+			throw new Error("UserDataStore.setPseudonym: callback not provided");
 		}
 
 		var sanitizedPseudonym = sanitizer.escape(pseudonym);
@@ -329,7 +330,7 @@ var UserDataStore = function (userId) {
 						return;
 					}
 
-					upsertStoredData('pseudonym', pseudonym, function (errUpsert) {
+					upsertStoredData('pseudonym', crypto.encrypt(pseudonym), function (errUpsert) {
 						if (errUpsert) {
 							callback(errUpsert);
 							return;
@@ -350,7 +351,7 @@ var UserDataStore = function (userId) {
 
 	this.getEmailPreferences = function (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("UserDataCache.getEmailPreferences: callback not provided");
+			throw new Error("UserDataStore.getEmailPreferences: callback not provided");
 		}
 
 		try {
@@ -386,7 +387,7 @@ var UserDataStore = function (userId) {
 
 	this.setEmailPreferences = function (emailPreferences, callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("UserDataCache.setEmailPreferences: callback not provided");
+			throw new Error("UserDataStore.setEmailPreferences: callback not provided");
 		}
 
 		var validValues = ['never', 'immediately', 'hourly'];
@@ -485,4 +486,4 @@ var UserDataStore = function (userId) {
 		}
 	};
 };
-module.exports = UserDataCache;
+module.exports = UserDataStore;

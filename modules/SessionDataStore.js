@@ -6,6 +6,7 @@ var livefyreService = require('../services/livefyre');
 var consoleLogger = require('../helpers/consoleLogger');
 var mongoSanitize = require('mongo-sanitize');
 var UserDataStore = require('./UserDataStore');
+var crypto = require('../helpers/crypto');
 var async = require('async');
 var EventEmitter = require('events');
 
@@ -29,13 +30,13 @@ var SessionDataStore = function (sessionId) {
 			return;
 		}
 
-		storeEvents.once('cacheDataFetched', function (err, data) {
+		storeEvents.once('storedDataFetched', function (err, data) {
 			callback(err, data);
 		});
 
 		var done = function (err, data) {
 			fetchingStoreInProgress = false;
-			storeEvents.emit('cacheDataFetched', err, data);
+			storeEvents.emit('storedDataFetched', err, data);
 		};
 
 
@@ -63,6 +64,10 @@ var SessionDataStore = function (sessionId) {
 
 					if (data && data.length) {
 						storedData = data[0];
+						if (storedData.authMetadata && storedData.authMetadata.pseudonym) {
+							storedData.authMetadata.pseudonym = crypto.decrypt(storedData.authMetadata.pseudonym);
+						}
+
 						consoleLogger.log(sessionId, 'cached data retrieved');
 						consoleLogger.debug(sessionId, storedData);
 
@@ -347,6 +352,7 @@ var SessionDataStore = function (sessionId) {
 	};
 	var upsertAuthMetadata = function (authMetadata) {
 		consoleLogger.log(sessionId, 'upsert livefyre auth token');
+		authMetadata.pseudonym = crypto.encrypt(authMetadata.pseudonym);
 		upsertStoredData('authMetadata', authMetadata, authMetadata.expires);
 	};
 	this.getAuthMetadata = function (callback) {

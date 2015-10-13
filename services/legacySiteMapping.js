@@ -1,7 +1,7 @@
 "use strict";
 
 var db = require('../services/db');
-var consoleLogger = require('../modules/consoleLogger');
+var consoleLogger = require('../helpers/consoleLogger');
 
 var defaultSiteId = parseInt(process.env.DEFAULT_SITE_ID, 10);
 

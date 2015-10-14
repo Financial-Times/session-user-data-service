@@ -12,8 +12,8 @@ router.get('/getauth', function (req, res, next) {
 	if (req.cookies && req.cookies['FTSession']) {
 		userSession = req.cookies['FTSession'];
 	}
-	if (req.query.session) {
-		userSession = req.query.session;
+	if (req.query.sessionId) {
+		userSession = req.query.sessionId;
 	}
 
 	var sessionDataStore;
@@ -84,8 +84,8 @@ var setPseudonym = function (req, res, next) {
 	if (req.cookies && req.cookies['FTSession']) {
 		userSession = req.cookies['FTSession'];
 	}
-	if (req.query.session) {
-		userSession = req.query.session;
+	if (req.query.sessionId) {
+		userSession = req.query.sessionId;
 	}
 
 	var sessionDataStore;
@@ -146,8 +146,8 @@ var updateUser = function (req, res, next) {
 	if (req.cookies && req.cookies['FTSession']) {
 		userSession = req.cookies['FTSession'];
 	}
-	if (req.query.session) {
-		userSession = req.query.session;
+	if (req.query.sessionId) {
+		userSession = req.query.sessionId;
 	}
 
 	var sessionDataStore;
@@ -273,8 +273,8 @@ router.get('/emptypseudonym', function (req, res, next) {
 	if (req.cookies && req.cookies['FTSession']) {
 		userSession = req.cookies['FTSession'];
 	}
-	if (req.query.session) {
-		userSession = req.query.session;
+	if (req.query.sessionId) {
+		userSession = req.query.sessionId;
 	}
 
 	var sessionDataStore;

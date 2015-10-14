@@ -4,9 +4,9 @@ var db = require('../services/db');
 var consoleLogger = require('../helpers/consoleLogger');
 var mongoSanitize = require('mongo-sanitize');
 var EventEmitter = require('events');
-var sanitizer = require('sanitizer');
 var eRightsToUuid = require('../services/eRightsToUuid');
 var async = require('async');
+var emailService = require('../services/email');
 var crypto = require('../helpers/crypto');
 
 var UserDataStore = function (userId) {
@@ -223,10 +223,18 @@ var UserDataStore = function (userId) {
 			throw new Error("UserDataStore.getLivefyrePreferredUserId: callback not provided");
 		}
 
+		var callCallback = function () {
+			var args = arguments;
+
+			setTimeout(function () {
+				callback.apply(self, args);
+			}, 0);
+		};
+
 		try {
 			getUuidOfUserId(function (errUuid) {
 				if (errUuid) {
-					callback(errUuid);
+					callCallback(errUuid);
 					return;
 				}
 
@@ -241,17 +249,17 @@ var UserDataStore = function (userId) {
 
 					if (storedData && storedData.lfUserId) {
 						consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'data loaded from the cache');
-						callback(null, storedData.lfUserId);
+						callCallback(null, storedData.lfUserId);
 					} else {
 						// fetch and save
 						consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'not found in cache');
 						fetchLivefyrePreferredUserId(function (errFetch, lfUserId) {
 							if (errFetch) {
-								callback(errFetch);
+								callCallback(errFetch);
 								return;
 							}
 
-							callback(null, lfUserId);
+							callCallback(null, lfUserId);
 
 							upsertLivefyrePreferredUserId(lfUserId);
 						});
@@ -260,7 +268,7 @@ var UserDataStore = function (userId) {
 			});
 		} catch (e) {
 			console.error(userId, 'Exception, getLivefyrePreferredUserId', e);
-			callback(e);
+			callCallback(e);
 		}
 	};
 
@@ -288,10 +296,10 @@ var UserDataStore = function (userId) {
 					}
 
 					if (storedData && storedData.pseudonym) {
-						var sanitizedPseudonym = sanitizer.escape(crypto.decrypt(storedData.pseudonym));
+						var pseudonym = crypto.decrypt(storedData.pseudonym);
 
 						consoleLogger.log(userId, 'getPseudonym', 'data loaded from the cache');
-						callback(null, sanitizedPseudonym);
+						callback(null, pseudonym);
 					} else {
 						consoleLogger.log(userId, 'getPseudonym', 'user has no pseudonym');
 						callback(null, null);
@@ -309,8 +317,7 @@ var UserDataStore = function (userId) {
 			throw new Error("UserDataStore.setPseudonym: callback not provided");
 		}
 
-		var sanitizedPseudonym = sanitizer.escape(pseudonym);
-		if (!pseudonym || !sanitizedPseudonym) {
+		if (!pseudonym) {
 			callback(new Error("Pseudonym is blank."));
 		}
 
@@ -343,6 +350,44 @@ var UserDataStore = function (userId) {
 			});
 		} catch (e) {
 			console.error(userId, 'Exception, setPseudonym', e);
+			callback(e);
+		}
+	};
+
+	this.emptyPseudonym = function (callback) {
+		if (typeof callback !== 'function') {
+			throw new Error("UserDataStore.emptyPseudonym: callback not provided");
+		}
+
+		try {
+			getUuidOfUserId(function (errUuid) {
+				if (errUuid) {
+					callback(errUuid);
+					return;
+				}
+
+				getStoredData(function (errCache, storedData) {
+					if (errCache) {
+						// fetch
+						consoleLogger.log(userId, 'emptyPseudonym', 'error with the storage');
+						consoleLogger.debug(userId, errCache);
+						callback(errCache);
+						return;
+					}
+
+					upsertStoredData('pseudonym', null, function (errUpsert) {
+						if (errUpsert) {
+							callback(errUpsert);
+							return;
+						}
+
+						consoleLogger.log(userId, 'emptyPseudonym', 'empty pseudonym ok');
+						callback();
+					});
+				});
+			});
+		} catch (e) {
+			console.error(userId, 'Exception, emptyPseudonym', e);
 			callback(e);
 		}
 	};
@@ -482,6 +527,125 @@ var UserDataStore = function (userId) {
 			});
 		} catch (e) {
 			console.error(userId, 'Exception, setEmailPreferences', e);
+			callback(e);
+		}
+	};
+
+
+	var fetchBasicUserInfo = function (callback) {
+		emailService.getUserData(uuid, function (err, data) {
+			if (err) {
+				callback(err);
+				return;
+			}
+
+			callback(null, data);
+		});
+	};
+	this.getUserData = function (callback) {
+		if (typeof callback !== 'function') {
+			throw new Error("UserDataStore.getUserData: callback not provided");
+		}
+
+		try {
+			getUuidOfUserId(function (errUuid) {
+				if (errUuid) {
+					callback(errUuid);
+					return;
+				}
+
+				getStoredData(function (errCache, storedData) {
+					if (errCache) {
+						// fetch
+						consoleLogger.log(userId, 'getUserData', 'error retrieving pseudonym');
+						consoleLogger.debug(userId, errCache);
+						callback(errCache);
+						return;
+					}
+
+					if (storedData) {
+						var returnData = {};
+
+						returnData.uuid = uuid;
+
+						self.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
+							if (errLfId) {
+								callback(errLfId);
+								return;
+							}
+
+							returnData.lfUserId = lfUserId;
+
+							if (storedData.pseudonym) {
+								returnData.pseudonym = crypto.decrypt(storedData.pseudonym);
+							}
+
+							if (storedData.emailPreferences) {
+								returnData.emailPreferences = storedData.emailPreferences;
+							}
+
+							if (storedData.email && storedData.firstName && storedData.lastName) {
+								returnData.email = crypto.decrypt(storedData.email);
+								returnData.firstName = crypto.decrypt(storedData.firstName);
+								returnData.lastName = crypto.decrypt(storedData.lastName);
+
+								callback(null, returnData);
+								return;
+							} else {
+								fetchBasicUserInfo(function (errFetch, basicUserInfo) {
+									if (errFetch) {
+										callback(errFetch);
+										return;
+									}
+
+									if (basicUserInfo) {
+										if (basicUserInfo.email) {
+											returnData.email = basicUserInfo.email;
+											upsertStoredData('email', crypto.encrypt(basicUserInfo.email));
+										}
+										if (basicUserInfo.firstName) {
+											returnData.firstName = basicUserInfo.firstName;
+											upsertStoredData('firstName', crypto.encrypt(basicUserInfo.firstName));
+										}
+										if (basicUserInfo.lastName) {
+											returnData.lastName = basicUserInfo.lastName;
+											upsertStoredData('lastName', crypto.encrypt(basicUserInfo.lastName));
+										}
+									}
+
+									callback(null, returnData);
+								});
+							}
+						});
+					} else {
+						fetchBasicUserInfo(function (errFetch, basicUserInfo) {
+							if (errFetch) {
+								callback(errFetch);
+								return;
+							}
+
+							if (basicUserInfo) {
+								if (basicUserInfo.email) {
+									returnData.email = basicUserInfo.email;
+									upsertStoredData('email', basicUserInfo.email);
+								}
+								if (basicUserInfo.firstName) {
+									returnData.firstName = basicUserInfo.firstName;
+									upsertStoredData('firstName', basicUserInfo.firstName);
+								}
+								if (basicUserInfo.lastName) {
+									returnData.lastName = basicUserInfo.lastName;
+									upsertStoredData('lastName', basicUserInfo.lastName);
+								}
+							}
+
+							callback(null, returnData);
+						});
+					}
+				});
+			});
+		} catch (e) {
+			console.error(userId, 'Exception, getUserData', e);
 			callback(e);
 		}
 	};

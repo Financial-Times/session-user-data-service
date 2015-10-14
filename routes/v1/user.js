@@ -4,6 +4,8 @@ var express = require('express');
 var router = express.Router();
 var SessionDataStore = require('../../modules/SessionDataStore');
 var async = require('async');
+var livefyreService = require('../../services/livefyre');
+var consoleLogger = require('../../helpers/consoleLogger');
 
 router.get('/getauth', function (req, res, next) {
 	var userSession;
@@ -111,6 +113,18 @@ var setPseudonym = function (req, res, next) {
 
 						res.jsonp({
 							status: 'ok'
+						});
+
+						userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
+							if (errLfId) {
+								return;
+							}
+
+							livefyreService.callPingToPull(lfUserId, function (errPing) {
+								if (errPing) {
+									consoleLogger.warn('pingToPull error', errPing);
+								}
+							});
 						});
 					});
 				});
@@ -223,6 +237,18 @@ var updateUser = function (req, res, next) {
 						return;
 					}
 
+					userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
+						if (errLfId) {
+							return;
+						}
+
+						livefyreService.callPingToPull(lfUserId, function (errPing) {
+							if (errPing) {
+								consoleLogger.warn('pingToPull error', errPing);
+							}
+						});
+					});
+
 					sessionDataStore.invalidate(function () {
 						res.jsonp({
 							status: 'ok'
@@ -243,7 +269,61 @@ router.post('/updateuser', updateUser);
 
 
 router.get('/emptypseudonym', function (req, res, next) {
+	var userSession;
+	if (req.cookies && req.cookies['FTSession']) {
+		userSession = req.cookies['FTSession'];
+	}
+	if (req.query.session) {
+		userSession = req.query.session;
+	}
 
+	var sessionDataStore;
+	if (userSession) {
+		sessionDataStore = new SessionDataStore(userSession);
+
+		sessionDataStore.getUserDataStore(function (errSess, userDataStore) {
+			if (errSess) {
+				res.sendStatus(503);
+				return;
+			}
+
+			if (userDataStore) {
+				userDataStore.emptyPseudonym(function (errSetPs) {
+					if (errSetPs) {
+						res.sendStatus(503);
+						return;
+					}
+
+					sessionDataStore.invalidate(function (errInv) {
+						if (errInv) {
+							res.sendStatus(503);
+							return;
+						}
+
+						res.jsonp({
+							status: 'ok'
+						});
+
+						userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
+							if (errLfId) {
+								return;
+							}
+
+							livefyreService.callPingToPull(lfUserId, function (errPing) {
+								if (errPing) {
+									consoleLogger.warn('pingToPull error', errPing);
+								}
+							});
+						});
+					});
+				});
+			} else {
+				res.sendStatus(401);
+			}
+		});
+	} else {
+		res.sendStatus(401);
+	}
 });
 
 module.exports = router;

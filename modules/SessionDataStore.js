@@ -7,8 +7,10 @@ var consoleLogger = require('../helpers/consoleLogger');
 var mongoSanitize = require('mongo-sanitize');
 var UserDataStore = require('./UserDataStore');
 var crypto = require('../helpers/crypto');
+var sanitizer = require('sanitizer');
 var async = require('async');
 var EventEmitter = require('events');
+var env = require('../env');
 
 var SessionDataStore = function (sessionId) {
 	var storedData = null;
@@ -191,8 +193,8 @@ var SessionDataStore = function (sessionId) {
 
 		var expirationDate;
 		if (remembered) {
-			// aprox. 6 months from creation time
-			expirationDate = new Date(creationTime.getTime() + 1000 * 60 * 60 * 24 * 30 * 6);
+			// default aprox. 6 months from creation time
+			expirationDate = new Date(creationTime.getTime() + 1000 * 60 * 60 * env.sessionValidityHours.remembered);
 
 			// at least 4h from now (in case the session is about at the end of its life)
 			if (expirationDate <= new Date(new Date().getTime() + 1000 * 60 * 60 * 4)) {
@@ -200,8 +202,8 @@ var SessionDataStore = function (sessionId) {
 				expirationDate = new Date(new Date().getTime() + 1000 * 60 * 60 * 4);
 			}
 		} else {
-			// 24 hours from creation time
-			expirationDate = new Date(creationTime.getTime() + 1000 * 60 * 60 * 24);
+			// default 24 hours from creation time
+			expirationDate = new Date(creationTime.getTime() + 1000 * 60 * 60 * env.sessionValidityHours.notRemembered);
 
 			// at least 4h from now (in case the session is about at the end of its life)
 			if (expirationDate <= new Date(new Date().getTime() + 1000 * 60 * 60 * 4)) {
@@ -297,6 +299,8 @@ var SessionDataStore = function (sessionId) {
 							}
 
 							if (pseudonym) {
+								pseudonym = sanitizer.escape(pseudonym);
+
 								var configForToken = {
 									userId: lfUserId,
 									displayName: pseudonym,

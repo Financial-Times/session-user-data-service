@@ -6,10 +6,7 @@ var livefyreService = require('../services/livefyre');
 var consoleLogger = require('../helpers/consoleLogger');
 var mongoSanitize = require('mongo-sanitize');
 var EventEmitter = require('events');
-
-var cacheConfig = {
-	expireHours: process.env.ARTICLE_CACHE_EXPIRY || 12
-};
+var env = require('../env');
 
 var ArticleDataStore = function (articleId) {
 	var storedData = null;
@@ -130,7 +127,7 @@ var ArticleDataStore = function (articleId) {
 		consoleLogger.log(articleId, 'upsert tags');
 		upsertStoredData("tags", {
 			data: tags,
-			expires: new Date(new Date().getTime() + cacheConfig.expireHours * 1000 * 60 * 60)
+			expires: new Date(new Date().getTime() + env.cacheExpiryHours.articles * 1000 * 60 * 60)
 		});
 	};
 	this.getArticleTags = function (callback) {

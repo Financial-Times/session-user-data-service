@@ -2,9 +2,7 @@
 
 var needle = require('needle');
 var isUuid = require('../helpers/isUuid');
-
-var byUuidUrl = 'https://depr-user-id-svc.memb.ft.com/deprecated-user-ids/v1?userId=';
-var byErightsUrl = 'https://depr-user-id-svc.memb.ft.com/deprecated-user-ids/v1?=erightsId';
+var env = require('../env');
 
 exports.getUuid = function (userId, callback) {
 	if (typeof callback !== 'function') {
@@ -16,7 +14,10 @@ exports.getUuid = function (userId, callback) {
 		return;
 	}
 
-	needle.get(byErightsUrl + userId, function (err, response) {
+	var byErightsUrl = env.erightsToUuidService.urls.byErights;
+	byErightsUrl = byErightsUrl.replace(/\{userId\}/g, userId);
+
+	needle.get(byErightsUrl, function (err, response) {
 		if (err || response.statusCode !== 200 || !response.body) {
 			callback(err || new Error("User not found."));
 		}
@@ -31,11 +32,10 @@ exports.getERightsId = function (userId, callback) {
 	}
 
 	if (isUuid(userId)) {
-		console.log('userId', userId, 'is uuid');
+		var byUuidUrl = env.erightsToUuidService.urls.byUuid;
+		byUuidUrl = byUuidUrl.replace(/\{userId\}/g, userId);
 
-		console.log('api url', byUuidUrl + userId);
-
-		needle.get(byUuidUrl + userId, function (err, response) {
+		needle.get(byUuidUrl, function (err, response) {
 			if (err || response.statusCode !== 200 || !response.body) {
 				console.log('userId', userId, 'User not found');
 

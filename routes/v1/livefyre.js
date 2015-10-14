@@ -4,6 +4,7 @@ var express = require('express');
 var router = express.Router();
 var ArticleDataStore = require('../../modules/ArticleDataStore');
 var SessionDataStore = require('../../modules/SessionDataStore');
+var UserDataStore = require('../../modules/UserDataStore');
 var livefyreService = require('../../services/livefyre');
 var _ = require('lodash');
 var async = require('async');
@@ -230,10 +231,63 @@ router.get('/get_lf_bootstrap', function (req, res, next) {
 });
 
 router.get('/profile', function (req, res, next) {
-	if (!req.query.id) {
-		res.status(400).send('"id" (user ID) should be provided.');
+	if (!req.query.id || !req.query.lftoken) {
+		res.status(400).send('"id" (user ID) and "lftoken" (Livefyre user token) should be provided.');
 		return;
 	}
+
+	if (!livefyreService.validateToken(req.query.lftoken)) {
+		res.sendStatus(403);
+		return;
+	}
+
+	var userDataStore = new UserDataStore(req.query.id);
+	userDataStore.getUserData(function (err, data) {
+		if (err) {
+			res.sendStatus(503);
+			return;
+		}
+
+		var returnData = {};
+		returnData.id = String(data.lfUserId);
+		if (data.email) {
+			returnData.email = data.email;
+		}
+		if (data.firstName) {
+			returnData.first_name = data.firstName;
+		}
+		if (data.lastName) {
+			returnData.last_name = data.lastName;
+		}
+
+		if (data.pseudonym) {
+			returnData.display_name = data.pseudonym;
+		}
+
+		if (data.emailPreferences) {
+			returnData.email_notifications = {};
+
+			if (data.emailPreferences.comments) {
+				returnData.email_notifications.comments = data.emailPreferences.comments;
+			}
+
+			if (data.emailPreferences.likes) {
+				returnData.email_notifications.likes = data.emailPreferences.likes;
+			}
+
+			if (data.emailPreferences.replies) {
+				returnData.email_notifications.replies = data.emailPreferences.replies;
+			}
+
+			if (data.emailPreferences.hasOwnProperty('autoFollow') && typeof data.emailPreferences.autoFollow === 'boolean') {
+				returnData.autofollow_conversations = String(data.emailPreferences.autoFollow);
+			}
+		}
+
+		returnData.settings_url = "";
+
+		res.jsonp(returnData);
+	});
 });
 
 

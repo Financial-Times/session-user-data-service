@@ -3,8 +3,29 @@
 var livefyre = require('livefyre');
 var legacySiteMapping = require('./legacySiteMapping');
 var needle = require('needle');
+var consoleLogger = require('../helpers/consoleLogger');
+var env = require('../env');
 
-var network = livefyre.getNetwork(process.env.LIVEFYRE_NETWORK + '@fyre.co', process.env.LIVEFYRE_NETWORK_KEY);
+var network = livefyre.getNetwork(env.livefyre.network.name + '@fyre.co', env.livefyre.network.key);
+
+var pingToPullUrl = process.env.LIVEFYRE_PING_TO_PULL_URL;
+
+var systemTokenCache = {
+	token: null,
+	expiresAt: null
+};
+var getSystemToken = function () {
+	if (systemTokenCache.token && systemTokenCache.expiresAt < new Date()) {
+		return systemTokenCache.token;
+	}
+
+	systemTokenCache.token = network.buildLivefyreToken();
+	systemTokenCache.expiresAt = new Date(new Date().getTime() + 1000 * 60 * 60 * 23.5);
+
+	consoleLogger.log('systemToken generated', systemTokenCache.token);
+
+	return systemTokenCache.token;
+};
 
 
 exports.getCollectionDetails = function (config, callback) {
@@ -26,8 +47,8 @@ exports.getCollectionDetails = function (config, callback) {
 				return;
 			}
 
-			if (process.env['LIVEFYRE_SITE_KEY_' + siteId]) {
-				var site = network.getSite(siteId, process.env['LIVEFYRE_SITE_KEY_' + siteId]);
+			if (env.livefyre.siteKeys[siteId]) {
+				var site = network.getSite(siteId, env.livefyre.siteKeys[siteId]);
 
 				var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);
 				if (config.tags) {
@@ -76,7 +97,7 @@ exports.collectionExists = function (articleId, callback) {
 
 	var url = 'https://{networkName}.bootstrap.fyre.co/bs3/v3.1/{networkName}.fyre.co/{siteId}/{articleId}/init';
 
-	url = url.replace(/\{networkName\}/g, process.env.livefyreNetwork);
+	url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
 	url = url.replace(/\{articleId\}/g, new Buffer(articleId).toString('base64'));
 
 	legacySiteMapping.getSiteId(articleId, function (err, siteId) {
@@ -120,5 +141,38 @@ exports.generateAuthToken = function (config, callback) {
 	callback(null, {
 		token: authToken,
 		expires: new Date(new Date().getTime() + expires * 1000).getTime()
+	});
+};
+
+exports.validateToken = function (token) {
+	try {
+		return network.validateLivefyreToken(token);
+	} catch (e) {
+		consoleLogger.warn('Exception, livefyre.validateToken', e);
+		return false;
+	}
+};
+
+exports.callPingToPull = function (userId, callback) {
+	if (typeof callback !== 'function') {
+		throw new Error("livefyre.callPingToPull: callback not provided");
+	}
+
+	var url = pingToPullUrl;
+	url.replace(/\{networkName\}/g, env.livefyre.network.name)
+		.replace(/\{user_id\}/g, userId)
+		.replace(/\{token\}/g, getSystemToken());
+
+	needle.post(url, function (err, response) {
+		if (err) {
+			callback(err);
+			return;
+		}
+
+		if (response.statusCode !== 200) {
+			callback(new Error(response.statusCode));
+		} else {
+			callback();
+		}
 	});
 };

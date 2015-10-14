@@ -2,21 +2,25 @@
 
 var needle = require('needle');
 var _ = require('lodash');
+var env = require('../env');
 
 
-exports.getSessionData = function (session, callback) {
+exports.getSessionData = function (sessionId, callback) {
 	if (typeof callback !== 'function') {
 		throw new Error("userSessionApi.getSessionData: callback not provided");
 	}
 
 	var options = {
 		headers: {
-			'FT_Api_Key': process.env.SESSION_API_KEY
+			'FT_Api_Key': env.sessionApi.key
 		}
 	};
 
 	try {
-		needle.get('https://sessionapi.memb.ft.com/membership/sessions/' + session, options, function (err, response) {
+		var url = env.sessionApi.url;
+		url = url.replace(/\{sessionId\}/g, sessionId);
+
+		needle.get(url, options, function (err, response) {
 			if (err) {
 				callback(err);
 				return;

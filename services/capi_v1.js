@@ -1,6 +1,8 @@
 "use strict";
 
-var ftApiClient = require('ft-api-client')(process.env.CAPI_KEY, {
+var env = require('../env');
+
+var ftApiClient = require('ft-api-client')(env.capi.key, {
 	pollForPages: false
 });
 

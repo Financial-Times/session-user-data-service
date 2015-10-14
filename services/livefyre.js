@@ -84,7 +84,7 @@ exports.getBootstrapUrl = function (articleId, callback) {
 			return;
 		}
 
-		callback(null, 'http://bootstrap.'+ process.env.livefyreNetwork +'.fyre.co/bs3/'+ process.env.livefyreNetwork +'.fyre.co/'+ siteId +'/'+ new Buffer(articleId).toString('base64') +'/bootstrap.html');
+		callback(null, 'http://bootstrap.'+ env.livefyre.network.name +'.fyre.co/bs3/'+ env.livefyre.network.name +'.fyre.co/'+ siteId +'/'+ new Buffer(articleId).toString('base64') +'/bootstrap.html');
 	});
 };
 

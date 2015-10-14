@@ -1,8 +1,10 @@
 'use strict';
 
 const crypto = require("crypto");
+const env = require('../env');
+
 const algorithm = 'aes-256-ctr';
-const password = process.env.CRYPTO_KEY;
+const password = env.crypto.key;
 
 module.exports.encrypt = (text) => {
 	const cipher = crypto.createCipher(algorithm,password);

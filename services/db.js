@@ -1,5 +1,6 @@
 "use strict";
 
+const env = require('../env');
 var MongoClient = require('mongodb').MongoClient;
 var connection;
 
@@ -14,7 +15,7 @@ function getConnection (callback) {
 		return;
 	}
 
-	MongoClient.connect(process.env.MONGOLAB_URI, function(err, dbConn) {
+	MongoClient.connect(env.mongo.uri, function(err, dbConn) {
 		if (err) {
 			callback(err);
 			return;

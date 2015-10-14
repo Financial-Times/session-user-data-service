@@ -42,6 +42,10 @@ var config = {
 			byUuid: process.env.ERIGHTS_TO_UUID_SERVICE_URL_BY_UUID || 'https://depr-user-id-svc.memb.ft.com/deprecated-user-ids/v1?userId={userId}',
 			byErights: process.env.ERIGHTS_TO_UUID_SERVICE_URL_BY_ERIGHTS || 'https://depr-user-id-svc.memb.ft.com/deprecated-user-ids/v1?erightsId={userId}'
 		}
+	},
+	logger: {
+		level: process.env.LOGGER_LEVEL,
+		filter: process.env.LOGGER_FILTER
 	}
 };
 

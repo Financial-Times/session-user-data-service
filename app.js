@@ -7,6 +7,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cors = require('cors');
 var consoleLogger = require('./helpers/consoleLogger');
+var env = require('./env');
 
 var routes = {
 	index: require('./routes/index'),
@@ -17,19 +18,17 @@ var routes = {
 };
 
 
-if (process.env.LOGGER_LEVEL) {
-	consoleLogger.setLevel(process.env.LOGGER_LEVEL);
+if (env.logger.level) {
+	consoleLogger.setLevel(env.logger.level);
 }
 
-if (process.env.LOGGER_FILTER) {
-	var filters = process.env.LOGGER_FILTER.split(',').map(function (item) {return item.trim();});
+if (env.logger.filter) {
+	var filters = env.logger.filter.split(',').map(function (item) {return item.trim();});
 
 	consoleLogger.addFilter(filters);
 }
 
-
 consoleLogger.enable();
-consoleLogger.setLevel('log');
 
 
 var app = express();

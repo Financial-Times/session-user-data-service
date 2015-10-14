@@ -276,7 +276,7 @@ var ArticleDataStore = function (articleId) {
 	var upsertLivefyreCollectionDetails = function (collectionDetails, shortLifetime) {
 		upsertStoredData("livefyre.metadata", {
 			data: collectionDetails,
-			expires: new Date(shortLifetime ? new Date().getTime() + 1000 * 60 * 5 : new Date().getTime() + cacheConfig.expireHours * 1000 * 60 * 60)
+			expires: new Date(shortLifetime ? new Date().getTime() + 1000 * 60 * 5 : new Date().getTime() + env.cacheExpiryHours.articles * 1000 * 60 * 60)
 		});
 	};
 	this.getLivefyreCollectionDetails = function (config, callback) {

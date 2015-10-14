@@ -51,7 +51,7 @@ var config = {
 
 for (let key in process.env) {
 	if (process.env.hasOwnProperty(key)) {
-		var match = key.match(/$LIVEFYRE_SITE_KEY_([0-9]+)^/);
+		var match = key.match(/LIVEFYRE_SITE_KEY_([0-9]+)/);
 		if (match && match.length) {
 			config.livefyre.siteKeys[match[1]] = process.env[key];
 		}

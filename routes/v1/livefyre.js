@@ -53,8 +53,8 @@ router.get('/getcollectiondetails', function (req, res, next) {
 	if (req.cookies && req.cookies['FTSession']) {
 		userSession = req.cookies['FTSession'];
 	}
-	if (req.query.session) {
-		userSession = req.query.session;
+	if (req.query.sessionId) {
+		userSession = req.query.sessionId;
 	}
 
 	var articleDataStore = new ArticleDataStore(req.query.articleId);
@@ -104,8 +104,8 @@ router.get('/init', function (req, res, next) {
 	if (req.cookies && req.cookies['FTSession']) {
 		userSession = req.cookies['FTSession'];
 	}
-	if (req.query.session) {
-		userSession = req.query.session;
+	if (req.query.sessionId) {
+		userSession = req.query.sessionId;
 	}
 
 	var articleDataStore = new ArticleDataStore(req.query.articleId);

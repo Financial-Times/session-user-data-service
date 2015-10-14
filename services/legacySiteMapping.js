@@ -2,8 +2,9 @@
 
 var db = require('../services/db');
 var consoleLogger = require('../helpers/consoleLogger');
+var env = require('../env');
 
-var defaultSiteId = parseInt(process.env.DEFAULT_SITE_ID, 10);
+var defaultSiteId = parseInt(env.livefyre.defaultSiteId, 10);
 
 exports.getSiteId = function (articleId, callback) {
 	if (typeof callback !== 'function') {

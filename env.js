@@ -6,7 +6,7 @@ var config = {
 			name: process.env.LIVEFYRE_NETWORK_NAME,
 			key:process.env.LIVEFYRE_NETWORK_KEY
 		},
-		defaultSite: process.env.DEFAULT_SITE_ID,
+		defaultSiteId: process.env.DEFAULT_SITE_ID,
 		pingToPullUrl: process.env.LIVEFYRE_PING_TO_PULL_URL,
 		siteKeys: {}
 	},

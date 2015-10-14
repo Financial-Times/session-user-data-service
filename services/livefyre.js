@@ -8,8 +8,6 @@ var env = require('../env');
 
 var network = livefyre.getNetwork(env.livefyre.network.name + '@fyre.co', env.livefyre.network.key);
 
-var pingToPullUrl = process.env.LIVEFYRE_PING_TO_PULL_URL;
-
 var systemTokenCache = {
 	token: null,
 	expiresAt: null
@@ -158,7 +156,7 @@ exports.callPingToPull = function (userId, callback) {
 		throw new Error("livefyre.callPingToPull: callback not provided");
 	}
 
-	var url = pingToPullUrl;
+	var url = env.livefyre.pingToPullUrl;
 	url.replace(/\{networkName\}/g, env.livefyre.network.name)
 		.replace(/\{user_id\}/g, userId)
 		.replace(/\{token\}/g, getSystemToken());

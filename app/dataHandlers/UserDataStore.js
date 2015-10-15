@@ -1,13 +1,13 @@
 "use strict";
 
-var db = require('../services/db');
-var consoleLogger = require('../helpers/consoleLogger');
-var mongoSanitize = require('mongo-sanitize');
-var EventEmitter = require('events');
-var eRightsToUuid = require('../services/eRightsToUuid');
-var async = require('async');
-var emailService = require('../services/email');
-var crypto = require('../helpers/crypto');
+const db = require('../services/db');
+const consoleLogger = require('../utils/consoleLogger');
+const mongoSanitize = require('mongo-sanitize');
+const EventEmitter = require('events');
+const eRightsToUuid = require('../services/eRightsToUuid');
+const async = require('async');
+const emailService = require('../services/email');
+const crypto = require('../utils/crypto');
 
 var UserDataStore = function (userId) {
 	var storedData = null;

@@ -1,12 +1,12 @@
 "use strict";
 
-var capi_v1 = require('../services/capi_v1');
-var db = require('../services/db');
-var livefyreService = require('../services/livefyre');
-var consoleLogger = require('../helpers/consoleLogger');
-var mongoSanitize = require('mongo-sanitize');
-var EventEmitter = require('events');
-var env = require('../env');
+const capi_v1 = require('../services/capi_v1');
+const db = require('../services/db');
+const livefyreService = require('../services/livefyre');
+const consoleLogger = require('../utils/consoleLogger');
+const mongoSanitize = require('mongo-sanitize');
+const EventEmitter = require('events');
+const env = require('../../env');
 
 var ArticleDataStore = function (articleId) {
 	var storedData = null;

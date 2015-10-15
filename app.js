@@ -6,14 +6,14 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cors = require('cors');
-var consoleLogger = require('./helpers/consoleLogger');
+var consoleLogger = require('./app/utils/consoleLogger');
 var env = require('./env');
 
 var routes = {
-	index: require('./routes/index'),
+	index: require('./app/routes/index'),
 	v1: {
-		livefyre: require('./routes/v1/livefyre'),
-		user: require('./routes/v1/user')
+		livefyre: require('./app/routes/v1/livefyre'),
+		user: require('./app/routes/v1/user')
 	}
 };
 

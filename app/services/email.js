@@ -1,8 +1,8 @@
 "use strict";
 
-var needle = require('needle');
-var _ = require('lodash');
-var env = require('../env');
+const needle = require('needle');
+const _ = require('lodash');
+const env = require('../../env');
 
 
 exports.getUserData = function (userId, callback) {

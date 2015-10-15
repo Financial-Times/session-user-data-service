@@ -1,9 +1,9 @@
 "use strict";
 
-const SessionDataStore = require('../../modules/SessionDataStore');
+const SessionDataStore = require('../../dataHandlers/SessionDataStore');
 const async = require('async');
 const livefyreService = require('../../services/livefyre');
-const consoleLogger = require('../../helpers/consoleLogger');
+const consoleLogger = require('../../utils/consoleLogger');
 
 
 exports.getAuth = function (req, res, next) {

@@ -1,12 +1,12 @@
 "use strict";
 
-const ArticleDataStore = require('../../modules/ArticleDataStore');
-const SessionDataStore = require('../../modules/SessionDataStore');
-const UserDataStore = require('../../modules/UserDataStore');
+const ArticleDataStore = require('../../dataHandlers/ArticleDataStore');
+const SessionDataStore = require('../../dataHandlers/SessionDataStore');
+const UserDataStore = require('../../dataHandlers/UserDataStore');
 const livefyreService = require('../../services/livefyre');
 const _ = require('lodash');
 const async = require('async');
-const consoleLogger = require('../../helpers/consoleLogger');
+const consoleLogger = require('../../utils/consoleLogger');
 
 
 exports.metadata = function(req, res, next) {

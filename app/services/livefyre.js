@@ -3,8 +3,8 @@
 var livefyre = require('livefyre');
 var legacySiteMapping = require('./legacySiteMapping');
 var needle = require('needle');
-var consoleLogger = require('../helpers/consoleLogger');
-var env = require('../env');
+var consoleLogger = require('../utils/consoleLogger');
+var env = require('../../env');
 
 var network = livefyre.getNetwork(env.livefyre.network.name + '@fyre.co', env.livefyre.network.key);
 

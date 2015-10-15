@@ -1,8 +1,8 @@
 "use strict";
 
-const env = require('../env');
-var MongoClient = require('mongodb').MongoClient;
-var connection;
+const env = require('../../env');
+const MongoClient = require('mongodb').MongoClient;
+let connection;
 
 
 function getConnection (callback) {

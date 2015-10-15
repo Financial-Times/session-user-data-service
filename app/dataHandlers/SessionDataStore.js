@@ -1,16 +1,16 @@
 "use strict";
 
-var db = require('../services/db');
-var userSessionApi = require('../services/userSessionApi');
-var livefyreService = require('../services/livefyre');
-var consoleLogger = require('../helpers/consoleLogger');
-var mongoSanitize = require('mongo-sanitize');
-var UserDataStore = require('./UserDataStore');
-var crypto = require('../helpers/crypto');
-var sanitizer = require('sanitizer');
-var async = require('async');
-var EventEmitter = require('events');
-var env = require('../env');
+const db = require('../services/db');
+const userSessionApi = require('../services/userSessionApi');
+const livefyreService = require('../services/livefyre');
+const consoleLogger = require('../utils/consoleLogger');
+const mongoSanitize = require('mongo-sanitize');
+const UserDataStore = require('./UserDataStore');
+const crypto = require('../utils/crypto');
+const sanitizer = require('sanitizer');
+const async = require('async');
+const EventEmitter = require('events');
+const env = require('../../env');
 
 var SessionDataStore = function (sessionId) {
 	var storedData = null;

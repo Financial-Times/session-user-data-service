@@ -1,10 +1,10 @@
 "use strict";
 
-var db = require('../services/db');
-var consoleLogger = require('../helpers/consoleLogger');
-var env = require('../env');
+const db = require('../services/db');
+const consoleLogger = require('../utils/consoleLogger');
+const env = require('../../env');
 
-var defaultSiteId = parseInt(env.livefyre.defaultSiteId, 10);
+const defaultSiteId = parseInt(env.livefyre.defaultSiteId, 10);
 
 exports.getSiteId = function (articleId, callback) {
 	if (typeof callback !== 'function') {

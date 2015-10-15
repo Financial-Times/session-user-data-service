@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require("crypto");
-const env = require('../env');
+const env = require('../../env');
 
 const algorithm = 'aes-256-ctr';
 const password = env.crypto.key;

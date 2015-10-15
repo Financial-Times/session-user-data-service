@@ -1,8 +1,8 @@
 "use strict";
 
-var needle = require('needle');
-var isUuid = require('../helpers/isUuid');
-var env = require('../env');
+const needle = require('needle');
+const isUuid = require('../utils/isUuid');
+const env = require('../../env');
 
 exports.getUuid = function (userId, callback) {
 	if (typeof callback !== 'function') {

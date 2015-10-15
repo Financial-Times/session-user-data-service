@@ -63,9 +63,18 @@ exports.getCollectionDetails = function (req, res, next) {
 
 	getLivefyreCollectionDetailsAuthRestricted(articleDataStore, sessionDataStore, config, function (err, data) {
 		if (err) {
-			if (typeof err === 'object' && err.statusCode) {
-				res.sendStatus(err.statusCode);
-				return;
+			if (typeof err === 'object') {
+				if (err.statusCode) {
+					res.sendStatus(err.statusCode);
+					return;
+				}
+
+				if (err.unclassified) {
+					res.jsonp({
+						unclassified: true
+					});
+					return;
+				}
 			}
 
 			console.log('/v1/livefyre/init', '\nConfig', config, '\nError', err);
@@ -118,6 +127,13 @@ exports.init = function (req, res, next) {
 		livefyre: function (callback) {
 			getLivefyreCollectionDetailsAuthRestricted(articleDataStore, sessionDataStore, config, function (err, data) {
 				if (err) {
+					if (typeof err === 'object' && err.unclassified) {
+						callback(null, {
+							unclassified: true
+						});
+						return;
+					}
+
 					callback(err);
 					return;
 				}
@@ -179,9 +195,11 @@ exports.init = function (req, res, next) {
 		}
 	}, function (err, results) {
 		if (err) {
-			if (typeof err === 'object' && err.statusCode) {
-				res.sendStatus(err.statusCode);
-				return;
+			if (typeof err === 'object') {
+				if (err.statusCode) {
+					res.sendStatus(err.statusCode);
+					return;
+				}
 			}
 
 			console.log('/v1/livefyre/init', '\nConfig', config, '\nError', err);

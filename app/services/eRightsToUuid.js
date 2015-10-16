@@ -19,7 +19,7 @@ exports.getUuid = function (userId, callback) {
 
 	needle.get(byErightsUrl, function (err, response) {
 		if (err || response.statusCode !== 200 || !response.body) {
-			callback(err || new Error("User not found."));
+			callback(err || {statusCode: 404, message: "User not found."});
 		}
 
 		callback(null, response.body.user.id);
@@ -37,18 +37,14 @@ exports.getERightsId = function (userId, callback) {
 
 		needle.get(byUuidUrl, function (err, response) {
 			if (err || response.statusCode !== 200 || !response.body) {
-				console.log('userId', userId, 'User not found');
-
-				callback(err || new Error("User not found."));
+				callback({statusCode: 404, message: "User not found."});
 				return;
 			}
 
 			if (response.body.user && response.body.user.deprecatedIds && response.body.user.deprecatedIds.erightsId) {
-				console.log('userId', userId, 'erightsId found', response.body.user.deprecatedIds.erightsId);
 				callback(null, response.body.user.deprecatedIds.erightsId);
 			} else {
-				console.log('userId', userId, 'no erightsID found');
-				callback(new Error("No eRights ID found."));
+				callback({statusCode: 404, message: "No eRights ID found."});
 			}
 		});
 	} else {

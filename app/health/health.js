@@ -13,6 +13,7 @@ config.checks.forEach(function (serviceName) {
 var inErrorState = false;
 
 const healthStatus = _.omit(config, 'checks');
+healthStatus.checks = [];
 
 var check = function () {
 	var checksToRun = [];

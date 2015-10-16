@@ -3,12 +3,14 @@
 const config = require('./config.json');
 const _ = require('lodash');
 const async = require('async');
+const consoleLogger = require('../utils/consoleLogger');
 
 const healthServices = [];
 config.checks.forEach(function (serviceName) {
 	healthServices.push(require('./healthServices/' + serviceName));
 });
 
+var inErrorState = false;
 
 const healthStatus = _.omit(config, 'checks');
 
@@ -20,9 +22,12 @@ var check = function () {
 
 	async.parallel(checksToRun, function (err, results) {
 		if (err) {
-			throw err;
+			consoleLogger.error('health', 'global error', err);
+			inErrorState = true;
+			return;
 		}
 
+		inErrorState = false;
 		healthStatus.checks = results;
 	});
 
@@ -32,5 +37,9 @@ check();
 
 
 exports.getChecks = function () {
+	if (inErrorState) {
+		return false;
+	}
+
 	return healthStatus;
 };

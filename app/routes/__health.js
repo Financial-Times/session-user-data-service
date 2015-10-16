@@ -6,7 +6,13 @@ const health = require('../health/health.js');
 
 
 router.get('/__health', function (req, res, next) {
-	res.jsonp(health.getChecks());
+	var healthStatus = health.getChecks();
+
+	if (!healthStatus) {
+		res.sendStatus(503);
+	} else {
+		res.jsonp(healthStatus);
+	}
 });
 
 module.exports = router;

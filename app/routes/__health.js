@@ -5,7 +5,8 @@ const router = express.Router();
 const health = require('../health/health.js');
 
 
-router.get('/__health', function (req, res, next) {
+
+var controller = function (req, res, next) {
 	var healthStatus = health.getChecks();
 
 	if (!healthStatus) {
@@ -13,6 +14,8 @@ router.get('/__health', function (req, res, next) {
 	} else {
 		res.jsonp(healthStatus);
 	}
-});
+};
+router.get('/__health', controller);
+router.get('/__health.json', controller);
 
 module.exports = router;

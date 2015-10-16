@@ -14,7 +14,8 @@ var routes = {
 	__health: require('./app/routes/__health'),
 	v1: {
 		livefyre: require('./app/routes/v1/livefyre'),
-		user: require('./app/routes/v1/user')
+		user: require('./app/routes/v1/user'),
+		__gtg: require('./app/routes/v1/__gtg')
 	}
 };
 
@@ -66,6 +67,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes.index);
 app.use('/v1/livefyre', routes.v1.livefyre);
 app.use('/v1/user', routes.v1.user);
+app.use('/v1', routes.v1.__gtg);
 app.use('/', routes.__health);
 
 

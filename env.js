@@ -7,8 +7,11 @@ var config = {
 			key:process.env.LIVEFYRE_NETWORK_KEY
 		},
 		defaultSiteId: process.env.DEFAULT_SITE_ID,
-		pingToPullUrl: process.env.LIVEFYRE_PING_TO_PULL_URL,
-		siteKeys: {}
+		siteKeys: {},
+		api: {
+			pingToPullUrl: process.env.LIVEFYRE_PING_TO_PULL_URL,
+			collectionExistsUrl: process.env.LIVEFYRE_API_COLLECTION_EXISTS || 'https://{networkName}.bootstrap.fyre.co/bs3/v3.1/{networkName}.fyre.co/{siteId}/{articleIdBase64}/init'
+		}
 	},
 	mongo: {
 		uri: process.env.MONGOLAB_URI
@@ -46,7 +49,8 @@ var config = {
 	logger: {
 		level: process.env.LOGGER_LEVEL,
 		filter: process.env.LOGGER_FILTER
-	}
+	},
+	host: process.env.HOST || 'session-user-data-service.herokuapp.com'
 };
 
 for (let key in process.env) {

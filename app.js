@@ -11,6 +11,7 @@ var env = require('./env');
 
 var routes = {
 	index: require('./app/routes/index'),
+	__health: require('./app/routes/__health'),
 	v1: {
 		livefyre: require('./app/routes/v1/livefyre'),
 		user: require('./app/routes/v1/user')
@@ -65,6 +66,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes.index);
 app.use('/v1/livefyre', routes.v1.livefyre);
 app.use('/v1/user', routes.v1.user);
+app.use('/', routes.__health);
 
 
 // catch 404 and forward to error handler

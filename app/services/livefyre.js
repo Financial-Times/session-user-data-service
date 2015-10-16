@@ -93,10 +93,10 @@ exports.collectionExists = function (articleId, callback) {
 		throw new Error("livefyre.collectionExists: callback not provided");
 	}
 
-	var url = 'https://{networkName}.bootstrap.fyre.co/bs3/v3.1/{networkName}.fyre.co/{siteId}/{articleId}/init';
+	var url = env.livefyre.api.collectionExistsUrl;
 
 	url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
-	url = url.replace(/\{articleId\}/g, new Buffer(articleId).toString('base64'));
+	url = url.replace(/\{articleIdBase64\}/g, new Buffer(articleId).toString('base64'));
 
 	legacySiteMapping.getSiteId(articleId, function (err, siteId) {
 		if (err) {
@@ -156,7 +156,7 @@ exports.callPingToPull = function (userId, callback) {
 		throw new Error("livefyre.callPingToPull: callback not provided");
 	}
 
-	var url = env.livefyre.pingToPullUrl;
+	var url = env.livefyre.api.pingToPullUrl;
 	url.replace(/\{networkName\}/g, env.livefyre.network.name)
 		.replace(/\{user_id\}/g, userId)
 		.replace(/\{token\}/g, getSystemToken());

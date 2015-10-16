@@ -1,0 +1,14 @@
+{
+	"schemaVersion": 1,
+	"name": "session-user-data-service",
+	"description": "session-user-data-service",
+	"checks": [
+		"capi_v1",
+		"db",
+		"emailService",
+		"erightsMappingService",
+		"livefyreApi",
+		"siteMapping",
+		"userSessionApi"
+	]
+}

@@ -316,3 +316,7 @@ exports.emptyPseudonym = function (req, res, next) {
 		res.sendStatus(401);
 	}
 };
+
+exports.userUpdated = function (req, res, next) {
+	console.log(req);
+};

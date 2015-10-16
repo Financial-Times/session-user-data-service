@@ -20,4 +20,7 @@ router.post('/updateuser', userController.updateUser);
 
 router.get('/emptypseudonym', userController.emptyPseudonym);
 
+
+router.patch('/userUpdated', userController.userUpdated);
+
 module.exports = router;

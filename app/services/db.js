@@ -10,14 +10,23 @@ function getConnection (callback) {
 		throw new Error("db.getConnection: callback not provided");
 	}
 
+	let callbackCalled = false;
+	const callCallback = function (err, data) {
+		if (!callbackCalled) {
+			callbackCalled = true;
+
+			callback(err, data);
+		}
+	};
+
 	if (connection) {
-		callback(null, connection);
+		callCallback(null, connection);
 		return;
 	}
 
 	MongoClient.connect(env.mongo.uri, function(err, dbConn) {
 		if (err) {
-			callback(err);
+			callCallback(err);
 			return;
 		}
 
@@ -34,8 +43,12 @@ function getConnection (callback) {
 		});
 
 		connection = dbConn;
-		callback(null, dbConn);
+		callCallback(null, dbConn);
 	});
+
+	setTimeout(function () {
+		callCallback({message: "Connection timeout"});
+	}, 10000);
 }
 
 exports.getConnection = getConnection;

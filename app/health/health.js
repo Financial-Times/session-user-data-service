@@ -32,7 +32,7 @@ var check = function () {
 		healthStatus.checks = results;
 	});
 
-	setTimeout(check, 10000);
+	setTimeout(check, 30000);
 };
 check();
 

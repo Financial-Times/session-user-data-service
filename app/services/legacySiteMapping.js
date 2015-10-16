@@ -27,7 +27,6 @@ exports.getSiteId = function (articleId, callback) {
 				}
 
 				if (dbEntries && dbEntries.length && dbEntries[0].siteId) {
-					consoleLogger.log(articleId, 'legacyMapping, mapping found in DB');
 					if (dbEntries[0].siteId === 'unclassified') {
 						callback({
 							unclassified: true
@@ -37,7 +36,6 @@ exports.getSiteId = function (articleId, callback) {
 
 					callback(null, dbEntries[0].siteId);
 				} else {
-					consoleLogger.log(articleId, 'legacyMapping, mapping not found in DB');
 					callback(null, defaultSiteId);
 				}
 			});

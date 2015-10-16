@@ -3,6 +3,7 @@
 const needle = require('needle');
 const _ = require('lodash');
 const env = require('../../env');
+const consoleLogger = require('../utils/consoleLogger');
 
 
 exports.getSessionData = function (sessionId, callback) {
@@ -36,7 +37,7 @@ exports.getSessionData = function (sessionId, callback) {
 			callback(null, responseBody);
 		});
 	} catch (e) {
-		console.log('Session API validate', 'Error', e);
+		consoleLogger.error(sessionId, 'Session API validate', 'Error', e);
 
 		callback(e);
 	}

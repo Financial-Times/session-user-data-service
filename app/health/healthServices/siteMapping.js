@@ -33,7 +33,7 @@ exports.getHealth = function (callback) {
 
 	try {
 		legacySiteMapping.getSiteId('6c3a02c2-606b-11e5-9846-de406ccb37f2', function (err, data) {
-			if (err) {
+			if (err || data === env.livefyre.defaultSiteId) {
 				currentHealth.ok = false;
 				currentHealth.checkOutput = "";
 				callCallback(null, currentHealth);
@@ -53,6 +53,7 @@ exports.getHealth = function (callback) {
 		}, 15000);
 	} catch (e) {
 		consoleLogger.error('health', 'siteMapping', 'Exception', e);
-		callCallback(null, 'Exception');
+		currentHealth.ok = false;
+		currentHealth.checkOutput = 'Exception';
 	}
 };

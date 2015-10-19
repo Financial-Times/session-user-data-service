@@ -53,6 +53,7 @@ exports.getHealth = function (callback) {
 		}, 15000);
 	} catch (e) {
 		consoleLogger.error('health', 'emailService', 'Exception', e);
-		callCallback(null, 'Exception');
+		currentHealth.ok = false;
+		currentHealth.checkOutput = 'Exception';
 	}
 };

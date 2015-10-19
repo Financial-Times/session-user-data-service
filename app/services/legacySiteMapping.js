@@ -1,7 +1,6 @@
 "use strict";
 
 const db = require('../services/db');
-const consoleLogger = require('../utils/consoleLogger');
 const env = require('../../env');
 
 const defaultSiteId = parseInt(env.livefyre.defaultSiteId, 10);

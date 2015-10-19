@@ -59,6 +59,7 @@ exports.getHealth = function (callback) {
 		}, 15000);
 	} catch (e) {
 		consoleLogger.error('health', 'livefyreApi', 'Exception', e);
-		callCallback(null, 'Exception');
+		currentHealth.ok = false;
+		currentHealth.checkOutput = 'Exception';
 	}
 };

@@ -7,6 +7,7 @@ const consoleLogger = require('../utils/consoleLogger');
 const mongoSanitize = require('mongo-sanitize');
 const EventEmitter = require('events');
 const env = require('../../env');
+const urlParser = require('url');
 
 var ArticleDataStore = function (articleId) {
 	var storedData = null;
@@ -114,14 +115,70 @@ var ArticleDataStore = function (articleId) {
 	}
 
 
+	var getTagsByUrl = function (url) {
+		if (url && url.indexOf('ft.com') !== -1) {
+			var parsedUrl = urlParser.parse(url);
+			var tags = [];
 
+			var matches = parsedUrl.hostname.match(/(.*)\.ft\.com/);
+			if (matches && matches.length) {
+				switch (matches[1]) {
+					case 'blogs':
+						tags.push('blog');
+						break;
+					case 'discussions':
+						tags.push('discussion');
+						break;
+					case 'ftalphaville':
+						tags.push('alphaville');
+						tags.push('blog');
+						break;
+					default:
+						tags.push(matches[1]);
+				}
+			}
+
+			if (parsedUrl.hostname.startsWith('blogs.ft.com') || parsedUrl.hostname.startsWith('discussions.ft.com')) {
+				matches = parsedUrl.pathname.match(/\/([^\/]+)/);
+				if (matches && matches.length) {
+					tags.push(matches[1]);
+				}
+			}
+
+			return tags;
+		}
+
+		return [];
+	};
 	var fetchArticleTags = function (callback) {
 		if (typeof callback !== 'function') {
 			throw new Error("ArticleDataStore.fetchArticleTags: callback not provided");
 		}
 
 		consoleLogger.log(articleId, 'fetch article tags');
-		capi_v1.getFilteredTags(articleId, callback);
+
+		capi_v1.getArticleData(articleId, function (errCapi, articleData) {
+			if (errCapi) {
+				callback(errCapi);
+
+				return;
+			}
+
+			var tags = [];
+			if (articleData.sections) {
+				tags = tags.concat(articleData.sections.map(function (val) {return val.taxonomy + '.' + val.name}));
+			}
+
+			if (articleData.authors) {
+				tags = tags.concat(articleData.authors.map(function (val) {return val.taxonomy + '.' + val.name}));
+			}
+
+			if (articleData.brand) {
+				tags.push(articleData.brand.taxonomy + '.' + articleData.brand.name);
+			}
+
+			callback(null, tags);
+		});
 	};
 	var upsertArticleTags = function (tags) {
 		consoleLogger.log(articleId, 'upsert tags');
@@ -130,7 +187,7 @@ var ArticleDataStore = function (articleId) {
 			expires: new Date(new Date().getTime() + env.cacheExpiryHours.articles * 1000 * 60 * 60)
 		});
 	};
-	this.getArticleTags = function (callback) {
+	this.getArticleTags = function (url, callback) {
 		if (typeof callback !== 'function') {
 			throw new Error("ArticleDataStore.getArticleTags: callback not provided");
 		}
@@ -147,7 +204,7 @@ var ArticleDataStore = function (articleId) {
 
 				if (storedData && storedData.tags) {
 					consoleLogger.log(articleId, 'articleTags', 'data loaded from the cache');
-					callback(null, storedData.tags.data);
+					callback(null, storedData.tags.data.concat(getTagsByUrl(url)));
 
 					if (new Date(storedData.tags.expires) < new Date()) {
 						// expired, fetch and update
@@ -169,7 +226,7 @@ var ArticleDataStore = function (articleId) {
 							return;
 						}
 
-						callback(null, tags);
+						callback(null, tags.concat(getTagsByUrl(url)));
 
 						upsertArticleTags(tags);
 					});
@@ -240,7 +297,7 @@ var ArticleDataStore = function (articleId) {
 		}
 
 		consoleLogger.log(articleId, 'collectionDetails', 'fetch');
-		self.getArticleTags(function (errTags, tags) {
+		self.getArticleTags(config.url, function (errTags, tags) {
 			var capiDown = false;
 
 			if (errTags) {

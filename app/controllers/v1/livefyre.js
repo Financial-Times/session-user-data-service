@@ -16,7 +16,7 @@ exports.metadata = function(req, res, next) {
 	}
 
 	var articleDataStore = new ArticleDataStore(req.query.articleId);
-	articleDataStore.getArticleTags(function (err, tags) {
+	articleDataStore.getArticleTags(req.query.url, function (err, tags) {
 		if (err) {
 			console.log('/v1/livefyre/metadata', '\nArticleId:', req.query.articleId, '\nError:', err);
 

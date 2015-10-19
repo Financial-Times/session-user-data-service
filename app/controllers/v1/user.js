@@ -70,9 +70,35 @@ exports.getAuth = function (req, res, next) {
 	}
 };
 
+
 exports.setPseudonym = function (req, res, next) {
+	var isJsonP = req.query.callback ? true : false;
+
 	if (!req.query.pseudonym) {
-		res.status(400).send('"pseudonym" should be provided');
+		res.status(isJsonP ? 200 : 400).jsonp({
+			status: 'error',
+			error: 'Pseudonym invalid or not provided.'
+		});
+		return;
+	}
+
+	var pseudonym = req.query.pseudonym;
+	pseudonym = pseudonym.trim();
+	pseudonym = pseudonym.replace(/ +(?= )/g,'');
+
+	if (!pseudonym) {
+		res.status(isJsonP ? 200 : 400).jsonp({
+			status: 'error',
+			error: 'Pseudonym invalid or not provided.'
+		});
+		return;
+	}
+
+	if (pseudonym.length > 50) {
+		res.status(isJsonP ? 200 : 400).jsonp({
+			status: 'error',
+			error: 'The pseudonym should be not longer than 50 characters.'
+		});
 		return;
 	}
 
@@ -96,7 +122,7 @@ exports.setPseudonym = function (req, res, next) {
 			}
 
 			if (userDataStore) {
-				userDataStore.setPseudonym(req.query.pseudonym, function (errSetPs) {
+				userDataStore.setPseudonym(pseudonym, function (errSetPs) {
 					if (errSetPs) {
 						res.sendStatus(503);
 						return;
@@ -144,6 +170,78 @@ exports.updateUser = function (req, res, next) {
 		userSession = req.query.sessionId;
 	}
 
+
+	var isJsonP = req.query.callback ? true : false;
+
+	if (!req.query.pseudonym) {
+		res.status(isJsonP ? 200 : 400).jsonp({
+			status: 'error',
+			error: 'Pseudonym invalid or not provided.'
+		});
+		return;
+	}
+
+	var pseudonym = req.query.pseudonym;
+	pseudonym = pseudonym.trim();
+	pseudonym = pseudonym.replace(/ +(?= )/g,'');
+
+	if (!pseudonym) {
+		res.status(isJsonP ? 200 : 400).jsonp({
+			status: 'error',
+			error: 'Pseudonym invalid or not provided.'
+		});
+		return;
+	}
+
+	if (pseudonym.length > 50) {
+		res.status(isJsonP ? 200 : 400).jsonp({
+			status: 'error',
+			error: 'The pseudonym should be not longer than 50 characters.'
+		});
+		return;
+	}
+
+
+	if (req.query.emailcomments || req.query.emaillikes || req.query.emailreplies || req.query.emailautofollow) {
+		if (req.query.emailautofollow !== null && typeof req.query.emailautofollow !== 'undefined') {
+			if (req.query.emailautofollow !== 'on' && req.query.emailautofollow !== true && req.query.emailautofollow !== 'true' &&
+			 req.query.emailautofollow !== 'off' && req.query.emailautofollow !== false && req.query.emailautofollow !== 'false') {
+				res.status(isJsonP ? 200 : 400).jsonp({
+					status: 'error',
+					error: 'Email preference values are not valid.'
+				});
+				return;
+			}
+		}
+
+		var validValues = ['never', 'immediately', 'hourly'];
+
+		if (req.query.emailcomments && validValues.indexOf(req.query.emailcomments) === -1) {
+			res.status(isJsonP ? 200 : 400).jsonp({
+				status: 'error',
+				error: 'Email preference values are not valid.'
+			});
+			return;
+		}
+
+		if (req.query.emaillikes && validValues.indexOf(req.query.emaillikes) === -1) {
+			res.status(isJsonP ? 200 : 400).jsonp({
+				status: 'error',
+				error: 'Email preference values are not valid.'
+			});
+			return;
+		}
+
+		if (req.query.emailreplies && validValues.indexOf(req.query.emailreplies) === -1) {
+			res.status(isJsonP ? 200 : 400).jsonp({
+				status: 'error',
+				error: 'Email preference values are not valid.'
+			});
+			return;
+		}
+	}
+
+
 	var sessionDataStore;
 	if (userSession) {
 		sessionDataStore = new SessionDataStore(userSession);
@@ -157,8 +255,8 @@ exports.updateUser = function (req, res, next) {
 			if (userDataStore) {
 				async.parallel({
 					pseudonym: function (callback) {
-						if (req.query.pseudonym) {
-							userDataStore.setPseudonym(req.query.pseudonym, function (errSetPs) {
+						if (pseudonym) {
+							userDataStore.setPseudonym(pseudonym, function (errSetPs) {
 								if (errSetPs) {
 									callback(errSetPs);
 									return;
@@ -167,39 +265,20 @@ exports.updateUser = function (req, res, next) {
 								callback();
 							});
 						} else {
-							callback();
+							callback({
+								400: "Pseudonym invalid or not provided."
+							});
 						}
 					},
 					emailPreferences: function (callback) {
 						if (req.query.emailcomments || req.query.emaillikes || req.query.emailreplies || req.query.emailautofollow) {
 							var autoFollow = null;
-							if (req.query.emailautofollow === 'on' || req.query.emailautofollow === true || req.query.emailautofollow === 'true') {
-								autoFollow = true;
-							} else if (req.query.emailautofollow === 'off' || req.query.emailautofollow === false || req.query.emailautofollow === 'false') {
-								autoFollow = false;
-							}
-
-							var validValues = ['never', 'immediately', 'hourly'];
-
-							if (req.query.emailcomments && validValues.indexOf(req.query.emailcomments) === -1) {
-								callback({
-									400: "Email preference values are not valid."
-								});
-								return;
-							}
-
-							if (req.query.emaillikes && validValues.indexOf(req.query.emaillikes) === -1) {
-								callback({
-									400: "Email preference values are not valid."
-								});
-								return;
-							}
-
-							if (req.query.emailreplies && validValues.indexOf(req.query.emailreplies) === -1) {
-								callback({
-									400: "Email preference values are not valid."
-								});
-								return;
+							if (req.query.emailautofollow !== null && typeof req.query.emailautofollow !== 'undefined') {
+								if (req.query.emailautofollow === 'on' || req.query.emailautofollow === true || req.query.emailautofollow === 'true') {
+									autoFollow = true;
+								} else if (req.query.emailautofollow === 'off' || req.query.emailautofollow === false || req.query.emailautofollow === 'false') {
+									autoFollow = false;
+								}
 							}
 
 
@@ -223,7 +302,7 @@ exports.updateUser = function (req, res, next) {
 				}, function (err, results) {
 					if (err) {
 						if (err['400']) {
-							res.status(400).send(err['400']);
+							res.status(isJsonP ? 200 : 400).send(err['400']);
 							return;
 						}
 
@@ -317,6 +396,11 @@ exports.emptyPseudonym = function (req, res, next) {
 	}
 };
 
-exports.userUpdated = function (req, res, next) {
-	console.log(req);
+exports.updateUserBasicInfo = function (req, res, next) {
+	console.log(req.params.uuid);
+	if (req.params.uuid === '3f330864-1c0f-443e-a6b3-cf8a3b536a52') {
+		console.log(req.body);
+	}
+
+	res.sendStatus(200);
 };

@@ -20,8 +20,6 @@ var getSystemToken = function () {
 	systemTokenCache.token = network.buildLivefyreToken();
 	systemTokenCache.expiresAt = new Date(new Date().getTime() + 1000 * 60 * 60 * 23.5);
 
-	consoleLogger.log('systemToken generated', systemTokenCache.token);
-
 	return systemTokenCache.token;
 };
 

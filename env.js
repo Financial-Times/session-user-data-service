@@ -50,7 +50,8 @@ var config = {
 		level: process.env.LOGGER_LEVEL,
 		filter: process.env.LOGGER_FILTER
 	},
-	host: process.env.HOST || 'session-user-data-service.herokuapp.com'
+	host: process.env.HOST || 'session-user-data-service.herokuapp.com',
+	maintenanceModeOn: ['true', true].indexOf(process.env.MAINTENANCE_ON) !== -1 ? true : false
 };
 
 for (let key in process.env) {

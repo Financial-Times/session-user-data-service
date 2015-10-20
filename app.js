@@ -56,19 +56,22 @@ app.use(cors(corsOptions));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hjs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes.index);
-app.use('/v1/livefyre', routes.v1.livefyre);
-app.use('/v1/user', routes.v1.user);
-app.use('/v1', routes.v1.__gtg);
-app.use('/', routes.__health);
+if (env.maintenanceModeOn) {
+	app.all('*', function (req, res, next) {
+		res.status(503).send("Maintenance");
+	});
+} else {
+	app.use('/', routes.index);
+	app.use('/v1/livefyre', routes.v1.livefyre);
+	app.use('/v1/user', routes.v1.user);
+	app.use('/v1', routes.v1.__gtg);
+	app.use('/', routes.__health);
+}
 
 
 // catch 404 and forward to error handler

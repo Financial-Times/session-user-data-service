@@ -83,7 +83,7 @@ exports.getCollectionDetails = function (req, res, next) {
 			return;
 		}
 
-		res.jsonp(_.pick(data, ['siteId', 'articleId', 'collectionMeta']));
+		res.jsonp(_.pick(data, ['siteId', 'articleId', 'collectionMeta', 'checksum']));
 	});
 };
 

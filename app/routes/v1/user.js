@@ -21,6 +21,6 @@ router.post('/updateuser', userController.updateUser);
 router.get('/emptypseudonym', userController.emptyPseudonym);
 
 
-router.patch('/userUpdated/:uuid', userController.updateUserBasicInfo);
+router.post('/userUpdated/:uuid', userController.updateUserBasicInfo);
 
 module.exports = router;

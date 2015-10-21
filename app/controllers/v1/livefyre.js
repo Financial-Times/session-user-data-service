@@ -284,29 +284,38 @@ exports.profile = function (req, res, next) {
 			returnData.display_name = data.pseudonym;
 		}
 
-		returnData.email_notifications = {};
+		if (data.emailPreferences) {
+			returnData.email_notifications = {};
 
-		if (data.emailPreferences.comments) {
-			returnData.email_notifications.comments = data.emailPreferences.comments;
-		} else {
-			returnData.email_notifications.comments = 'never';
-		}
+			if (data.emailPreferences.comments) {
+				returnData.email_notifications.comments = data.emailPreferences.comments;
+			} else {
+				returnData.email_notifications.comments = 'never';
+			}
 
-		if (data.emailPreferences.likes) {
-			returnData.email_notifications.likes = data.emailPreferences.likes;
-		} else {
-			returnData.email_notifications.likes = 'never';
-		}
+			if (data.emailPreferences.likes) {
+				returnData.email_notifications.likes = data.emailPreferences.likes;
+			} else {
+				returnData.email_notifications.likes = 'never';
+			}
 
-		if (data.emailPreferences.replies) {
-			returnData.email_notifications.replies = data.emailPreferences.replies;
-		} else {
-			returnData.email_notifications.replies = 'never';
-		}
+			if (data.emailPreferences.replies) {
+				returnData.email_notifications.replies = data.emailPreferences.replies;
+			} else {
+				returnData.email_notifications.replies = 'never';
+			}
 
-		if (data.emailPreferences.hasOwnProperty('autoFollow') && typeof data.emailPreferences.autoFollow === 'boolean') {
-			returnData.autofollow_conversations = String(data.emailPreferences.autoFollow);
+			if (data.emailPreferences.hasOwnProperty('autoFollow') && typeof data.emailPreferences.autoFollow === 'boolean') {
+				returnData.autofollow_conversations = String(data.emailPreferences.autoFollow);
+			} else {
+				returnData.autofollow_conversations = 'false';
+			}
 		} else {
+			returnData.email_notifications = {
+				comments: 'never',
+				likes: 'never',
+				replies: 'never'
+			};
 			returnData.autofollow_conversations = 'false';
 		}
 

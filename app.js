@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var cors = require('cors');
 var consoleLogger = require('./app/utils/consoleLogger');
 var env = require('./env');
+var urlParser = require('url');
 
 var routes = {
 	index: require('./app/routes/index'),
@@ -39,7 +40,7 @@ var corsOptions = {
 	origin: function(origin, callback) {
 		if (origin) {
 			var allowed = 'ft.com';
-			var hostname = origin.parse(origin).hostname;
+			var hostname = urlParser.parse(origin).hostname;
 
 			callback(null, hostname.indexOf(allowed, hostname.length - allowed.length) !== -1);
 
@@ -56,6 +57,7 @@ app.use(cors(corsOptions));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hjs');
 
+app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());

@@ -347,52 +347,53 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataStore, sessionDa
 		callback.apply(this, arguments);
 	};
 
-	articleDataStore.livefyreCollectionExists(function (err, exists) {
-		if (err) {
-			callCallback(err);
+
+	fetchLivefyreCollectionDetails(articleDataStore, config, function (errFetch, collectionDetails) {
+		if (errFetch) {
+			callCallback(errFetch);
 			return;
 		}
 
-		if (exists) {
-			consoleLogger.log(config.articleId, 'auth restricted collection creation, collection exists');
-			fetchLivefyreCollectionDetails(articleDataStore, config, function (errFetch, collectionDetails) {
-				if (errFetch) {
-					callCallback(errFetch);
-					return;
-				}
-
-				callCallback(null, collectionDetails);
-			});
-		} else {
-			consoleLogger.log(config.articleId, 'auth restricted collection creation, collection does not exist');
-
-			if (sessionDataStore) {
-				sessionDataStore.getSessionData(function (err, sessionData) {
-					if (err) {
-						callCallback(err);
-						return;
-					}
-
-					if (sessionData) {
-						fetchLivefyreCollectionDetails(articleDataStore, config, function (errFetch, collectionDetails) {
-							if (errFetch) {
-								callCallback(err);
-								return;
-							}
-
-							callCallback(null, collectionDetails);
-						});
-					} else {
-						callCallback({
-							statusCode: 403
-						});
-					}
-				});
-			} else {
-				callCallback({
-					statusCode: 403
-				});
+		articleDataStore.livefyreCollectionExists(function (errExists, exists) {
+			if (errExists) {
+				callCallback(errExists);
+				return;
 			}
-		}
+
+			if (exists) {
+				consoleLogger.log(config.articleId, 'auth restricted collection creation, collection exists');
+				callCallback(null, collectionDetails);
+			} else {
+				consoleLogger.log(config.articleId, 'auth restricted collection creation, collection does not exist');
+
+				if (sessionDataStore) {
+					sessionDataStore.getSessionData(function (err, sessionData) {
+						if (err) {
+							callCallback(err);
+							return;
+						}
+
+						if (sessionData) {
+							fetchLivefyreCollectionDetails(articleDataStore, config, function (errFetch, collectionDetails) {
+								if (errFetch) {
+									callCallback(err);
+									return;
+								}
+
+								callCallback(null, collectionDetails);
+							});
+						} else {
+							let returnData = _.pick(collectionDetails, ['siteId', 'articleId']);
+							returnData.notAllowedToCreateCollection = true;
+							callCallback(null, returnData);
+						}
+					});
+				} else {
+					let returnData = _.pick(collectionDetails, ['siteId', 'articleId']);
+					returnData.notAllowedToCreateCollection = true;
+					callCallback(null, returnData);
+				}
+			}
+		});
 	});
 }

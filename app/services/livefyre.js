@@ -66,8 +66,10 @@ exports.getCollectionDetails = function (config, callback) {
 				callback(new Error("SiteID is not configured properly."));
 			}
 		});
-	} catch (err) {
-		callback(err);
+	} catch (e) {
+		consoleLogger.error(config.articleId, 'Livefyre getCollectionDetails', 'Error', e);
+
+		callback(e);
 	}
 };
 

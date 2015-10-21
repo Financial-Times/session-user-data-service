@@ -51,7 +51,8 @@ var config = {
 		filter: process.env.LOGGER_FILTER
 	},
 	host: process.env.HOST || 'session-user-data-service.herokuapp.com',
-	maintenanceModeOn: ['true', true].indexOf(process.env.MAINTENANCE_ON) !== -1 ? true : false
+	maintenanceModeOn: ['true', true].indexOf(process.env.MAINTENANCE_ON) !== -1 ? true : false,
+	apiKeyForRestrictedEndpoints: process.env.API_KEY_FOR_RESTRICTED_ENDPOINTS
 };
 
 for (let key in process.env) {

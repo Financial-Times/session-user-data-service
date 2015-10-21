@@ -1,10 +1,11 @@
 "use strict";
 
 const SessionDataStore = require('../../dataHandlers/SessionDataStore');
+const UserDataStore = require('../../dataHandlers/UserDataStore');
 const async = require('async');
 const livefyreService = require('../../services/livefyre');
 const consoleLogger = require('../../utils/consoleLogger');
-
+const env = require('../../../env');
 
 exports.getAuth = function (req, res, next) {
 	var userSession;
@@ -397,10 +398,22 @@ exports.emptyPseudonym = function (req, res, next) {
 };
 
 exports.updateUserBasicInfo = function (req, res, next) {
-	console.log(req.params.uuid);
-	if (req.params.uuid === '3f330864-1c0f-443e-a6b3-cf8a3b536a52') {
-		console.log(req.body);
-	}
+	if (req.query.apiKey === env.apiKeyForRestrictedEndpoints) {
+		var userDataStore = new UserDataStore(req.params.uuid);
+		userDataStore.updateBasicUserData({
+			email: req.body.email,
+			firstName: req.body.firstName,
+			lastName: req.body.lastName
+		}, function (err) {
+			if (err) {
+				consoleLogger.error(req.params.uuid, "updateUserBasicInfo, error", err);
+				res.sendStatus(503);
+				return;
+			}
 
-	res.sendStatus(200);
+			res.send({ok: true});
+		});
+	} else {
+		res.status(401).send("API key is not provided or invalid.");
+	}
 };

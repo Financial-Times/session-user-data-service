@@ -649,5 +649,76 @@ var UserDataStore = function (userId) {
 			callback(e);
 		}
 	};
+
+
+	this.updateBasicUserData = function (userData, callback) {
+		if (typeof callback !== 'function') {
+			throw new Error("UserDataStore.updateBasicUserData: callback not provided");
+		}
+
+		try {
+			getUuidOfUserId(function (errUuid) {
+				if (errUuid) {
+					callback(errUuid);
+					return;
+				}
+
+				async.parallel({
+					email: function (callbackAsync) {
+						if (userData.email) {
+							upsertStoredData('email', crypto.encrypt(userData.email), function (err) {
+								if (err) {
+									callbackAsync(err);
+									return;
+								}
+
+								callbackAsync();
+							});
+						} else {
+							callbackAsync();
+						}
+					},
+					firstName: function (callbackAsync) {
+						if (userData.firstName) {
+							upsertStoredData('firstName', crypto.encrypt(userData.firstName), function (err) {
+								if (err) {
+									callbackAsync(err);
+									return;
+								}
+
+								callbackAsync();
+							});
+						} else {
+							callbackAsync();
+						}
+					},
+					lastName: function (callbackAsync) {
+						if (userData.lastName) {
+							upsertStoredData('lastName', crypto.encrypt(userData.lastName), function (err) {
+								if (err) {
+									callbackAsync(err);
+									return;
+								}
+
+								callbackAsync();
+							});
+						} else {
+							callbackAsync();
+						}
+					}
+				}, function (errUpsert) {
+					if (errUpsert) {
+						callback(errUpsert);
+						return;
+					}
+
+					callback();
+				});
+			});
+		} catch (e) {
+			console.error(userId, 'Exception, updateBasicUserData', e);
+			callback(e);
+		}
+	};
 };
 module.exports = UserDataStore;

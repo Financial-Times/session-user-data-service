@@ -284,32 +284,30 @@ exports.profile = function (req, res, next) {
 			returnData.display_name = data.pseudonym;
 		}
 
-		if (data.emailPreferences) {
-			returnData.email_notifications = {};
+		returnData.email_notifications = {};
 
-			if (data.emailPreferences.comments) {
-				returnData.email_notifications.comments = data.emailPreferences.comments;
-			} else {
-				returnData.email_notifications.comments = 'never';
-			}
+		if (data.emailPreferences.comments) {
+			returnData.email_notifications.comments = data.emailPreferences.comments;
+		} else {
+			returnData.email_notifications.comments = 'never';
+		}
 
-			if (data.emailPreferences.likes) {
-				returnData.email_notifications.likes = data.emailPreferences.likes;
-			} else {
-				returnData.email_notifications.likes = 'never';
-			}
+		if (data.emailPreferences.likes) {
+			returnData.email_notifications.likes = data.emailPreferences.likes;
+		} else {
+			returnData.email_notifications.likes = 'never';
+		}
 
-			if (data.emailPreferences.replies) {
-				returnData.email_notifications.replies = data.emailPreferences.replies;
-			} else {
-				returnData.email_notifications.replies = 'never';
-			}
+		if (data.emailPreferences.replies) {
+			returnData.email_notifications.replies = data.emailPreferences.replies;
+		} else {
+			returnData.email_notifications.replies = 'never';
+		}
 
-			if (data.emailPreferences.hasOwnProperty('autoFollow') && typeof data.emailPreferences.autoFollow === 'boolean') {
-				returnData.autofollow_conversations = String(data.emailPreferences.autoFollow);
-			} else {
-				returnData.autofollow_conversations = 'false';
-			}
+		if (data.emailPreferences.hasOwnProperty('autoFollow') && typeof data.emailPreferences.autoFollow === 'boolean') {
+			returnData.autofollow_conversations = String(data.emailPreferences.autoFollow);
+		} else {
+			returnData.autofollow_conversations = 'false';
 		}
 
 		returnData.settings_url = "";

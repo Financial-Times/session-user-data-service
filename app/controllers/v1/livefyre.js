@@ -271,9 +271,11 @@ exports.profile = function (req, res, next) {
 		if (data.email) {
 			returnData.email = data.email;
 		}
+
 		if (data.firstName) {
 			returnData.first_name = data.firstName;
 		}
+
 		if (data.lastName) {
 			returnData.last_name = data.lastName;
 		}
@@ -287,18 +289,26 @@ exports.profile = function (req, res, next) {
 
 			if (data.emailPreferences.comments) {
 				returnData.email_notifications.comments = data.emailPreferences.comments;
+			} else {
+				returnData.email_notifications.comments = 'never';
 			}
 
 			if (data.emailPreferences.likes) {
 				returnData.email_notifications.likes = data.emailPreferences.likes;
+			} else {
+				returnData.email_notifications.likes = 'never';
 			}
 
 			if (data.emailPreferences.replies) {
 				returnData.email_notifications.replies = data.emailPreferences.replies;
+			} else {
+				returnData.email_notifications.replies = 'never';
 			}
 
 			if (data.emailPreferences.hasOwnProperty('autoFollow') && typeof data.emailPreferences.autoFollow === 'boolean') {
 				returnData.autofollow_conversations = String(data.emailPreferences.autoFollow);
+			} else {
+				returnData.autofollow_conversations = 'false';
 			}
 		}
 

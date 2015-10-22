@@ -36,7 +36,7 @@ exports.getHealth = function (callback) {
 		var url = env.livefyre.api.collectionExistsUrl;
 		url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
 		url = url.replace(/\{articleIdBase64\}/g, new Buffer('e78d07ca-680f-11e5-a57f-21b88f7d973f').toString('base64'));
-		url = url.replace(/\{siteId\}/g, 378157);
+		url = url.replace(/\{siteId\}/g, env.livefyre.defaultSiteId);
 
 		needle.get(url, function (err, data) {
 			if (err) {

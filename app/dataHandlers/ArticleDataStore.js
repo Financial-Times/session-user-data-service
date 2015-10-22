@@ -133,8 +133,11 @@ var ArticleDataStore = function (articleId) {
 						tags.push('alphaville');
 						tags.push('blog');
 						break;
+					case 'lexicon':
+						tags.push('lexicon');
+						break;
 					default:
-						tags.push(matches[1]);
+						break;
 				}
 			}
 

@@ -6,7 +6,7 @@ var needle = require('needle');
 var consoleLogger = require('../utils/consoleLogger');
 var env = require('../../env');
 
-var network = livefyre.getNetwork(env.livefyre.network.name + '@fyre.co', env.livefyre.network.key);
+var network = livefyre.getNetwork(env.livefyre.network.name + '.fyre.co', env.livefyre.network.key);
 
 var systemTokenCache = {
 	token: null,

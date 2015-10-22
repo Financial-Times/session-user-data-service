@@ -116,11 +116,11 @@ var ArticleDataStore = function (articleId) {
 
 
 	var getTagsByUrl = function (url) {
-		if (url && url.indexOf('ft.com') !== -1) {
+		if (url && url.endsWith('ft.com')) {
 			var parsedUrl = urlParser.parse(url);
 			var tags = [];
 
-			var matches = parsedUrl.hostname.match(/([^\.]+)\.ft\.com/);
+			var matches = parsedUrl.hostname.match(/([^\.]+)\.ft\.com$/);
 			if (matches && matches.length) {
 				switch (matches[1]) {
 					case 'blogs':
@@ -141,7 +141,7 @@ var ArticleDataStore = function (articleId) {
 				}
 			}
 
-			if (parsedUrl.hostname.startsWith('blogs.ft.com') || parsedUrl.hostname.startsWith('discussions.ft.com')) {
+			if (parsedUrl.hostname.endsWith('blogs.ft.com') || parsedUrl.hostname.endsWith('discussions.ft.com')) {
 				matches = parsedUrl.pathname.match(/\/([^\/]+)/);
 				if (matches && matches.length) {
 					tags.push(matches[1]);

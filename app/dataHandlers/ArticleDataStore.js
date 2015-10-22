@@ -120,7 +120,7 @@ var ArticleDataStore = function (articleId) {
 			var parsedUrl = urlParser.parse(url);
 			var tags = [];
 
-			var matches = parsedUrl.hostname.match(/(.*)\.ft\.com/);
+			var matches = parsedUrl.hostname.match(/([^\.]+)\.ft\.com/);
 			if (matches && matches.length) {
 				switch (matches[1]) {
 					case 'blogs':

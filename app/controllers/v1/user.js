@@ -7,6 +7,15 @@ const livefyreService = require('../../services/livefyre');
 const consoleLogger = require('../../utils/consoleLogger');
 const env = require('../../../env');
 
+
+function sendResponse(req, res, status, json) {
+	var isJsonP = req.query.callback ? true : false;
+
+	status = status || 200;
+
+	res.status(isJsonP ? 200 : status).jsonp(json);
+}
+
 exports.getAuth = function (req, res, next) {
 	var userSession;
 	if (req.cookies && req.cookies['FTSession']) {
@@ -73,10 +82,8 @@ exports.getAuth = function (req, res, next) {
 
 
 exports.setPseudonym = function (req, res, next) {
-	var isJsonP = req.query.callback ? true : false;
-
 	if (!req.query.pseudonym) {
-		res.status(isJsonP ? 200 : 400).jsonp({
+		sendResponse(req, res, 400, {
 			status: 'error',
 			error: 'Pseudonym invalid or not provided.'
 		});
@@ -88,7 +95,7 @@ exports.setPseudonym = function (req, res, next) {
 	pseudonym = pseudonym.replace(/ +(?= )/g,'');
 
 	if (!pseudonym) {
-		res.status(isJsonP ? 200 : 400).jsonp({
+		sendResponse(req, res, 400, {
 			status: 'error',
 			error: 'Pseudonym invalid or not provided.'
 		});
@@ -96,7 +103,7 @@ exports.setPseudonym = function (req, res, next) {
 	}
 
 	if (pseudonym.length > 50) {
-		res.status(isJsonP ? 200 : 400).jsonp({
+		sendResponse(req, res, 400, {
 			status: 'error',
 			error: 'The pseudonym should be not longer than 50 characters.'
 		});
@@ -118,24 +125,33 @@ exports.setPseudonym = function (req, res, next) {
 
 		sessionDataStore.getUserDataStore(function (errSess, userDataStore) {
 			if (errSess) {
-				res.sendStatus(503);
+				sendResponse(req, res, 503, {
+					status: 'error',
+					error: 'Server currently unavailable, please try again later.'
+				});
 				return;
 			}
 
 			if (userDataStore) {
 				userDataStore.setPseudonym(pseudonym, function (errSetPs) {
 					if (errSetPs) {
-						res.sendStatus(503);
+						sendResponse(req, res, 503, {
+							status: 'error',
+							error: 'Server currently unavailable, please try again later.'
+						});
 						return;
 					}
 
 					sessionDataStore.invalidate(function (errInv) {
 						if (errInv) {
-							res.sendStatus(503);
+							sendResponse(req, res, 503, {
+								status: 'error',
+								error: 'Server currently unavailable, please try again later.'
+							});
 							return;
 						}
 
-						res.jsonp({
+						sendResponse(req, res, 200, {
 							status: 'ok'
 						});
 
@@ -153,11 +169,17 @@ exports.setPseudonym = function (req, res, next) {
 					});
 				});
 			} else {
-				res.sendStatus(401);
+				sendResponse(req, res, 401, {
+					status: 'error',
+					error: 'User session is not valid.'
+				});
 			}
 		});
 	} else {
-		res.sendStatus(401);
+		sendResponse(req, res, 401, {
+			status: 'error',
+			error: 'User session is not valid.'
+		});
 	}
 };
 
@@ -174,32 +196,27 @@ exports.updateUser = function (req, res, next) {
 
 	var isJsonP = req.query.callback ? true : false;
 
-	if (!req.query.pseudonym) {
-		res.status(isJsonP ? 200 : 400).jsonp({
-			status: 'error',
-			error: 'Pseudonym invalid or not provided.'
-		});
-		return;
-	}
+	var pseudonym;
+	if (req.query.pseudonym) {
+		pseudonym = req.query.pseudonym;
+		pseudonym = pseudonym.trim();
+		pseudonym = pseudonym.replace(/ +(?= )/g,'');
 
-	var pseudonym = req.query.pseudonym;
-	pseudonym = pseudonym.trim();
-	pseudonym = pseudonym.replace(/ +(?= )/g,'');
+		if (!pseudonym) {
+			sendResponse(req, res, 400, {
+				status: 'error',
+				error: 'Pseudonym invalid.'
+			});
+			return;
+		}
 
-	if (!pseudonym) {
-		res.status(isJsonP ? 200 : 400).jsonp({
-			status: 'error',
-			error: 'Pseudonym invalid or not provided.'
-		});
-		return;
-	}
-
-	if (pseudonym.length > 50) {
-		res.status(isJsonP ? 200 : 400).jsonp({
-			status: 'error',
-			error: 'The pseudonym should be not longer than 50 characters.'
-		});
-		return;
+		if (pseudonym.length > 50) {
+			sendResponse(req, res, 400, {
+				status: 'error',
+				error: 'The pseudonym should be not longer than 50 characters.'
+			});
+			return;
+		}
 	}
 
 
@@ -218,7 +235,7 @@ exports.updateUser = function (req, res, next) {
 		var validValues = ['never', 'immediately', 'hourly'];
 
 		if (req.query.emailcomments && validValues.indexOf(req.query.emailcomments) === -1) {
-			res.status(isJsonP ? 200 : 400).jsonp({
+			sendResponse(req, res, 400, {
 				status: 'error',
 				error: 'Email preference values are not valid.'
 			});
@@ -226,7 +243,7 @@ exports.updateUser = function (req, res, next) {
 		}
 
 		if (req.query.emaillikes && validValues.indexOf(req.query.emaillikes) === -1) {
-			res.status(isJsonP ? 200 : 400).jsonp({
+			sendResponse(req, res, 400, {
 				status: 'error',
 				error: 'Email preference values are not valid.'
 			});
@@ -234,7 +251,7 @@ exports.updateUser = function (req, res, next) {
 		}
 
 		if (req.query.emailreplies && validValues.indexOf(req.query.emailreplies) === -1) {
-			res.status(isJsonP ? 200 : 400).jsonp({
+			sendResponse(req, res, 400, {
 				status: 'error',
 				error: 'Email preference values are not valid.'
 			});
@@ -249,7 +266,10 @@ exports.updateUser = function (req, res, next) {
 
 		sessionDataStore.getUserDataStore(function (errSess, userDataStore) {
 			if (errSess) {
-				res.sendStatus(503);
+				sendResponse(req, res, 503, {
+					status: 'error',
+					error: 'Server currently unavailable, please try again later.'
+				});
 				return;
 			}
 
@@ -266,9 +286,7 @@ exports.updateUser = function (req, res, next) {
 								callback();
 							});
 						} else {
-							callback({
-								400: "Pseudonym invalid or not provided."
-							});
+							callback();
 						}
 					},
 					emailPreferences: function (callback) {
@@ -303,16 +321,26 @@ exports.updateUser = function (req, res, next) {
 				}, function (err, results) {
 					if (err) {
 						if (err['400']) {
-							res.status(isJsonP ? 200 : 400).send(err['400']);
+							sendResponse(req, res, 400, {
+								status: 'error',
+								error: err['400']
+							});
 							return;
 						}
 
-						res.sendStatus(503);
+						sendResponse(req, res, 503, {
+							status: 'error',
+							error: 'Server currently unavailable, please try again later.'
+						});
 						return;
 					}
 
 					userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
 						if (errLfId) {
+							sendResponse(req, res, 503, {
+								status: 'error',
+								error: 'Server currently unavailable, please try again later.'
+							});
 							return;
 						}
 
@@ -324,17 +352,23 @@ exports.updateUser = function (req, res, next) {
 					});
 
 					sessionDataStore.invalidate(function () {
-						res.jsonp({
+						sendResponse(req, res, 200, {
 							status: 'ok'
 						});
 					});
 				});
 			} else {
-				res.sendStatus(401);
+				sendResponse(req, res, 401, {
+					status: 'error',
+					error: 'User session is not valid.'
+				});
 			}
 		});
 	} else {
-		res.sendStatus(401);
+		sendResponse(req, res, 401, {
+			status: 'error',
+			error: 'User session is not valid.'
+		});
 	}
 };
 
@@ -354,46 +388,49 @@ exports.emptyPseudonym = function (req, res, next) {
 
 		sessionDataStore.getUserDataStore(function (errSess, userDataStore) {
 			if (errSess) {
-				res.sendStatus(503);
+				sendResponse(req, res, 503, {
+					status: 'error',
+					error: 'Server currently unavailable, please try again later.'
+				});
 				return;
 			}
 
 			if (userDataStore) {
 				userDataStore.emptyPseudonym(function (errSetPs) {
 					if (errSetPs) {
-						res.sendStatus(503);
+						sendResponse(req, res, 503, {
+							status: 'error',
+							error: 'Server currently unavailable, please try again later.'
+						});
 						return;
 					}
 
 					sessionDataStore.invalidate(function (errInv) {
 						if (errInv) {
-							res.sendStatus(503);
+							sendResponse(req, res, 503, {
+								status: 'error',
+								error: 'Server currently unavailable, please try again later.'
+							});
 							return;
 						}
 
-						res.jsonp({
+						sendResponse(req, res, 200, {
 							status: 'ok'
-						});
-
-						userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
-							if (errLfId) {
-								return;
-							}
-
-							livefyreService.callPingToPull(lfUserId, function (errPing) {
-								if (errPing) {
-									consoleLogger.warn('pingToPull error', errPing);
-								}
-							});
 						});
 					});
 				});
 			} else {
-				res.sendStatus(401);
+				sendResponse(req, res, 401, {
+					status: 'error',
+					error: 'User session is not valid.'
+				});
 			}
 		});
 	} else {
-		res.sendStatus(401);
+		sendResponse(req, res, 401, {
+			status: 'error',
+			error: 'User session is not valid.'
+		});
 	}
 };
 
@@ -411,7 +448,9 @@ exports.updateUserBasicInfo = function (req, res, next) {
 				return;
 			}
 
-			res.send({ok: true});
+			res.send({
+				status: 'ok'
+			});
 		});
 	} else {
 		res.status(401).send("API key is not provided or invalid.");

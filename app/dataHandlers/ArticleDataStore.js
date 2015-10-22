@@ -153,9 +153,9 @@ var ArticleDataStore = function (articleId) {
 
 		return [];
 	};
-	var fetchArticleTags = function (callback) {
+	var fetchCapiTags = function (callback) {
 		if (typeof callback !== 'function') {
-			throw new Error("ArticleDataStore.fetchArticleTags: callback not provided");
+			throw new Error("ArticleDataStore.fetchCapiTags: callback not provided");
 		}
 
 		consoleLogger.log(articleId, 'fetch article tags');
@@ -201,7 +201,14 @@ var ArticleDataStore = function (articleId) {
 					// fetch
 					consoleLogger.log(articleId, 'articleTags', 'error retrieving cache');
 					consoleLogger.debug(articleId, errCache);
-					fetchArticleTags(callback);
+					fetchCapiTags(function (errFetch, tags) {
+						if (errFetch) {
+							callback(null, getTagsByUrl(url));
+							return;
+						}
+
+						tags.concat(getTagsByUrl(url));
+					});
 					return;
 				}
 
@@ -212,7 +219,7 @@ var ArticleDataStore = function (articleId) {
 					if (new Date(storedData.tags.expires) < new Date()) {
 						// expired, fetch and update
 						consoleLogger.log(articleId, 'articleTags', 'data expired, refresh');
-						fetchArticleTags(function (errFetch, tags) {
+						fetchCapiTags(function (errFetch, tags) {
 							if (errFetch) {
 								return;
 							}
@@ -223,9 +230,9 @@ var ArticleDataStore = function (articleId) {
 				} else {
 					// fetch and save
 					consoleLogger.log(articleId, 'articleTags', 'not found in cache');
-					fetchArticleTags(function (errFetch, tags) {
+					fetchCapiTags(function (errFetch, tags) {
 						if (errFetch) {
-							callback(errFetch);
+							callback(null, getTagsByUrl(url));
 							return;
 						}
 

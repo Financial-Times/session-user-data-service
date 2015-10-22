@@ -453,6 +453,6 @@ exports.updateUserBasicInfo = function (req, res, next) {
 			});
 		});
 	} else {
-		res.status(401).send("API key is not provided or invalid.");
+		res.status(403).send("API key is not provided or invalid.");
 	}
 };

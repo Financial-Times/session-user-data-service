@@ -8,6 +8,7 @@ const eRightsToUuid = require('../services/eRightsToUuid');
 const async = require('async');
 const emailService = require('../services/email');
 const crypto = require('../utils/crypto');
+const env = require('../../env');
 
 var UserDataStore = function (userId) {
 	var storedData = null;

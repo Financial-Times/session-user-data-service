@@ -178,5 +178,5 @@ exports.setLevel = function (level) {
 };
 
 exports.addFilter = function (filterItem) {
-	filters.addItem(filterItem);
+	filters.push(filterItem);
 };

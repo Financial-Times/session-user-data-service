@@ -18,11 +18,17 @@ exports.getUuid = function (userId, callback) {
 	byErightsUrl = byErightsUrl.replace(/\{userId\}/g, userId);
 
 	needle.get(byErightsUrl, function (err, response) {
-		if (err || response.statusCode !== 200 || !response.body) {
+		if (err || response.statusCode !== 200) {
 			callback(err || {statusCode: 404, message: "User not found."});
+			return;
 		}
 
-		callback(null, response.body.user.id);
+		if (response.body.user && response.body.user.id) {
+			callback(null, response.body.user.id);
+		} else {
+			callback({statusCode: 404, message: "User not found."});
+		}
+
 	});
 };
 

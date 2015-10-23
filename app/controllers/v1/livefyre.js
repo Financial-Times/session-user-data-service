@@ -94,6 +94,8 @@ exports.init = function (req, res, next) {
 		return;
 	}
 
+	consoleLogger.debug(req.query.articleId, "Cookies", req.cookies);
+
 	var config = {
 		articleId: req.query.articleId,
 		title: req.query.title,
@@ -250,7 +252,7 @@ exports.getLfBootstrap = function (req, res, next) {
 
 exports.profile = function (req, res, next) {
 	if (!req.query.id || !req.query.lftoken) {
-		res.status(400).send('"id" (user ID) and "lftoken" (Livefyre user token) should be provided.');
+		res.status(400).send('"id" (user ID) and "lftoken" (Livefyre system token) should be provided.');
 		return;
 	}
 

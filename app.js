@@ -105,6 +105,7 @@ app.use(function(err, req, res, next) {
     message: err.message,
     error: {}
   });
+  consoleLogger.error("Unhandled ERROR", err);
 });
 
 

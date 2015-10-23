@@ -1,6 +1,7 @@
 "use strict";
 
 const env = require('../../env');
+const consoleLogger = require('../utils/consoleLogger');
 
 var ftApiClient = require('ft-api-client')(env.capi.key, {
 	pollForPages: false
@@ -16,7 +17,9 @@ var getArticleData = function (uuid, callback) {
 		.then(function (article) {
 			callback(null, article);
 		}, function (err) {
-			console.log('CAPI error', err);
+			if (err && err.statusCode !== 404) {
+				consoleLogger.error('CAPI error', err);
+			}
 
 			callback(err);
 		});

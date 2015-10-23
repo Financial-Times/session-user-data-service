@@ -11,7 +11,7 @@ exports.getSiteId = function (articleId, callback) {
 	}
 
 	try {
-		db.getConnection(function (err, connection) {
+		db.getConnection(env.mongo.uri, function (err, connection) {
 			if (err) {
 				callback(err);
 				return;

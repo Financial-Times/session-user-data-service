@@ -32,7 +32,7 @@ exports.getHealth = function (callback) {
 	var currentHealth = _.clone(healthCheckModel);
 
 	try {
-		db.getConnection(function (errConn, connection) {
+		db.getConnection(env.mongo.uri, function (errConn, connection) {
 			if (errConn) {
 				currentHealth.ok = false;
 				currentHealth.checkOutput = "Connection is down. See the logs of the application on heroku.";

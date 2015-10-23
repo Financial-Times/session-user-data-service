@@ -41,7 +41,7 @@ var UserDataStore = function (userId) {
 		if (!fetchingStoreInProgress) {
 			fetchingStoreInProgress = true;
 
-			db.getConnection(function (errConn, connection) {
+			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
 					consoleLogger.log(userId, 'error retrieving the cache');
 					consoleLogger.debug(userId, errConn);
@@ -97,7 +97,7 @@ var UserDataStore = function (userId) {
 			var setData = {};
 			setData[mongoSanitize(field)] = data;
 
-			db.getConnection(function (errConn, connection) {
+			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
 					consoleLogger.log(userId, 'upsert failed');
 					consoleLogger.debug(errConn);

@@ -45,7 +45,7 @@ var SessionDataStore = function (sessionId) {
 		if (!fetchingStoreInProgress) {
 			fetchingStoreInProgress = true;
 
-			db.getConnection(function (errConn, connection) {
+			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
 					consoleLogger.log(sessionId, 'error retrieving the cache');
 					consoleLogger.debug(sessionId, errConn);
@@ -88,7 +88,7 @@ var SessionDataStore = function (sessionId) {
 			var setData = {};
 			setData[mongoSanitize(field)] = data;
 
-			db.getConnection(function (errConn, connection) {
+			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
 					consoleLogger.log(sessionId, 'upsert failed');
 					consoleLogger.debug(errConn);
@@ -135,7 +135,7 @@ var SessionDataStore = function (sessionId) {
 
 	function deleteStoredData (callback) {
 		try {
-			db.getConnection(function (errConn, connection) {
+			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
 					consoleLogger.log(sessionId, 'delete failed');
 					callback(errConn);

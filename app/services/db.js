@@ -1,11 +1,10 @@
 "use strict";
 
-const env = require('../../env');
 const MongoClient = require('mongodb').MongoClient;
-let connection;
+let connections = {};
 
 
-function getConnection (callback) {
+function getConnection (uri, callback) {
 	if (typeof callback !== 'function') {
 		throw new Error("db.getConnection: callback not provided");
 	}
@@ -19,19 +18,19 @@ function getConnection (callback) {
 		}
 	};
 
-	if (connection) {
-		callCallback(null, connection);
+	if (connections[uri]) {
+		callCallback(null, connections[uri]);
 		return;
 	}
 
-	MongoClient.connect(env.mongo.uri, function(err, dbConn) {
+	MongoClient.connect(uri, function(err, dbConn) {
 		if (err) {
 			callCallback(err);
 			return;
 		}
 
 		dbConn.on('close', function() {
-			connection = null;
+			connections[uri] = null;
 
 			if (this._callBackStore) {
 				for(var key in this._callBackStore._notReplied) {
@@ -42,7 +41,7 @@ function getConnection (callback) {
 			}
 		});
 
-		connection = dbConn;
+		connections[uri] = dbConn;
 		callCallback(null, dbConn);
 	});
 

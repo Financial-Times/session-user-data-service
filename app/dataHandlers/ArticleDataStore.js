@@ -43,7 +43,7 @@ var ArticleDataStore = function (articleId) {
 		if (!fetchingStoreInProgress) {
 			fetchingStoreInProgress = true;
 
-			db.getConnection(function (errConn, connection) {
+			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
 					consoleLogger.log(articleId, 'error retrieving the cache');
 					consoleLogger.debug(articleId, errConn);
@@ -85,7 +85,7 @@ var ArticleDataStore = function (articleId) {
 			var setData = {};
 			setData[mongoSanitize(field)] = data;
 
-			db.getConnection(function (errConn, connection) {
+			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
 					consoleLogger.log(articleId, 'upsert failed');
 					consoleLogger.debug(errConn);

@@ -77,7 +77,7 @@ exports.getCollectionDetails = function (req, res, next) {
 				}
 			}
 
-			console.log('/v1/livefyre/init', '\nConfig', config, '\nError', err);
+			consoleLogger.warn('/v1/livefyre/init', '\nConfig', config, '\nError', err);
 
 			res.sendStatus(503);
 			return;

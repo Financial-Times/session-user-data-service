@@ -10,7 +10,7 @@ var config = {
 		siteKeys: {},
 		api: {
 			pingToPullUrl: process.env.LIVEFYRE_PING_TO_PULL_URL,
-			collectionExistsUrl: process.env.LIVEFYRE_API_COLLECTION_EXISTS || 'https://{networkName}.bootstrap.fyre.co/bs3/v3.1/{networkName}.fyre.co/{siteId}/{articleIdBase64}/init'
+			collectionExistsUrl: process.env.LIVEFYRE_API_COLLECTION_EXISTS
 		}
 	},
 	mongo: {
@@ -20,7 +20,7 @@ var config = {
 		key: process.env.CAPI_KEY
 	},
 	sessionApi: {
-		url: process.env.SESSION_API_URL || 'https://sessionapi.memb.ft.com/membership/sessions/{sessionId}',
+		url: process.env.SESSION_API_URL,
 		key: process.env.SESSION_API_KEY
 	},
 	crypto: {
@@ -34,7 +34,7 @@ var config = {
 		remembered: process.env.SESSION_CACHE_VALIDITY_REMEMBERED || 24 * 30 * 6
 	},
 	emailService: {
-		url: process.env.EMAIL_SERVICE_URL || 'http://email-webservices.ft.com/users/{userId}',
+		url: process.env.EMAIL_SERVICE_URL,
 		auth: {
 			user: process.env.EMAIL_SERVICE_AUTH_USER,
 			pass: process.env.EMAIL_SERVICE_AUTH_PASSWORD
@@ -42,8 +42,8 @@ var config = {
 	},
 	erightsToUuidService: {
 		urls: {
-			byUuid: process.env.ERIGHTS_TO_UUID_SERVICE_URL_BY_UUID || 'https://depr-user-id-svc.memb.ft.com/deprecated-user-ids/v1?userId={userId}',
-			byErights: process.env.ERIGHTS_TO_UUID_SERVICE_URL_BY_ERIGHTS || 'https://depr-user-id-svc.memb.ft.com/deprecated-user-ids/v1?erightsId={userId}'
+			byUuid: process.env.ERIGHTS_TO_UUID_SERVICE_URL_BY_UUID,
+			byErights: process.env.ERIGHTS_TO_UUID_SERVICE_URL_BY_ERIGHTS
 		}
 	},
 	logger: {

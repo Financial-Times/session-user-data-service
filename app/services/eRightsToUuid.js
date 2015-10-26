@@ -54,6 +54,20 @@ exports.getERightsId = function (userId, callback) {
 			}
 		});
 	} else {
-		callback(null, userId);
+		var byErightsUrl = env.erightsToUuidService.urls.byErights;
+		byErightsUrl = byErightsUrl.replace(/\{userId\}/g, userId);
+
+		needle.get(byErightsUrl, function (err, response) {
+			if (err || response.statusCode !== 200) {
+				callback(err || {statusCode: 404, message: "User not found."});
+				return;
+			}
+
+			if (response.body.user && response.body.user.deprecatedIds && response.body.user.deprecatedIds.erightsId) {
+				callback(null, response.body.user.deprecatedIds.erightsId);
+			} else {
+				callback({statusCode: 404, message: "No eRights ID found."});
+			}
+		});
 	}
 };

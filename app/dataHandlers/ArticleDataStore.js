@@ -109,7 +109,7 @@ var ArticleDataStore = function (articleId) {
 				});
 			});
 		} catch (e) {
-			console.error(articleId, 'Exception, upsertStoredData', e);
+			consoleLogger.error(articleId, 'Exception, upsertStoredData', e);
 			return;
 		}
 	}
@@ -243,7 +243,7 @@ var ArticleDataStore = function (articleId) {
 				}
 			});
 		} catch (e) {
-			console.error(articleId, 'Exception, getArticleTags', e);
+			consoleLogger.error(articleId, 'Exception, getArticleTags', e);
 			callback(e);
 		}
 	};
@@ -295,7 +295,7 @@ var ArticleDataStore = function (articleId) {
 				}
 			});
 		} catch (e) {
-			console.error(articleId, 'Exception, livefyreCollectionExists', e);
+			consoleLogger.error(articleId, 'Exception, livefyreCollectionExists', e);
 			callback(e);
 		}
 	};

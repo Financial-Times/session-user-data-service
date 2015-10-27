@@ -105,7 +105,7 @@ exports.setPseudonym = function (req, res, next) {
 	if (pseudonym.length > 50) {
 		sendResponse(req, res, 400, {
 			status: 'error',
-			error: 'The pseudonym should be not longer than 50 characters.'
+			error: 'The pseudonym should not be longer than 50 characters.'
 		});
 		return;
 	}
@@ -213,7 +213,7 @@ exports.updateUser = function (req, res, next) {
 		if (pseudonym.length > 50) {
 			sendResponse(req, res, 400, {
 				status: 'error',
-				error: 'The pseudonym should be not longer than 50 characters.'
+				error: 'The pseudonym should not be longer than 50 characters.'
 			});
 			return;
 		}

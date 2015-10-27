@@ -10,7 +10,8 @@ var config = {
 		siteKeys: {},
 		api: {
 			pingToPullUrl: process.env.LIVEFYRE_PING_TO_PULL_URL,
-			collectionExistsUrl: process.env.LIVEFYRE_API_COLLECTION_EXISTS
+			collectionExistsUrl: process.env.LIVEFYRE_API_COLLECTION_EXISTS,
+			bootstrapUrl: process.env.LIVEFYRE_BOOTSTRAP_URL
 		}
 	},
 	mongo: {

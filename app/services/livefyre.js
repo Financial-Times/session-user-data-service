@@ -84,7 +84,13 @@ exports.getBootstrapUrl = function (articleId, callback) {
 			return;
 		}
 
-		callback(null, 'http://bootstrap.'+ env.livefyre.network.name +'.fyre.co/bs3/'+ env.livefyre.network.name +'.fyre.co/'+ siteId +'/'+ new Buffer(articleId).toString('base64') +'/bootstrap.html');
+
+		var url = env.livefyre.api.bootstrapUrl;
+		url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
+		url = url.replace(/\{articleIdBase64\}/g, new Buffer(articleId).toString('base64'));
+		url = url.replace(/\{siteId\}/g, siteId);
+
+		callback(null, url);
 	});
 };
 
@@ -124,21 +130,24 @@ exports.generateAuthToken = function (config, callback) {
 
 	if (!config.userId || !config.displayName) {
 		callback(new Error('"userId" and "displayName" should be provided.'));
+		return;
 	}
+
+	var now = new Date();
 
 	var expires = 60 * 60 * 24; // default is 24 hours
 	if (config.expires) {
 		expires = config.expires;
 	}
 	if (config.expiresAt) {
-		expires = (new Date(config.expiresAt).getTime() - new Date().getTime()) / 1000;
+		expires = (new Date(config.expiresAt).getTime() - now.getTime()) / 1000;
 	}
 
 	var authToken = network.buildUserAuthToken(config.userId + '', config.displayName, expires);
 
 	callback(null, {
 		token: authToken,
-		expires: new Date(new Date().getTime() + expires * 1000).getTime()
+		expires: new Date(now.getTime() + expires * 1000).getTime()
 	});
 };
 
@@ -157,8 +166,8 @@ exports.callPingToPull = function (userId, callback) {
 	}
 
 	var url = env.livefyre.api.pingToPullUrl;
-	url.replace(/\{networkName\}/g, env.livefyre.network.name)
-		.replace(/\{user_id\}/g, userId)
+	url = url.replace(/\{networkName\}/g, env.livefyre.network.name)
+		.replace(/\{userId\}/g, userId)
 		.replace(/\{token\}/g, getSystemToken());
 
 	needle.post(url, function (err, response) {
@@ -168,7 +177,9 @@ exports.callPingToPull = function (userId, callback) {
 		}
 
 		if (response.statusCode !== 200) {
-			callback(new Error(response.statusCode));
+			callback({
+				statusCode: response.statusCode
+			});
 		} else {
 			callback();
 		}

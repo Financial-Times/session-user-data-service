@@ -72,6 +72,7 @@ if (env.maintenanceModeOn) {
 	app.use('/v1/livefyre', routes.v1.livefyre);
 	app.use('/v1/user', routes.v1.user);
 	app.use('/v1', routes.v1.__gtg);
+	app.use('/', routes.v1.__gtg);
 	app.use('/', routes.__health);
 }
 

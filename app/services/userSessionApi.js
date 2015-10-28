@@ -27,8 +27,6 @@ exports.getSessionData = function (sessionId, callback) {
 				return;
 			}
 
-			consoleLogger.debug(sessionId, 'sessionApi', response);
-
 			if (response.statusCode !== 200) {
 				callback(null, null);
 				return;

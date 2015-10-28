@@ -58,6 +58,8 @@ var loggerFunction = (function () {
 						try {
 							console[levels[level]].apply(console, args);
 						} catch (e) {
+							console.log('console catch');
+
 							for (var i = 0; i < args.length; i++) {
 								args[i] = JSON.stringify(args[i]);
 							}

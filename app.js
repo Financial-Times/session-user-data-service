@@ -61,6 +61,17 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(function (req, res, next) {
+	// normalize stupid tomcat cookies, which appends ",$Version=0" after the values of each cookie
+
+	if (req.cookies) {
+		for (let cookieKey in req.cookies) {
+			if (req.cookies.hasOwnProperty(cookieKey)) {
+				req.cookies[cookieKey].replace(/\,\$Version\=[0-9]/g, '');
+			}
+		}
+	}
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 if (env.maintenanceModeOn) {

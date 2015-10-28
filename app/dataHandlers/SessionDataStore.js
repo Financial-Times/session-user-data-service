@@ -224,7 +224,18 @@ var SessionDataStore = function (sessionId) {
 		}
 
 		consoleLogger.log(sessionId, 'fetch session data');
-		userSessionApi.getSessionData(sessionId, callback);
+		userSessionApi.getSessionData(sessionId, function (err, data) {
+			if (err) {
+				consoleLogger.info(sessionId, 'session data invalid or error in service');
+				consoleLogger.debug(sessionId, err);
+				callback(err);
+				return;
+			}
+
+			consoleLogger.log(sessionId, 'session data fetched successfully');
+			consoleLogger.debug(sessionId, 'session data:', data);
+			callback(null, data);
+		});
 	};
 	var upsertSessionData = function (sessionData) {
 		consoleLogger.log(sessionId, 'upsert session data');

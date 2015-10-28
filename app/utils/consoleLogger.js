@@ -56,10 +56,9 @@ var loggerFunction = (function () {
 				if (level >= minLevel) {
 					if (filters.length === 0 || filters.indexOf(module) !== -1) {
 						try {
-							console[levels[level]].apply(console, args);
+							console.log.apply(console, args);
 						} catch (e) {
 							console.log('console catch');
-
 							for (var i = 0; i < args.length; i++) {
 								args[i] = JSON.stringify(args[i]);
 							}

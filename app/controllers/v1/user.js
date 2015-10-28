@@ -20,8 +20,6 @@ exports.getAuth = function (req, res, next) {
 	var userSession;
 	if (req.cookies && req.cookies['FTSession']) {
 		userSession = req.cookies['FTSession'];
-		consoleLogger.debug('FTSession cookie: \''+ req.cookies['FTSession'] +'\'');
-		consoleLogger.debug('cookies: ', req.cookies);
 	}
 
 	if (req.query.sessionId) {

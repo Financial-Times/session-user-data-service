@@ -67,7 +67,9 @@ app.use(function (req, res, next) {
 	if (req.cookies) {
 		for (let cookieKey in req.cookies) {
 			if (req.cookies.hasOwnProperty(cookieKey)) {
-				req.cookies[cookieKey].replace(/\,\$Version\=[0-9]/g, '');
+				if (req.cookies[cookieKey].indexOf('$Version') !== -1) {
+					req.cookies[cookieKey] = req.cookies[cookieKey].replace(/\,\$Version\=[0-9]/g, '');
+				}
 			}
 		}
 	}

@@ -3,27 +3,12 @@
 const assert = require('assert');
 const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
+const MongodbMock = require('../../../mocks/mongodb');
 
 consoleLogger.disable();
 
-const mocks = {
-	'mongodb': {
-		MongoClient: {
-			connect: function (connectionString, callback) {
-				if (connectionString === 'invalid') {
-					callback(new Error("Connection string not valid."));
-				} else {
-					callback(null, {
-						on: () => {}
-					});
-				}
-			}
-		}
-	}
-};
-
 const db = proxyquire('../../../app/services/db.js', {
-	'mongodb': mocks['mongodb']
+	'mongodb': new MongodbMock().mock
 });
 
 describe('db', function() {

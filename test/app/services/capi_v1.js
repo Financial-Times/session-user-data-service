@@ -3,36 +3,26 @@
 const assert = require('assert');
 const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
+const FtApiClientMock = require('../../../mocks/ft-api-client');
 
 consoleLogger.disable();
 
-const mocks = {
-	'ft-api-client': function () {
-		return {
-			get: function (uuid) {
-				return {
-					then: function (callback, error) {
-						if (uuid === '109842b8-71f4-11e5-9b9e-690fdae72044') {
-							callback({});
-							return;
-						}
+var articleId = '109842b8-71f4-11e5-9b9e-690fdae72044';
+var articleData = {};
+articleData[articleId] = {};
 
-						error(new Error("Not found"));
-					}
-				};
-			}
-		};
-	}
-};
+var ftApiClientMock = new FtApiClientMock({
+	articleData: articleData
+});
 
 const capi_v1 = proxyquire('../../../app/services/capi_v1.js', {
-	'ft-api-client': mocks['ft-api-client']
+	'ft-api-client': ftApiClientMock.mock
 });
 
 describe('capi_v1', function() {
 	describe('getArticleData', function () {
 		it('should return article data when valid UUID is provided', function (done) {
-			capi_v1.getArticleData('109842b8-71f4-11e5-9b9e-690fdae72044', function (err, data) {
+			capi_v1.getArticleData(articleId, function (err, data) {
 				assert.equal(err, null, "Error is not set.");
 				assert.ok(data && typeof data === 'object', "The response is correctly returned.");
 

@@ -3,6 +3,7 @@
 const assert = require('assert');
 const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
+const MongodbMock = require('../../../mocks/mongodb');
 
 consoleLogger.disable();
 
@@ -12,63 +13,37 @@ var siteIdForArticleId = 5142;
 var articleIdUnclassified = 'a86755e4-46a5-11e1-bc5f-00144feabdc0';
 
 const mocks = {
-	db: {
-		getConnection: function (connectionString, callback) {
-			if (connectionString === 'invalid') {
-				callback(new Error("No connection could be obtained."));
-				return;
-			}
-
-			callback(null, {
-				collection: function (collectionName) {
-					if (collectionName === 'legacy_site_mapping') {
-						return {
-							find: function (query) {
-								return {
-									toArray(callbackFind) {
-										if (query && query._id) {
-											if (query._id === articleId) {
-												callbackFind(null, [{
-													siteId: siteIdForArticleId
-												}]);
-												return;
-											} else if (query._id === articleIdUnclassified) {
-												callbackFind(null, [{
-													siteId: 'unclassified'
-												}]);
-												return;
-											} else {
-												callbackFind(null, []);
-												return;
-											}
-										} else {
-											callbackFind(new Error("Invalid query."));
-											return;
-										}
-									}
-								};
-							}
-						};
-					} else {
-						throw new Error("Wrong collection is used.");
-					}
-				}
-			});
-		}
-	},
 	env: {
 		livefyre: {
 			defaultSiteId: 1412
 		},
 		mongo: {
-			uri: 'mongo-uri'
-		}
+			uri: 'mongo-uri-legacySiteMapping'
+		},
+		'@global': true
 	}
 };
-var mongoUri = 'mongo-uri';
+var mongoUri = mocks.env.mongo.uri;
+
+
+var mongodbMock = new MongodbMock({
+	dbMock: {
+		'legacy_site_mapping': [
+			{
+				_id: articleId,
+				siteId: siteIdForArticleId
+			},
+			{
+				_id: articleIdUnclassified,
+				siteId: 'unclassified'
+			}
+		]
+	},
+	global: true
+});
 
 const legacySiteMapping = proxyquire('../../../app/services/legacySiteMapping.js', {
-	'../services/db': mocks.db,
+	'mongodb': mongodbMock.mock,
 	'../../env': mocks.env
 });
 

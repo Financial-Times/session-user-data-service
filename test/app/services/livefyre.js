@@ -3,8 +3,11 @@
 const assert = require('assert');
 const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
+const MongodbMock = require('../../../mocks/mongodb');
+const LivefyreMock = require('../../../mocks/livefyre');
 
 consoleLogger.disable();
+
 
 const articleDetails = {
 	id: 'a86755e4-46a5-11e1-bc5f-00144feabdc0',
@@ -25,6 +28,38 @@ const articleDetailsCollectionNotExists = {
 	siteId: 523435
 };
 
+const articleDetailsUnclassified = {
+	id: 'e78d07ca-680f-11e5-a57f-21b88f7d973f',
+	title: 'Test article 3',
+	url: 'http://www.ft.com/cms/e78d07ca-680f-11e5-a57f-21b88f7d973f.html',
+	siteId: 'unclassified'
+};
+
+var siteMappingMock = {
+	'legacy_site_mapping': [
+		{
+			_id: articleDetails.id,
+			siteId: articleDetails.siteId
+		},
+		{
+			_id: articleDetailsWithSiteIdNotSetUp.id,
+			siteId: articleDetailsWithSiteIdNotSetUp.siteId
+		},
+		{
+			_id: articleDetailsCollectionNotExists.id,
+			siteId: articleDetailsCollectionNotExists.siteId
+		},
+		{
+			_id: articleDetailsUnclassified.id,
+			siteId: articleDetailsUnclassified.siteId
+		}
+	]
+};
+
+
+
+
+
 const userId = '3f330864-1c0f-443e-a6b3-cf8a3b536a52';
 const displayName = 'testName';
 
@@ -34,59 +69,6 @@ const validToken = 'tafg342fefwef';
 const systemToken = 'system-token';
 
 const mocks = {
-	livefyre: {
-		getNetwork: function (networkName, networkKey) {
-			return {
-				buildLivefyreToken: function () {
-					return systemToken;
-				},
-				buildUserAuthToken: function (userId, displayName, expires) {
-					return {
-						userId: userId,
-						displayName: displayName,
-						expires: expires
-					};
-				},
-				getSite: function (siteId, siteKey) {
-					return {
-						buildCollection: function (stream_type, title, articleId, url) {
-							var data = {
-								tags: '',
-								networkName: networkName,
-								networkKey: networkKey,
-								siteId: siteId,
-								siteKey: siteKey,
-								streamType: stream_type,
-								title: title,
-								articleId: articleId,
-								url: url
-							};
-							return {
-								data: data,
-								buildCollectionMetaToken: function () {
-									return {
-										collectionMeta: data
-									};
-								},
-								buildChecksum: function () {
-									return {
-										checksum: data
-									};
-								}
-							};
-						}
-					};
-				},
-				validateLivefyreToken: function (token) {
-					if (token === validToken) {
-						return true;
-					}
-
-					return false;
-				}
-			};
-		}
-	},
 	needle: {
 		get: function (url, callback) {
 			var collectionExistsRegExp = new RegExp(mocks.env.livefyre.api.collectionExistsUrl
@@ -162,27 +144,8 @@ const mocks = {
 			} else {
 				callback(new Error("URL not matched."));
 			}
-		}
-	},
-	legacySiteMapping: {
-		getSiteId: function (articleId, callback) {
-			if (articleId === articleDetails.id) {
-				callback(null, articleDetails.siteId);
-				return;
-			}
-
-			if (articleId === articleDetailsWithSiteIdNotSetUp.id) {
-				callback(null, articleDetailsWithSiteIdNotSetUp.siteId);
-				return;
-			}
-
-			if (articleId === articleDetailsCollectionNotExists.id) {
-				callback(null, articleDetailsCollectionNotExists.siteId);
-				return;
-			}
-
-			callback(new Error("Error"));
-		}
+		},
+		'@global': true
 	},
 	env: {
 		livefyre: {
@@ -190,30 +153,59 @@ const mocks = {
 				name: 'ft',
 				key: 'network-key'
 			},
+			defaultSiteId: 1412,
 			siteKeys: {
 				1: 'key1',
 				2: 'key2',
 				3: 'key3',
-				415343: 'key415343'
+				415343: 'key415343',
+				1412: 'key1412'
 			},
 			api: {
 				collectionExistsUrl: 'http://{networkName}.collection-exists.livefyre.com/{articleIdBase64}',
 				pingToPullUrl: 'http://{networkName}.ping-to-pull.livefyre.com/{userId}?token={token}',
 				bootstrapUrl: 'http://bootstrap.{networkName}.fyre.co/bs3/{networkName}.fyre.co/{siteId}/{articleIdBase64}/bootstrap.html'
 			}
-		}
+		},
+		mongo: {
+			uri: 'mongo-uri-livefyre'
+		},
+		'@global': true
 	}
 };
 
+const mongodbMock = new MongodbMock({
+	dbMock: siteMappingMock,
+	global: true
+});
+const livefyreMock = new LivefyreMock({
+	systemToken: systemToken,
+	validToken: validToken,
+	global: true
+});
+
 const livefyreService = proxyquire('../../../app/services/livefyre.js', {
-	'livefyre': mocks.livefyre,
+	'livefyre': livefyreMock.mock,
 	'../../env': mocks.env,
 	'needle': mocks.needle,
-	'./legacySiteMapping': mocks.legacySiteMapping
+	'mongodb': mongodbMock.mock
 });
 
 describe('livefyreService', function() {
 	describe('getCollectionDetails', function () {
+		it('should return error if the UUID is unclassified', function (done) {
+			livefyreService.getCollectionDetails({
+				articleId: articleDetailsUnclassified.id,
+				title: articleDetailsUnclassified.title,
+				url: articleDetailsUnclassified.url
+			}, function (err, data) {
+				assert.ok(err, "Error is returned.");
+				assert.ok(data === undefined || data === null, "Data is not set.");
+
+				done();
+			});
+		});
+
 		it('should return error if legacySiteMapping returns error', function (done) {
 			livefyreService.getCollectionDetails({
 				articleId: 'invalid-uuid',
@@ -528,8 +520,6 @@ describe('livefyreService', function() {
 				displayName: displayName,
 				expiresAt: expiresAt
 			}, function (err, data) {
-				var end = new Date();
-
 				assert.ok(!err, "Error is not returned.");
 				assert.deepEqual(Object.keys(data), ['token', 'expires'], "Response has the expected fields.");
 				assert.deepEqual(Object.keys(data.token), ['userId', 'displayName', 'expires'], "Token has the expected data.");
@@ -566,7 +556,6 @@ describe('livefyreService', function() {
 
 		it('should call the service with no issues if valid user ID is specified', function (done) {
 			livefyreService.callPingToPull(userId, function (err) {
-				console.log(err);
 				assert.ok(!err, "Error not returned.");
 
 				done();

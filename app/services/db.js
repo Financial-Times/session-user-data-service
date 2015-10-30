@@ -1,6 +1,7 @@
 "use strict";
 
-const MongoClient = require('mongodb').MongoClient;
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
 let connections = {};
 
 

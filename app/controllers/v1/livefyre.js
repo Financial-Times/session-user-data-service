@@ -83,7 +83,7 @@ exports.getCollectionDetails = function (req, res, next) {
 			return;
 		}
 
-		res.jsonp(_.pick(data, ['siteId', 'articleId', 'collectionMeta', 'checksum']));
+		res.jsonp(data);
 	});
 };
 
@@ -402,13 +402,29 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataStore, sessionDa
 								callCallback(null, collectionDetails);
 							});
 						} else {
-							let returnData = _.pick(collectionDetails, ['siteId', 'articleId']);
+							let returnData = collectionDetails;
+							for (let key in returnData) {
+								if (returnData.hasOwnProperty(key)) {
+									if (['siteId', 'articleId'].indexOf(key) === -1) {
+										returnData[key] = null;
+									}
+								}
+							}
+
 							returnData.notAllowedToCreateCollection = true;
 							callCallback(null, returnData);
 						}
 					});
 				} else {
-					let returnData = _.pick(collectionDetails, ['siteId', 'articleId']);
+					let returnData = collectionDetails;
+					for (let key in returnData) {
+						if (returnData.hasOwnProperty(key)) {
+							if (['siteId', 'articleId'].indexOf(key) === -1) {
+								returnData[key] = null;
+							}
+						}
+					}
+
 					returnData.notAllowedToCreateCollection = true;
 					callCallback(null, returnData);
 				}

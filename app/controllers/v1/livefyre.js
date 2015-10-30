@@ -403,13 +403,17 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataStore, sessionDa
 							});
 						} else {
 							let returnData = collectionDetails;
+
+							/* Auth restricted collection creation, temporarily removed as it breaks CCS
+
 							for (let key in returnData) {
 								if (returnData.hasOwnProperty(key)) {
 									if (['siteId', 'articleId'].indexOf(key) === -1) {
-										returnData[key] = '';
+										returnData[key] = null;
 									}
 								}
 							}
+							*/
 
 							returnData.notAllowedToCreateCollection = true;
 							callCallback(null, returnData);
@@ -417,13 +421,17 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataStore, sessionDa
 					});
 				} else {
 					let returnData = collectionDetails;
+
+					/* Auth restricted collection creation, temporarily removed as it breaks CCS
+
 					for (let key in returnData) {
 						if (returnData.hasOwnProperty(key)) {
 							if (['siteId', 'articleId'].indexOf(key) === -1) {
-								returnData[key] = '';
+								returnData[key] = null;
 							}
 						}
 					}
+					*/
 
 					returnData.notAllowedToCreateCollection = true;
 					callCallback(null, returnData);

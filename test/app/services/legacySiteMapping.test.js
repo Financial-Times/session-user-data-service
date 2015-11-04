@@ -12,18 +12,16 @@ var siteIdForArticleId = 5142;
 
 var articleIdUnclassified = 'a86755e4-46a5-11e1-bc5f-00144feabdc0';
 
-const mocks = {
-	env: {
-		livefyre: {
-			defaultSiteId: 1412
-		},
-		mongo: {
-			uri: 'mongo-uri-legacySiteMapping'
-		},
-		'@global': true
-	}
+const env = {
+	livefyre: {
+		defaultSiteId: 1412
+	},
+	mongo: {
+		uri: 'mongo-uri-legacySiteMapping'
+	},
+	'@global': true
 };
-var mongoUri = mocks.env.mongo.uri;
+var mongoUri = env.mongo.uri;
 
 
 var mongodbMock = new MongodbMock({
@@ -44,13 +42,13 @@ var mongodbMock = new MongodbMock({
 
 const legacySiteMapping = proxyquire('../../../app/services/legacySiteMapping.js', {
 	'mongodb': mongodbMock.mock,
-	'../../env': mocks.env
+	'../../env': env
 });
 
 describe('legacySiteMapping', function() {
 	describe('getSiteId', function () {
 		it('should return error when no connection could be obtained with MongoDB', function (done) {
-			mocks.env.mongo.uri = 'invalid';
+			env.mongo.uri = 'invalid';
 
 			legacySiteMapping.getSiteId('invalid-uuid', function (err, data) {
 				assert.ok(err, "Error is returned.");
@@ -61,7 +59,7 @@ describe('legacySiteMapping', function() {
 		});
 
 		it('should return siteId from the mapping file if the UUID is found in the MongoDB', function (done) {
-			mocks.env.mongo.uri = mongoUri;
+			env.mongo.uri = mongoUri;
 
 			legacySiteMapping.getSiteId(articleId, function (err, data) {
 				assert.ok(!err, "Error is not set.");
@@ -72,7 +70,7 @@ describe('legacySiteMapping', function() {
 		});
 
 		it('should return unclassified response if the UUID is found in the MongoDB with the flag `unclassified`', function (done) {
-			mocks.env.mongo.uri = mongoUri;
+			env.mongo.uri = mongoUri;
 
 			legacySiteMapping.getSiteId(articleIdUnclassified, function (err, data) {
 				assert.deepEqual(err, {
@@ -85,11 +83,11 @@ describe('legacySiteMapping', function() {
 		});
 
 		it('should return the default site ID if the UUID is not found in the MongoDB', function (done) {
-			mocks.env.mongo.uri = mongoUri;
+			env.mongo.uri = mongoUri;
 
 			legacySiteMapping.getSiteId('any-other-id', function (err, data) {
 				assert.ok(!err, "Error is not set.");
-				assert.deepEqual(data, mocks.env.livefyre.defaultSiteId, "Default site ID is returned.");
+				assert.deepEqual(data, env.livefyre.defaultSiteId, "Default site ID is returned.");
 
 				done();
 			});

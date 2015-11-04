@@ -94,43 +94,41 @@ var UserDataStore = function (userId) {
 
 
 	function upsertStoredData (field, data, callback) {
-		try {
-			var setData = {};
-			setData[mongoSanitize(field)] = data;
+		var setData = {};
+		setData[mongoSanitize(field)] = data;
 
-			db.getConnection(env.mongo.uri, function (errConn, connection) {
-				if (errConn) {
-					consoleLogger.log(userId, 'upsert failed');
-					consoleLogger.debug(errConn);
+		db.getConnection(env.mongo.uri, function (errConn, connection) {
+			if (errConn) {
+				consoleLogger.log(userId, 'upsert failed');
+				consoleLogger.debug(errConn);
+				return;
+			}
+
+			consoleLogger.log(userId, 'upsert cache');
+			consoleLogger.debug(userId, 'field: ' + field, 'data:', data);
+
+			connection.collection('users').update({
+				_id: mongoSanitize(userId)
+			}, {
+				$set: setData
+			}, {
+				upsert: true
+			}, function (err) {
+				if (err) {
+					if (typeof callback === 'function') {
+						callback(err);
+					}
 					return;
 				}
 
-				consoleLogger.log(userId, 'upsert cache');
-				consoleLogger.debug(userId, 'field: ' + field, 'data:', data);
+				// reset storage cache
+				storedData = null;
 
-				connection.collection('users').update({
-					_id: mongoSanitize(userId)
-				}, {
-					$set: setData
-				}, {
-					upsert: true
-				}, function (err) {
-					if (err) {
-						if (typeof callback === 'function') {
-							callback(err);
-						}
-						return;
-					}
-
-					if (typeof callback === 'function') {
-						callback();
-					}
-				});
+				if (typeof callback === 'function') {
+					callback();
+				}
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, upsertStoredData', e);
-			return;
-		}
+		});
 	}
 
 
@@ -232,45 +230,40 @@ var UserDataStore = function (userId) {
 			}, 0);
 		};
 
-		try {
-			getUuidOfUserId(function (errUuid) {
-				if (errUuid) {
-					callCallback(errUuid);
+		getUuidOfUserId(function (errUuid) {
+			if (errUuid) {
+				callCallback(errUuid);
+				return;
+			}
+
+			getStoredData(function (errCache, storedData) {
+				if (errCache) {
+					// fetch
+					consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'error retrieving cache');
+					consoleLogger.debug(userId, errCache);
+					fetchLivefyrePreferredUserId(callback);
 					return;
 				}
 
-				getStoredData(function (errCache, storedData) {
-					if (errCache) {
-						// fetch
-						consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'error retrieving cache');
-						consoleLogger.debug(userId, errCache);
-						fetchLivefyrePreferredUserId(callback);
-						return;
-					}
+				if (storedData && storedData.lfUserId) {
+					consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'data loaded from the cache');
+					callCallback(null, storedData.lfUserId);
+				} else {
+					// fetch and save
+					consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'not found in cache');
+					fetchLivefyrePreferredUserId(function (errFetch, lfUserId) {
+						if (errFetch) {
+							callCallback(errFetch);
+							return;
+						}
 
-					if (storedData && storedData.lfUserId) {
-						consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'data loaded from the cache');
-						callCallback(null, storedData.lfUserId);
-					} else {
-						// fetch and save
-						consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'not found in cache');
-						fetchLivefyrePreferredUserId(function (errFetch, lfUserId) {
-							if (errFetch) {
-								callCallback(errFetch);
-								return;
-							}
+						callCallback(null, lfUserId);
 
-							callCallback(null, lfUserId);
-
-							upsertLivefyrePreferredUserId(lfUserId);
-						});
-					}
-				});
+						upsertLivefyrePreferredUserId(lfUserId);
+					});
+				}
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, getLivefyrePreferredUserId', e);
-			callCallback(e);
-		}
+		});
 	};
 
 
@@ -280,37 +273,32 @@ var UserDataStore = function (userId) {
 			throw new Error("UserDataStore.getPseudonym: callback not provided");
 		}
 
-		try {
-			getUuidOfUserId(function (errUuid) {
-				if (errUuid) {
-					callback(errUuid);
+		getUuidOfUserId(function (errUuid) {
+			if (errUuid) {
+				callback(errUuid);
+				return;
+			}
+
+			getStoredData(function (errCache, storedData) {
+				if (errCache) {
+					// fetch
+					consoleLogger.log(userId, 'getPseudonym', 'error retrieving pseudonym');
+					consoleLogger.debug(userId, errCache);
+					callback(errCache);
 					return;
 				}
 
-				getStoredData(function (errCache, storedData) {
-					if (errCache) {
-						// fetch
-						consoleLogger.log(userId, 'getPseudonym', 'error retrieving pseudonym');
-						consoleLogger.debug(userId, errCache);
-						callback(errCache);
-						return;
-					}
+				if (storedData && storedData.pseudonym) {
+					var pseudonym = crypto.decrypt(storedData.pseudonym);
 
-					if (storedData && storedData.pseudonym) {
-						var pseudonym = crypto.decrypt(storedData.pseudonym);
-
-						consoleLogger.log(userId, 'getPseudonym', 'data loaded from the cache');
-						callback(null, pseudonym);
-					} else {
-						consoleLogger.log(userId, 'getPseudonym', 'user has no pseudonym');
-						callback(null, null);
-					}
-				});
+					consoleLogger.log(userId, 'getPseudonym', 'data loaded from the cache');
+					callback(null, pseudonym);
+				} else {
+					consoleLogger.log(userId, 'getPseudonym', 'user has no pseudonym');
+					callback(null, null);
+				}
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, getPseudonym', e);
-			callback(e);
-		}
+		});
 	};
 
 	this.setPseudonym = function (pseudonym, callback) {
@@ -322,37 +310,32 @@ var UserDataStore = function (userId) {
 			callback(new Error("Pseudonym is blank."));
 		}
 
-		try {
-			getUuidOfUserId(function (errUuid) {
-				if (errUuid) {
-					callback(errUuid);
+		getUuidOfUserId(function (errUuid) {
+			if (errUuid) {
+				callback(errUuid);
+				return;
+			}
+
+			getStoredData(function (errCache, storedData) {
+				if (errCache) {
+					// fetch
+					consoleLogger.log(userId, 'setPseudonym', 'error with the storage');
+					consoleLogger.debug(userId, errCache);
+					callback(errCache);
 					return;
 				}
 
-				getStoredData(function (errCache, storedData) {
-					if (errCache) {
-						// fetch
-						consoleLogger.log(userId, 'setPseudonym', 'error with the storage');
-						consoleLogger.debug(userId, errCache);
-						callback(errCache);
+				upsertStoredData('pseudonym', crypto.encrypt(pseudonym), function (errUpsert) {
+					if (errUpsert) {
+						callback(errUpsert);
 						return;
 					}
 
-					upsertStoredData('pseudonym', crypto.encrypt(pseudonym), function (errUpsert) {
-						if (errUpsert) {
-							callback(errUpsert);
-							return;
-						}
-
-						consoleLogger.log(userId, 'setPseudonym', 'set pseudonym ok');
-						callback();
-					});
+					consoleLogger.log(userId, 'setPseudonym', 'set pseudonym ok');
+					callback();
 				});
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, setPseudonym', e);
-			callback(e);
-		}
+		});
 	};
 
 	this.emptyPseudonym = function (callback) {
@@ -360,37 +343,32 @@ var UserDataStore = function (userId) {
 			throw new Error("UserDataStore.emptyPseudonym: callback not provided");
 		}
 
-		try {
-			getUuidOfUserId(function (errUuid) {
-				if (errUuid) {
-					callback(errUuid);
+		getUuidOfUserId(function (errUuid) {
+			if (errUuid) {
+				callback(errUuid);
+				return;
+			}
+
+			getStoredData(function (errCache, storedData) {
+				if (errCache) {
+					// fetch
+					consoleLogger.log(userId, 'emptyPseudonym', 'error with the storage');
+					consoleLogger.debug(userId, errCache);
+					callback(errCache);
 					return;
 				}
 
-				getStoredData(function (errCache, storedData) {
-					if (errCache) {
-						// fetch
-						consoleLogger.log(userId, 'emptyPseudonym', 'error with the storage');
-						consoleLogger.debug(userId, errCache);
-						callback(errCache);
+				upsertStoredData('pseudonym', null, function (errUpsert) {
+					if (errUpsert) {
+						callback(errUpsert);
 						return;
 					}
 
-					upsertStoredData('pseudonym', null, function (errUpsert) {
-						if (errUpsert) {
-							callback(errUpsert);
-							return;
-						}
-
-						consoleLogger.log(userId, 'emptyPseudonym', 'empty pseudonym ok');
-						callback();
-					});
+					consoleLogger.log(userId, 'emptyPseudonym', 'empty pseudonym ok');
+					callback();
 				});
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, emptyPseudonym', e);
-			callback(e);
-		}
+		});
 	};
 
 
@@ -400,35 +378,30 @@ var UserDataStore = function (userId) {
 			throw new Error("UserDataStore.getEmailPreferences: callback not provided");
 		}
 
-		try {
-			getUuidOfUserId(function (errUuid) {
-				if (errUuid) {
-					callback(errUuid);
+		getUuidOfUserId(function (errUuid) {
+			if (errUuid) {
+				callback(errUuid);
+				return;
+			}
+
+			getStoredData(function (errCache, storedData) {
+				if (errCache) {
+					// fetch
+					consoleLogger.log(userId, 'getEmailPreferences', 'error retrieving email preferences');
+					consoleLogger.debug(userId, errCache);
+					callback(errCache);
 					return;
 				}
 
-				getStoredData(function (errCache, storedData) {
-					if (errCache) {
-						// fetch
-						consoleLogger.log(userId, 'getEmailPreferences', 'error retrieving email preferences');
-						consoleLogger.debug(userId, errCache);
-						callback(errCache);
-						return;
-					}
-
-					if (storedData && storedData.emailPreferences) {
-						consoleLogger.log(userId, 'getEmailPreferences', 'data loaded from the cache');
-						callback(null, storedData.emailPreferences);
-					} else {
-						consoleLogger.log(userId, 'getEmailPreferences', 'user has no email preference');
-						callback(null, null);
-					}
-				});
+				if (storedData && storedData.emailPreferences) {
+					consoleLogger.log(userId, 'getEmailPreferences', 'data loaded from the cache');
+					callback(null, storedData.emailPreferences);
+				} else {
+					consoleLogger.log(userId, 'getEmailPreferences', 'user has no email preference');
+					callback(null, null);
+				}
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, getEmailPreferences', e);
-			callback(e);
-		}
+		});
 	};
 
 	this.setEmailPreferences = function (emailPreferences, callback) {
@@ -478,58 +451,53 @@ var UserDataStore = function (userId) {
 			delete emailPreferences.autoFollow;
 		}
 
-		try {
-			getUuidOfUserId(function (errUuid) {
-				if (errUuid) {
-					callback(errUuid);
+		getUuidOfUserId(function (errUuid) {
+			if (errUuid) {
+				callback(errUuid);
+				return;
+			}
+
+			getStoredData(function (errCache, storedData) {
+				if (errCache) {
+					// fetch
+					consoleLogger.log(userId, 'setEmailPreferences', 'error with the storage');
+					consoleLogger.debug(userId, errCache);
+
+					callback(errCache);
 					return;
 				}
 
-				getStoredData(function (errCache, storedData) {
-					if (errCache) {
-						// fetch
-						consoleLogger.log(userId, 'setEmailPreferences', 'error with the storage');
-						consoleLogger.debug(userId, errCache);
 
-						callback(errCache);
+				var upserts = {};
+				var getUpsertFunction = function (key) {
+					return function (callback) {
+						upsertStoredData('emailPreferences.' + key, emailPreferences[key], function (errUpsert) {
+							if (errUpsert) {
+								callback(errUpsert);
+								return;
+							}
+
+							callback();
+						});
+					};
+				};
+				for (let key in emailPreferences) {
+					if (emailPreferences.hasOwnProperty(key)) {
+						upserts[key] = getUpsertFunction(key);
+					}
+				}
+
+				async.parallel(upserts, function (errUpserts, results) {
+					if (errUpserts) {
+						callback(errUpserts);
 						return;
 					}
 
-
-					var upserts = {};
-					var getUpsertFunction = function (key) {
-						return function (callback) {
-							upsertStoredData('emailPreferences.' + key, emailPreferences[key], function (errUpsert) {
-								if (errUpsert) {
-									callback(errUpsert);
-									return;
-								}
-
-								callback();
-							});
-						};
-					};
-					for (let key in emailPreferences) {
-						if (emailPreferences.hasOwnProperty(key)) {
-							upserts[key] = getUpsertFunction(key);
-						}
-					}
-
-					async.parallel(upserts, function (errUpserts, results) {
-						if (errUpserts) {
-							callback(errUpserts);
-							return;
-						}
-
-						callback();
-					});
-
+					callback();
 				});
+
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, setEmailPreferences', e);
-			callback(e);
-		}
+		});
 	};
 
 
@@ -548,107 +516,102 @@ var UserDataStore = function (userId) {
 			throw new Error("UserDataStore.getUserData: callback not provided");
 		}
 
-		try {
-			getUuidOfUserId(function (errUuid) {
-				if (errUuid) {
-					callback(errUuid);
+		getUuidOfUserId(function (errUuid) {
+			if (errUuid) {
+				callback(errUuid);
+				return;
+			}
+
+			getStoredData(function (errCache, storedData) {
+				if (errCache) {
+					// fetch
+					consoleLogger.log(userId, 'getUserData', 'error retrieving pseudonym');
+					consoleLogger.debug(userId, errCache);
+					callback(errCache);
 					return;
 				}
 
-				getStoredData(function (errCache, storedData) {
-					if (errCache) {
-						// fetch
-						consoleLogger.log(userId, 'getUserData', 'error retrieving pseudonym');
-						consoleLogger.debug(userId, errCache);
-						callback(errCache);
-						return;
-					}
+				if (storedData) {
+					var returnData = {};
 
-					if (storedData) {
-						var returnData = {};
+					returnData.uuid = uuid;
 
-						returnData.uuid = uuid;
+					self.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
+						if (errLfId) {
+							callback(errLfId);
+							return;
+						}
 
-						self.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
-							if (errLfId) {
-								callback(errLfId);
-								return;
-							}
+						returnData.lfUserId = lfUserId;
 
-							returnData.lfUserId = lfUserId;
+						if (storedData.pseudonym) {
+							returnData.pseudonym = crypto.decrypt(storedData.pseudonym);
+						}
 
-							if (storedData.pseudonym) {
-								returnData.pseudonym = crypto.decrypt(storedData.pseudonym);
-							}
+						if (storedData.emailPreferences) {
+							returnData.emailPreferences = storedData.emailPreferences;
+						}
 
-							if (storedData.emailPreferences) {
-								returnData.emailPreferences = storedData.emailPreferences;
-							}
-
-							if (storedData.email && storedData.firstName && storedData.lastName) {
-								returnData.email = crypto.decrypt(storedData.email);
-								returnData.firstName = crypto.decrypt(storedData.firstName);
-								returnData.lastName = crypto.decrypt(storedData.lastName);
-
-								callback(null, returnData);
-								return;
-							} else {
-								fetchBasicUserInfo(function (errFetch, basicUserInfo) {
-									if (errFetch) {
-										callback(errFetch);
-										return;
-									}
-
-									if (basicUserInfo) {
-										if (basicUserInfo.email) {
-											returnData.email = basicUserInfo.email;
-											upsertStoredData('email', crypto.encrypt(basicUserInfo.email));
-										}
-										if (basicUserInfo.firstName) {
-											returnData.firstName = basicUserInfo.firstName;
-											upsertStoredData('firstName', crypto.encrypt(basicUserInfo.firstName));
-										}
-										if (basicUserInfo.lastName) {
-											returnData.lastName = basicUserInfo.lastName;
-											upsertStoredData('lastName', crypto.encrypt(basicUserInfo.lastName));
-										}
-									}
-
-									callback(null, returnData);
-								});
-							}
-						});
-					} else {
-						fetchBasicUserInfo(function (errFetch, basicUserInfo) {
-							if (errFetch) {
-								callback(errFetch);
-								return;
-							}
-
-							if (basicUserInfo) {
-								if (basicUserInfo.email) {
-									returnData.email = basicUserInfo.email;
-									upsertStoredData('email', basicUserInfo.email);
-								}
-								if (basicUserInfo.firstName) {
-									returnData.firstName = basicUserInfo.firstName;
-									upsertStoredData('firstName', basicUserInfo.firstName);
-								}
-								if (basicUserInfo.lastName) {
-									returnData.lastName = basicUserInfo.lastName;
-									upsertStoredData('lastName', basicUserInfo.lastName);
-								}
-							}
+						if (storedData.email && storedData.firstName && storedData.lastName) {
+							returnData.email = crypto.decrypt(storedData.email);
+							returnData.firstName = crypto.decrypt(storedData.firstName);
+							returnData.lastName = crypto.decrypt(storedData.lastName);
 
 							callback(null, returnData);
-						});
-					}
-				});
+							return;
+						} else {
+							fetchBasicUserInfo(function (errFetch, basicUserInfo) {
+								if (errFetch) {
+									callback(errFetch);
+									return;
+								}
+
+								if (basicUserInfo) {
+									if (basicUserInfo.email) {
+										returnData.email = basicUserInfo.email;
+										upsertStoredData('email', crypto.encrypt(basicUserInfo.email));
+									}
+									if (basicUserInfo.firstName) {
+										returnData.firstName = basicUserInfo.firstName;
+										upsertStoredData('firstName', crypto.encrypt(basicUserInfo.firstName));
+									}
+									if (basicUserInfo.lastName) {
+										returnData.lastName = basicUserInfo.lastName;
+										upsertStoredData('lastName', crypto.encrypt(basicUserInfo.lastName));
+									}
+								}
+
+								callback(null, returnData);
+							});
+						}
+					});
+				} else {
+					fetchBasicUserInfo(function (errFetch, basicUserInfo) {
+						if (errFetch) {
+							callback(errFetch);
+							return;
+						}
+
+						if (basicUserInfo) {
+							if (basicUserInfo.email) {
+								returnData.email = basicUserInfo.email;
+								upsertStoredData('email', basicUserInfo.email);
+							}
+							if (basicUserInfo.firstName) {
+								returnData.firstName = basicUserInfo.firstName;
+								upsertStoredData('firstName', basicUserInfo.firstName);
+							}
+							if (basicUserInfo.lastName) {
+								returnData.lastName = basicUserInfo.lastName;
+								upsertStoredData('lastName', basicUserInfo.lastName);
+							}
+						}
+
+						callback(null, returnData);
+					});
+				}
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, getUserData', e);
-			callback(e);
-		}
+		});
 	};
 
 
@@ -657,69 +620,64 @@ var UserDataStore = function (userId) {
 			throw new Error("UserDataStore.updateBasicUserData: callback not provided");
 		}
 
-		try {
-			getUuidOfUserId(function (errUuid) {
-				if (errUuid) {
-					callback(errUuid);
+		getUuidOfUserId(function (errUuid) {
+			if (errUuid) {
+				callback(errUuid);
+				return;
+			}
+
+			async.parallel({
+				email: function (callbackAsync) {
+					if (userData.email) {
+						upsertStoredData('email', crypto.encrypt(userData.email), function (err) {
+							if (err) {
+								callbackAsync(err);
+								return;
+							}
+
+							callbackAsync();
+						});
+					} else {
+						callbackAsync();
+					}
+				},
+				firstName: function (callbackAsync) {
+					if (userData.firstName) {
+						upsertStoredData('firstName', crypto.encrypt(userData.firstName), function (err) {
+							if (err) {
+								callbackAsync(err);
+								return;
+							}
+
+							callbackAsync();
+						});
+					} else {
+						callbackAsync();
+					}
+				},
+				lastName: function (callbackAsync) {
+					if (userData.lastName) {
+						upsertStoredData('lastName', crypto.encrypt(userData.lastName), function (err) {
+							if (err) {
+								callbackAsync(err);
+								return;
+							}
+
+							callbackAsync();
+						});
+					} else {
+						callbackAsync();
+					}
+				}
+			}, function (errUpsert) {
+				if (errUpsert) {
+					callback(errUpsert);
 					return;
 				}
 
-				async.parallel({
-					email: function (callbackAsync) {
-						if (userData.email) {
-							upsertStoredData('email', crypto.encrypt(userData.email), function (err) {
-								if (err) {
-									callbackAsync(err);
-									return;
-								}
-
-								callbackAsync();
-							});
-						} else {
-							callbackAsync();
-						}
-					},
-					firstName: function (callbackAsync) {
-						if (userData.firstName) {
-							upsertStoredData('firstName', crypto.encrypt(userData.firstName), function (err) {
-								if (err) {
-									callbackAsync(err);
-									return;
-								}
-
-								callbackAsync();
-							});
-						} else {
-							callbackAsync();
-						}
-					},
-					lastName: function (callbackAsync) {
-						if (userData.lastName) {
-							upsertStoredData('lastName', crypto.encrypt(userData.lastName), function (err) {
-								if (err) {
-									callbackAsync(err);
-									return;
-								}
-
-								callbackAsync();
-							});
-						} else {
-							callbackAsync();
-						}
-					}
-				}, function (errUpsert) {
-					if (errUpsert) {
-						callback(errUpsert);
-						return;
-					}
-
-					callback();
-				});
+				callback();
 			});
-		} catch (e) {
-			console.error(userId, 'Exception, updateBasicUserData', e);
-			callback(e);
-		}
+		});
 	};
 };
 module.exports = UserDataStore;

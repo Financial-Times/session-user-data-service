@@ -42,15 +42,17 @@ exports.getERightsId = function (userId, callback) {
 		byUuidUrl = byUuidUrl.replace(/\{userId\}/g, userId);
 
 		needle.get(byUuidUrl, function (err, response) {
-			if (err || response.statusCode !== 200 || !response.body) {
-				callback({statusCode: 404, message: "User not found."});
+			if (err) {
+				callback(err);
+			} else if (response.statusCode !== 200 || !response.body) {
+				callback();
 				return;
 			}
 
 			if (response.body.user && response.body.user.deprecatedIds && response.body.user.deprecatedIds.erightsId) {
 				callback(null, response.body.user.deprecatedIds.erightsId);
 			} else {
-				callback({statusCode: 404, message: "No eRights ID found."});
+				callback();
 			}
 		});
 	} else {
@@ -58,15 +60,17 @@ exports.getERightsId = function (userId, callback) {
 		byErightsUrl = byErightsUrl.replace(/\{userId\}/g, userId);
 
 		needle.get(byErightsUrl, function (err, response) {
-			if (err || response.statusCode !== 200) {
-				callback(err || {statusCode: 404, message: "User not found."});
+			if (err) {
+				callback(err);
+			} else if (response.statusCode !== 200) {
+				callback();
 				return;
 			}
 
 			if (response.body.user && response.body.user.deprecatedIds && response.body.user.deprecatedIds.erightsId) {
 				callback(null, response.body.user.deprecatedIds.erightsId);
 			} else {
-				callback({statusCode: 404, message: "No eRights ID found."});
+				callback();
 			}
 		});
 	}

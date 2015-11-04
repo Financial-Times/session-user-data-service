@@ -13,13 +13,23 @@ module.exports = function (config) {
 							return;
 						}
 
-						error(new Error("Not found"));
+						if (uuid.indexOf('capi-down') !== -1) {
+							error({
+								statusCode: 503
+							});
+							return;
+						}
+
+						error({
+							statusCode: 404
+						});
 					}
 				};
 			}
 		};
-	}
+	};
+
 	if (config.global === true) {
 		this.mock['@global'] = true;
 	}
-}
+};

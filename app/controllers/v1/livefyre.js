@@ -18,7 +18,7 @@ exports.metadata = function(req, res, next) {
 	var articleDataStore = new ArticleDataStore(req.query.articleId);
 	articleDataStore.getArticleTags(req.query.url, function (err, tags) {
 		if (err) {
-			console.log('/v1/livefyre/metadata', '\nArticleId:', req.query.articleId, '\nError:', err);
+			consoleLogger.warn('/v1/livefyre/metadata', '\nArticleId:', req.query.articleId, '\nError:', err);
 
 			res.jsonp([]);
 			articleDataStore.destroy();
@@ -204,7 +204,7 @@ exports.init = function (req, res, next) {
 				}
 			}
 
-			console.log('/v1/livefyre/init', '\nConfig', config, '\nError', err);
+			consoleLogger.warn('/v1/livefyre/init', '\nConfig', config, '\nError', err);
 
 			res.sendStatus(503);
 			return;
@@ -235,7 +235,7 @@ exports.getLfBootstrap = function (req, res, next) {
 				return;
 			}
 
-			console.log('/v1/livefyre/get_lf_bootstrap', '\nArticleId', req.query.uuid, '\nError', err);
+			consoleLogger.warn('/v1/livefyre/get_lf_bootstrap', '\nArticleId', req.query.uuid, '\nError', err);
 
 			res.sendStatus(503);
 		}

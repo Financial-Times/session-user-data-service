@@ -31,7 +31,7 @@ describe('capi_v1', function() {
 		});
 
 		it('should return error if ftApiClient responds with error', function (done) {
-			capi_v1.getArticleData('invalid-uuid', function (err, data) {
+			capi_v1.getArticleData('capi-down', function (err, data) {
 				assert.ok(err, "Error is returned.");
 				assert.ok(data === undefined || data === null, "Data is not set.");
 

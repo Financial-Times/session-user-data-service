@@ -3,7 +3,6 @@
 const needle = require('needle');
 const _ = require('lodash');
 const env = require('../../env');
-const consoleLogger = require('../utils/consoleLogger');
 
 
 exports.getSessionData = function (sessionId, callback) {
@@ -17,28 +16,22 @@ exports.getSessionData = function (sessionId, callback) {
 		}
 	};
 
-	try {
-		var url = env.sessionApi.url;
-		url = url.replace(/\{sessionId\}/g, sessionId);
+	var url = env.sessionApi.url;
+	url = url.replace(/\{sessionId\}/g, sessionId);
 
-		needle.get(url, options, function (err, response) {
-			if (err) {
-				callback(err);
-				return;
-			}
+	needle.get(url, options, function (err, response) {
+		if (err) {
+			callback(err);
+			return;
+		}
 
-			if (response.statusCode !== 200) {
-				callback(null, null);
-				return;
-			}
+		if (response.statusCode !== 200) {
+			callback(null, null);
+			return;
+		}
 
-			var responseBody = _.pick(response.body, ['uuid', 'creationTime', 'rememberMe']);
+		var responseBody = _.pick(response.body, ['uuid', 'creationTime', 'rememberMe']);
 
-			callback(null, responseBody);
-		});
-	} catch (e) {
-		consoleLogger.error(sessionId, 'Session API validate', 'Error', e);
-
-		callback(e);
-	}
+		callback(null, responseBody);
+	});
 };

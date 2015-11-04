@@ -34,43 +34,37 @@ exports.getCollectionDetails = function (config, callback) {
 		return;
 	}
 
-	try {
-		var stream_type = config.stream_type || 'livecomments';
+	var stream_type = config.stream_type || 'livecomments';
 
-		legacySiteMapping.getSiteId(config.articleId, function (err, siteId) {
-			if (err) {
-				callback(err);
-				return;
+	legacySiteMapping.getSiteId(config.articleId, function (err, siteId) {
+		if (err) {
+			callback(err);
+			return;
+		}
+
+		if (env.livefyre.siteKeys[siteId]) {
+			var site = network.getSite(siteId, env.livefyre.siteKeys[siteId]);
+
+			var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);
+			if (config.tags) {
+				collection.data.tags = config.tags.join(',').replace(/ /g, '_');
 			}
 
-			if (env.livefyre.siteKeys[siteId]) {
-				var site = network.getSite(siteId, env.livefyre.siteKeys[siteId]);
+			var collectionMeta = collection.buildCollectionMetaToken();
+			var checksum = collection.buildChecksum();
 
-				var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);
-				if (config.tags) {
-					collection.data.tags = config.tags.join(',').replace(/ /g, '_');
-				}
-
-				var collectionMeta = collection.buildCollectionMetaToken();
-				var checksum = collection.buildChecksum();
-
-				if (collectionMeta) {
-					callback(null, {
-						siteId: siteId,
-						articleId: config.articleId,
-						collectionMeta: collectionMeta,
-						checksum: checksum
-					});
-				}
-			} else {
-				callback(new Error("SiteID is not configured properly."));
+			if (collectionMeta) {
+				callback(null, {
+					siteId: siteId,
+					articleId: config.articleId,
+					collectionMeta: collectionMeta,
+					checksum: checksum
+				});
 			}
-		});
-	} catch (e) {
-		consoleLogger.error(config.articleId, 'Livefyre getCollectionDetails', 'Error', e);
-
-		callback(e);
-	}
+		} else {
+			callback(new Error("SiteID is not configured properly."));
+		}
+	});
 };
 
 exports.getBootstrapUrl = function (articleId, callback) {

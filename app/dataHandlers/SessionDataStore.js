@@ -11,6 +11,7 @@ const sanitizer = require('sanitizer');
 const async = require('async');
 const EventEmitter = require('events');
 const env = require('../../env');
+const _ = require('lodash');
 
 var SessionDataStore = function (sessionId) {
 	var storedData = null;
@@ -84,85 +85,77 @@ var SessionDataStore = function (sessionId) {
 	}
 
 	function upsertStoredData (field, data, expireAt) {
-		try {
-			var setData = {};
-			setData[mongoSanitize(field)] = data;
+		var setData = {};
+		setData[mongoSanitize(field)] = data;
 
-			db.getConnection(env.mongo.uri, function (errConn, connection) {
-				if (errConn) {
+		db.getConnection(env.mongo.uri, function (errConn, connection) {
+			if (errConn) {
+				consoleLogger.log(sessionId, 'upsert failed');
+				consoleLogger.debug(errConn);
+				return;
+			}
+
+			consoleLogger.log(sessionId, 'upsert cache');
+			consoleLogger.debug(sessionId, 'field: ' + field, 'data:', data);
+
+			connection.collection('sessions').update({
+				_id: mongoSanitize(sessionId)
+			}, {
+				$set: setData
+			}, {
+				upsert: true
+			}, function (errUpsert, result) {
+				if (errUpsert) {
 					consoleLogger.log(sessionId, 'upsert failed');
-					consoleLogger.debug(errConn);
+					consoleLogger.debug(sessionId, errUpsert);
 					return;
 				}
 
-				consoleLogger.log(sessionId, 'upsert cache');
-				consoleLogger.debug(sessionId, 'field: ' + field, 'data:', data);
+				// reset storage cache
+				storedData = null;
 
-				connection.collection('sessions').update({
-					_id: mongoSanitize(sessionId)
-				}, {
-					$set: setData
-				}, {
-					upsert: true
-				}, function (errUpsert, result) {
-					if (errUpsert) {
-						consoleLogger.log(sessionId, 'upsert failed');
-						consoleLogger.debug(sessionId, errUpsert);
-						return;
-					}
+				if (!atLeastOneUpdateMade && result !== 1) {
+					atLeastOneUpdateMade = true;
 
-					if (!atLeastOneUpdateMade && result !== 1) {
-						atLeastOneUpdateMade = true;
+					// insert, should set an expire
+					consoleLogger.log(sessionId, 'upsert', 'new entry, set expiration to', new Date(expireAt));
 
-						// insert, should set an expire
-						consoleLogger.log(sessionId, 'upsert', 'new entry, set expiration to', new Date(expireAt));
-
-						connection.collection('sessions').update({
-							_id: mongoSanitize(sessionId)
-						}, {
-							$set: {
-								'expireAt': new Date(expireAt)
-							}
-						});
-					}
-				});
+					connection.collection('sessions').update({
+						_id: mongoSanitize(sessionId)
+					}, {
+						$set: {
+							'expireAt': new Date(expireAt)
+						}
+					});
+				}
 			});
-		} catch (e) {
-			console.error(sessionId, 'Exception, upsertStoredData', e);
-			return;
-		}
+		});
 	}
 
 	function deleteStoredData (callback) {
-		try {
-			db.getConnection(env.mongo.uri, function (errConn, connection) {
-				if (errConn) {
+		db.getConnection(env.mongo.uri, function (errConn, connection) {
+			if (errConn) {
+				consoleLogger.log(sessionId, 'delete failed');
+				callback(errConn);
+				return;
+			}
+
+			consoleLogger.log(sessionId, 'delete cache');
+
+			connection.collection('sessions').remove({
+				_id: mongoSanitize(sessionId)
+			}, function (errDelete) {
+				if (errDelete) {
 					consoleLogger.log(sessionId, 'delete failed');
-					callback(errConn);
+					consoleLogger.debug(sessionId, errDelete);
+					callback(errDelete);
 					return;
 				}
 
-				consoleLogger.log(sessionId, 'delete cache');
-
-				connection.collection('sessions').remove({
-					_id: mongoSanitize(sessionId)
-				}, function (errDelete) {
-					if (errDelete) {
-						consoleLogger.log(sessionId, 'delete failed');
-						consoleLogger.debug(sessionId, errDelete);
-						callback(errDelete);
-						return;
-					}
-
-					storedData = null;
-					callback();
-				});
+				storedData = null;
+				callback();
 			});
-		} catch (e) {
-			console.error(sessionId, 'Exception, deleteStoredData', e);
-			callback(e);
-			return;
-		}
+		});
 	}
 
 
@@ -181,6 +174,7 @@ var SessionDataStore = function (sessionId) {
 
 			if (sessionData) {
 				userDataStore = new UserDataStore(sessionData.uuid);
+
 				callback(null, userDataStore);
 			} else {
 				callback(null, null);
@@ -226,8 +220,8 @@ var SessionDataStore = function (sessionId) {
 		consoleLogger.log(sessionId, 'fetch session data');
 		userSessionApi.getSessionData(sessionId, function (err, data) {
 			if (err) {
-				consoleLogger.info(sessionId, 'session data invalid or error in service');
-				consoleLogger.debug(sessionId, err);
+				consoleLogger.warn(sessionId, 'Session service error');
+				consoleLogger.debug(sessionId, 'Error:', err);
 				callback(err);
 				return;
 			}
@@ -246,40 +240,40 @@ var SessionDataStore = function (sessionId) {
 			throw new Error("SessionDataStore.getSessionData: callback not provided");
 		}
 
-		try {
-			getStoredData(function (errCache, storedData) {
-				if (errCache) {
-					// fetch
-					consoleLogger.log(sessionId, 'getSessionData', 'error retrieving cache');
-					consoleLogger.debug(sessionId, errCache);
-					fetchSessionData(callback);
-					return;
-				}
-
-				if (storedData && storedData.sessionData) {
-					consoleLogger.log(sessionId, 'getSessionData', 'data loaded from the cache');
-					callback(null, storedData.sessionData);
-				} else {
-					// fetch and save
-					consoleLogger.log(sessionId, 'getSessionData', 'not found in cache');
-					fetchSessionData(function (errFetch, sessionData) {
-						if (errFetch) {
-							callback(errFetch);
-							return;
-						}
-
-						callback(null, sessionData);
-
-						if (sessionData) {
-							upsertSessionData(sessionData);
-						}
-					});
-				}
-			});
-		} catch (e) {
-			console.error(sessionId, 'Exception, getSessionData', e);
-			callback(e);
+		if (!sessionId) {
+			callback(new Error("Session ID is not provided."));
+			return;
 		}
+
+		getStoredData(function (errCache, storedData) {
+			if (errCache) {
+				// fetch
+				consoleLogger.log(sessionId, 'getSessionData', 'error retrieving cache');
+				consoleLogger.debug(sessionId, errCache);
+				fetchSessionData(callback);
+				return;
+			}
+
+			if (storedData && storedData.sessionData) {
+				consoleLogger.log(sessionId, 'getSessionData', 'data loaded from the cache');
+				callback(null, storedData.sessionData);
+			} else {
+				// fetch and save
+				consoleLogger.log(sessionId, 'getSessionData', 'not found in cache');
+				fetchSessionData(function (errFetch, sessionData) {
+					if (errFetch) {
+						callback(errFetch);
+						return;
+					}
+
+					callback(null, sessionData);
+
+					if (sessionData) {
+						upsertSessionData(sessionData);
+					}
+				});
+			}
+		});
 	};
 
 
@@ -367,48 +361,47 @@ var SessionDataStore = function (sessionId) {
 	};
 	var upsertAuthMetadata = function (authMetadata) {
 		consoleLogger.log(sessionId, 'upsert livefyre auth token');
-		authMetadata.pseudonym = crypto.encrypt(authMetadata.pseudonym);
-		upsertStoredData('authMetadata', authMetadata, authMetadata.expires);
+		upsertStoredData('authMetadata', _.extend({}, authMetadata, {pseudonym: crypto.encrypt(authMetadata.pseudonym)}), authMetadata.expires);
 	};
 	this.getAuthMetadata = function (callback) {
 		if (typeof callback !== 'function') {
 			throw new Error("SessionDataStore.getAuthMetadata: callback not provided");
 		}
 
-		try {
-			getStoredData(function (errCache, storedData) {
-				if (errCache) {
-					// fetch
-					consoleLogger.log(sessionId, 'getAuthMetadata', 'error retrieving cache');
-					consoleLogger.debug(sessionId, errCache);
-					generateAuthMetadata(callback);
-					return;
-				}
-
-				if (storedData && storedData.authMetadata) {
-					consoleLogger.log(sessionId, 'getAuthMetadata', 'data loaded from the cache');
-					callback(null, storedData.authMetadata);
-				} else {
-					// fetch and save
-					consoleLogger.log(sessionId, 'getAuthMetadata', 'not found in cache');
-					generateAuthMetadata(function (errFetch, authMetadata) {
-						if (errFetch) {
-							callback(errFetch);
-							return;
-						}
-
-						callback(null, authMetadata);
-
-						if (authMetadata) {
-							upsertAuthMetadata(authMetadata);
-						}
-					});
-				}
-			});
-		} catch (e) {
-			console.error(sessionId, 'Exception, getAuthMetadata', e);
-			callback(e);
+		if (!sessionId) {
+			callback(new Error("Session ID is not provided."));
+			return;
 		}
+
+		getStoredData(function (errCache, storedData) {
+			if (errCache) {
+				// fetch
+				consoleLogger.log(sessionId, 'getAuthMetadata', 'error retrieving cache');
+				consoleLogger.debug(sessionId, errCache);
+				generateAuthMetadata(callback);
+				return;
+			}
+
+			if (storedData && storedData.authMetadata) {
+				consoleLogger.log(sessionId, 'getAuthMetadata', 'data loaded from the cache');
+				callback(null, _.extend({}, storedData.authMetadata, {pseudonym: crypto.decrypt(storedData.authMetadata.pseudonym)}));
+			} else {
+				// fetch and save
+				consoleLogger.log(sessionId, 'getAuthMetadata', 'not found in cache');
+				generateAuthMetadata(function (errFetch, authMetadata) {
+					if (errFetch) {
+						callback(errFetch);
+						return;
+					}
+
+					callback(null, authMetadata);
+
+					if (authMetadata) {
+						upsertAuthMetadata(authMetadata);
+					}
+				});
+			}
+		});
 	};
 
 

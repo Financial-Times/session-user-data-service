@@ -1,6 +1,8 @@
 "use strict";
 
 module.exports = function (config) {
+	config = config || {};
+
 	this.mock = {
 		getNetwork: function (networkName, networkKey) {
 			return {

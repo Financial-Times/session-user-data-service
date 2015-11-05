@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "node_modules/.bin/mocha -w"
+    "test": "node_modules/.bin/mocha",
+    "test-watch": "node_modules/.bin/mocha -w"
   },
   "dependencies": {
     "async": "^1.4.2",

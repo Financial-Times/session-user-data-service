@@ -1,6 +1,6 @@
 sudo: false
 language: node_js
 node_js:
-  - "4.x.x"
+  - "4.1"
 script:
   - npm test

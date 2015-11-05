@@ -50,9 +50,8 @@ const eRightsToUuid = proxyquire('../../../app/services/eRightsToUuid.js', {
 describe('eRightsToUuid', function() {
 	describe('getUuid', function () {
 		it('should return error when the call to the service returns error', function (done) {
-			eRightsToUuid.getUuid('not-found-user-id', function (err, data) {
+			eRightsToUuid.getUuid('service-down', function (err, data) {
 				assert.ok(err, "Error is returned.");
-				assert.equal(err.statusCode, 404, "Status code 404 is set on the error.");
 				assert.ok(data === undefined || data === null, "Data is not set.");
 
 				done();
@@ -85,12 +84,21 @@ describe('eRightsToUuid', function() {
 				done();
 			});
 		});
+
+		it('should return null if the user does not exist', function (done) {
+			eRightsToUuid.getUuid('not-found', function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.ok(data === undefined || data === null, "Data is null.");
+
+				done();
+			});
+		});
 	});
 
 	describe('getERightsId', function () {
 		it('should return error when the call to the service returns error', function (done) {
-			eRightsToUuid.getERightsId('not-found-user-id', function (err, data) {
-				assert.ok(!err, "No error is returned.");
+			eRightsToUuid.getERightsId('service-down', function (err, data) {
+				assert.ok(err, "Error is returned.");
 				assert.ok(data === undefined || data === null, "Data is null.");
 
 				done();
@@ -115,7 +123,7 @@ describe('eRightsToUuid', function() {
 			});
 		});
 
-		it('should return error if the user does not have an eRights ID', function (done) {
+		it('should return null if the user does not have an eRights ID', function (done) {
 			eRightsToUuid.getERightsId(uuidWithoutErights, function (err, data) {
 				assert.ok(!err, "No error is returned.");
 				assert.ok(data === undefined || data === null, "Data is null.");

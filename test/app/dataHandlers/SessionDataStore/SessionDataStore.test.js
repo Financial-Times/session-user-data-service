@@ -220,6 +220,27 @@ describe('SessionDataStore', function() {
 			});
 		});
 
+		it('should return pseudonym false if the user does not have a pseudonym 2', function (done) {
+			let sessionDataStore = new SessionDataStore(testData.sessions.noPseudonym.id);
+
+			sessionDataStore.getAuthMetadata(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				assert.equal(data, false, "Pseudonym false returned");
+
+				setTimeout(function () {
+					var sessionCache = testData.mockInstances.mongodb.findInDb('sessions', {
+						_id: testData.sessions.noPseudonym.id
+					});
+
+					assert.equal(sessionCache.length, 1, "Session cache created.");
+					assert.equal(sessionCache[0].authMetadata, undefined, "Session cache does not contain authMetadata.");
+
+					done();
+				}, 10);
+			});
+		});
+
 		it('should return authMetadata correctly if the user has a pseudonym, and caches it', function (done) {
 			let sessionDataStore = new SessionDataStore(testData.sessions.withPseudonymNoEmailPreference.id);
 

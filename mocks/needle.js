@@ -105,6 +105,8 @@ module.exports = function (config) {
 									"user": usersByIds[id] || usersByErights[parseInt(id, 10)]
 								}
 							});
+						} else if (typeof match[1] === 'string' && match[1].indexOf('down') !== -1) {
+							callback(new Error("Service down"));
 						} else {
 							callback(null, {
 								statusCode: 404

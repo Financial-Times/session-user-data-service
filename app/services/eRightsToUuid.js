@@ -18,8 +18,11 @@ exports.getUuid = function (userId, callback) {
 	byErightsUrl = byErightsUrl.replace(/\{userId\}/g, userId);
 
 	needle.get(byErightsUrl, function (err, response) {
-		if (err || response.statusCode !== 200) {
-			callback(err || {statusCode: 404, message: "User not found."});
+		if (err) {
+			callback(err);
+			return;
+		} else if (response.statusCode !== 200 || !response.body) {
+			callback();
 			return;
 		}
 
@@ -28,7 +31,6 @@ exports.getUuid = function (userId, callback) {
 		} else {
 			callback({statusCode: 404, message: "User not found."});
 		}
-
 	});
 };
 
@@ -44,6 +46,7 @@ exports.getERightsId = function (userId, callback) {
 		needle.get(byUuidUrl, function (err, response) {
 			if (err) {
 				callback(err);
+				return;
 			} else if (response.statusCode !== 200 || !response.body) {
 				callback();
 				return;
@@ -62,6 +65,7 @@ exports.getERightsId = function (userId, callback) {
 		needle.get(byErightsUrl, function (err, response) {
 			if (err) {
 				callback(err);
+				return;
 			} else if (response.statusCode !== 200) {
 				callback();
 				return;

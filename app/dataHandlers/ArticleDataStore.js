@@ -16,13 +16,14 @@ var ArticleDataStore = function (articleId) {
 
 
 
+	let toBeRefreshed;
 	var fetchingStoreInProgress = false;
 	function getStoredData (callback) {
 		if (typeof callback !== 'function') {
 			throw new Error("ArticleDataStore.getStoredData: callback not provided");
 		}
 
-		if (storedData) {
+		if (storedData && !toBeRefreshed) {
 			consoleLogger.log(articleId, 'cached data retrieved from memory');
 			callback(null, storedData);
 			return;
@@ -66,6 +67,7 @@ var ArticleDataStore = function (articleId) {
 
 					if (data && data.length) {
 						storedData = data[0];
+						toBeRefreshed = false;
 
 						consoleLogger.log(articleId, 'cached data retrieved');
 						consoleLogger.debug(articleId, storedData);
@@ -107,7 +109,7 @@ var ArticleDataStore = function (articleId) {
 				}
 
 				// reset storage cache
-				storedData = null;
+				toBeRefreshed = true;
 			});
 		});
 	}

@@ -21,13 +21,14 @@ var SessionDataStore = function (sessionId) {
 	var storeEvents = new EventEmitter();
 
 
+	let toBeRefreshed;
 	var fetchingStoreInProgress = false;
 	function getStoredData (callback) {
 		if (typeof callback !== 'function') {
 			throw new Error("SessionDataStore.getStoredData: callback not provided");
 		}
 
-		if (storedData) {
+		if (storedData && !toBeRefreshed) {
 			consoleLogger.log(sessionId, 'cached data retrieved from memory');
 			callback(null, storedData);
 			return;
@@ -61,12 +62,15 @@ var SessionDataStore = function (sessionId) {
 					if (errDb) {
 						consoleLogger.log(sessionId, 'cache retrieval failed');
 						consoleLogger.debug(sessionId, errDb);
+
 						done(errDb);
 						return;
 					}
 
 					if (data && data.length) {
 						storedData = data[0];
+						toBeRefreshed = false;
+
 						if (storedData.authMetadata && storedData.authMetadata.pseudonym) {
 							storedData.authMetadata.pseudonym = crypto.decrypt(storedData.authMetadata.pseudonym);
 						}
@@ -112,7 +116,7 @@ var SessionDataStore = function (sessionId) {
 				}
 
 				// reset storage cache
-				storedData = null;
+				toBeRefreshed = true;
 
 				if (!atLeastOneUpdateMade && result !== 1) {
 					atLeastOneUpdateMade = true;

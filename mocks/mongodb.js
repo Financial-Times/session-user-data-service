@@ -13,8 +13,30 @@ module.exports = function (config) {
 			let foundIt = true;
 
 			keys.forEach((key) => {
-				if (item[key] !== query[key]) {
-					foundIt = false;
+				if (key === '$or') {
+					let foundOr = false;
+
+					query[key].forEach((subQuery) => {
+						let foundOrSub = true;
+
+						Object.keys(subQuery).forEach((subKey) => {
+							if (item[subKey] !== subQuery[subKey]) {
+								foundOrSub = false;
+							}
+						});
+
+						if (foundOrSub) {
+							foundOr = true;
+						}
+					});
+
+					if (!foundOr) {
+						foundIt = false;
+					}
+				} else {
+					if (item[key] !== query[key]) {
+						foundIt = false;
+					}
 				}
 			});
 

@@ -110,23 +110,26 @@ module.exports = function (config) {
 											if (found && found.length) {
 												found.forEach(function (item) {
 													if (data.$set && Object.keys(data.$set).length) {
-														var dataKey = Object.keys(data.$set)[0];
-														var keys = dataKey.split('.');
-														var lastKey = keys[keys.length - 1];
+														var dataKeys = Object.keys(data.$set);
 
-														var currentObj = item;
-														let key;
-														for (let i = 0; i < keys.length - 1; i++) {
-															key = keys[i];
+														dataKeys.forEach((dataKey) => {
+															var keys = dataKey.split('.');
+															var lastKey = keys[keys.length - 1];
 
-															if (!item[key]) {
-																item[key] = {};
+															var currentObj = item;
+															let key;
+															for (let i = 0; i < keys.length - 1; i++) {
+																key = keys[i];
+
+																if (!item[key]) {
+																	item[key] = {};
+																}
+
+																currentObj = item[key];
 															}
 
-															currentObj = item[key];
-														}
-
-														currentObj[lastKey] = data.$set[dataKey];
+															currentObj[lastKey] = data.$set[dataKey];
+														});
 													} else {
 														var id = found._id;
 														item = data;
@@ -141,23 +144,25 @@ module.exports = function (config) {
 												if (data.$set && Object.keys(data.$set).length) {
 													newData = {};
 
-													var dataKey = Object.keys(data.$set)[0];
-													var keys = dataKey.split('.');
-													var lastKey = keys[keys.length - 1];
+													var dataKeys = Object.keys(data.$set);
+													dataKeys.forEach((dataKey) => {
+														var keys = dataKey.split('.');
+														var lastKey = keys[keys.length - 1];
 
-													var currentObj = newData;
-													let key;
-													for (let i = 0; i < keys.length - 1; i++) {
-														key = keys[i];
+														var currentObj = newData;
+														let key;
+														for (let i = 0; i < keys.length - 1; i++) {
+															key = keys[i];
 
-														if (!newData[key]) {
-															newData[key] = {};
+															if (!newData[key]) {
+																newData[key] = {};
+															}
+
+															currentObj = newData[key];
 														}
 
-														currentObj = newData[key];
-													}
-
-													currentObj[lastKey] = data.$set[dataKey];
+														currentObj[lastKey] = data.$set[dataKey];
+													});
 												} else {
 													newData = data;
 												}

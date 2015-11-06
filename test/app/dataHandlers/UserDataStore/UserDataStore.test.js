@@ -155,51 +155,6 @@ describe('UserDataStore', function() {
 				}, 10);
 			});
 		});
-
-
-		it('should return eRightsID if the user has one, find by UUID, with only eRightsID saved', function (done) {
-			let userDataStore = new UserDataStore(testData.users.withOnlyERightsIdSaved.uuid);
-
-			userDataStore.getLivefyrePreferredUserId(function (err, data) {
-				assert.ok(!err, "Error is not set.");
-				assert.equal(data, testData.users.withOnlyERightsIdSaved.eRightsId, "eRights ID is correctly returned.");
-
-				setTimeout(function () {
-					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
-						_id: testData.users.withOnlyERightsIdSaved.uuid
-					});
-
-					assert.equal(userStorage.length, 1, "DB entry is still in place.");
-					assert.deepEqual(userStorage[0]._id, testData.users.withOnlyERightsIdSaved.uuid, "_id is set");
-					assert.deepEqual(userStorage[0].uuid, testData.users.withOnlyERightsIdSaved.uuid, "UUID is set");
-					assert.deepEqual(userStorage[0].lfUserId, testData.users.withOnlyERightsIdSaved.eRightsId, "lfUserId is set");
-
-					done();
-				}, 10);
-			});
-		});
-
-		it('should return eRightsID if the user has one, find by eRightsId, with only eRightsID saved', function (done) {
-			let userDataStore = new UserDataStore(testData.users.withOnlyERightsIdSaved2.eRightsId);
-
-			userDataStore.getLivefyrePreferredUserId(function (err, data) {
-				assert.ok(!err, "Error is not set.");
-				assert.equal(data, testData.users.withOnlyERightsIdSaved2.eRightsId, "eRights ID is correctly returned.");
-
-				setTimeout(function () {
-					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
-						_id: testData.users.withOnlyERightsIdSaved2.uuid
-					});
-
-					assert.equal(userStorage.length, 1, "DB entry is still in place.");
-					assert.deepEqual(userStorage[0]._id, testData.users.withOnlyERightsIdSaved2.uuid, "_id is set");
-					assert.deepEqual(userStorage[0].uuid, testData.users.withOnlyERightsIdSaved2.uuid, "UUID is set");
-					assert.deepEqual(userStorage[0].lfUserId, testData.users.withOnlyERightsIdSaved2.eRightsId, "lfUserId is set");
-
-					done();
-				}, 10);
-			});
-		});
 	});
 
 	describe('getPseudonym', function () {
@@ -233,46 +188,47 @@ describe('UserDataStore', function() {
 			});
 		});
 
-		it('should return `null` if the user does not have a pseudonym', function (done) {
-			let userDataStore = new UserDataStore(testData.users.withoutPseudonym.uuid);
+		it('should return `null` if the user does not have a pseudonym, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getPseudonymWithoutPseudonym.uuid);
 
 			userDataStore.getPseudonym(function (err, data) {
 				assert.ok(!err, "Error is not set.");
 				assert.equal(data, null, "Null set.");
 
-				setTimeout(function () {
-					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
-						_id: testData.users.withoutPseudonym.uuid
-					});
-
-					assert.equal(userStorage.length, 1, "DB entry created.");
-					assert.deepEqual(userStorage[0]._id, testData.users.withoutPseudonym.uuid, "_id is set");
-					assert.deepEqual(userStorage[0].uuid, testData.users.withoutPseudonym.uuid, "UUID is set");
-
-					done();
-				}, 10);
+				done();
 			});
 		});
 
-		it('should return the pseudonym if the user have one', function (done) {
-			let userDataStore = new UserDataStore(testData.users.withPseudonym.uuid);
+		it('should return `null` if the user does not have a pseudonym, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getPseudonymWithoutPseudonym2.eRightsId);
 
 			userDataStore.getPseudonym(function (err, data) {
-				console.log(data);
 				assert.ok(!err, "Error is not set.");
-				assert.equal(data, testData.users.withPseudonym.initialData.pseudonym, "Pseudonym returned in decrypted mode.");
+				assert.equal(data, null, "Null set.");
 
-				setTimeout(function () {
-					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
-						_id: testData.users.withPseudonym.uuid
-					});
+				done();
+			});
+		});
 
-					assert.equal(userStorage.length, 1, "DB entry created.");
-					assert.deepEqual(userStorage[0]._id, testData.users.withPseudonym.uuid, "_id is set");
-					assert.deepEqual(userStorage[0].uuid, testData.users.withPseudonym.uuid, "UUID is set");
+		it('should return the pseudonym if the user have one, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getPseudonymWithPseudonym.uuid);
 
-					done();
-				}, 10);
+			userDataStore.getPseudonym(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.equal(data, testData.users.getPseudonymWithPseudonym.initialData.pseudonym, "Pseudonym returned in decrypted mode.");
+
+				done();
+			});
+		});
+
+		it('should return the pseudonym if the user have one, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getPseudonymWithPseudonym2.eRightsId);
+
+			userDataStore.getPseudonym(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.equal(data, testData.users.getPseudonymWithPseudonym2.initialData.pseudonym, "Pseudonym returned in decrypted mode.");
+
+				done();
 			});
 		});
 	});
@@ -289,9 +245,8 @@ describe('UserDataStore', function() {
 		it('should return error if no user ID is provided', function (done) {
 			let userDataStore = new UserDataStore();
 
-			userDataStore.setPseudonym('pseudonym', function (err, data) {
+			userDataStore.setPseudonym('pseudonym', function (err) {
 				assert.ok(err, "Error is set.");
-				assert.ok(!data, "No data is set.");
 
 				done();
 			});
@@ -300,11 +255,116 @@ describe('UserDataStore', function() {
 		it('should return error if the user does not exist', function (done) {
 			let userDataStore = new UserDataStore('notfound');
 
-			userDataStore.setPseudonym('pseudonym', function (err, data) {
+			userDataStore.setPseudonym('pseudonym', function (err) {
 				assert.ok(err, "Error is set.");
-				assert.ok(!data, "No data is set.");
-
 				done();
+			});
+		});
+
+		it('should return error if the pseudonym is blank', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setPseudonymWithoutPseudonym.uuid);
+
+			userDataStore.setPseudonym('', function (err) {
+				assert.ok(err, "Error is set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setPseudonymWithoutPseudonym.uuid
+					});
+
+					assert.equal(userStorage.length, 0, "DB entry not created.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should set the pseudonym if the user does not have it yet, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setPseudonymWithoutPseudonym2.uuid);
+
+			let pseudonym = 'testPs';
+			userDataStore.setPseudonym(pseudonym, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setPseudonymWithoutPseudonym2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setPseudonymWithoutPseudonym2.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setPseudonymWithoutPseudonym2.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].pseudonym, crypto.encrypt(pseudonym), "Pseudonym is encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should set the pseudonym if the user does not have it yet, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setPseudonymWithoutPseudonym3.eRightsId);
+
+			let pseudonym = 'testPs';
+			userDataStore.setPseudonym(pseudonym, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setPseudonymWithoutPseudonym3.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setPseudonymWithoutPseudonym3.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setPseudonymWithoutPseudonym3.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].pseudonym, crypto.encrypt(pseudonym), "Pseudonym is encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should update the pseudonym if the user has one, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setPseudonymWithPseudonym.uuid);
+
+			let pseudonym = 'testPs';
+			userDataStore.setPseudonym(pseudonym, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setPseudonymWithPseudonym.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setPseudonymWithPseudonym.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setPseudonymWithPseudonym.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].pseudonym, crypto.encrypt(pseudonym), "Pseudonym is encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should update the pseudonym if the user has one, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setPseudonymWithPseudonym2.eRightsId);
+
+			let pseudonym = 'testPs';
+			userDataStore.setPseudonym(pseudonym, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setPseudonymWithPseudonym2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setPseudonymWithPseudonym2.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setPseudonymWithPseudonym2.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].pseudonym, crypto.encrypt(pseudonym), "Pseudonym is encrypted and saved.");
+
+					done();
+				}, 10);
 			});
 		});
 	});
@@ -339,6 +399,93 @@ describe('UserDataStore', function() {
 				done();
 			});
 		});
+
+
+
+		it('should empty the pseudonym to null if the user does not have it yet, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.emptyPseudonymWithoutPseudonym.uuid);
+
+			userDataStore.emptyPseudonym(function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.emptyPseudonymWithoutPseudonym.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.emptyPseudonymWithoutPseudonym.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.emptyPseudonymWithoutPseudonym.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].pseudonym, null, "Pseudonym is encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should empty the pseudonym to null if the user does not have it yet, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.emptyPseudonymWithoutPseudonym2.eRightsId);
+
+			userDataStore.emptyPseudonym(function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.emptyPseudonymWithoutPseudonym2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.emptyPseudonymWithoutPseudonym2.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.emptyPseudonymWithoutPseudonym2.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].pseudonym, null, "Pseudonym is encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should empty the pseudonym if the user has one, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.emptyPseudonymWithPseudonym.uuid);
+
+			userDataStore.emptyPseudonym(function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.emptyPseudonymWithPseudonym.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0]._id, testData.users.emptyPseudonymWithPseudonym.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.emptyPseudonymWithPseudonym.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].pseudonym, null, "Pseudonym is encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should empty the pseudonym if the user has one, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.emptyPseudonymWithPseudonym2.eRightsId);
+
+			userDataStore.emptyPseudonym(function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.emptyPseudonymWithPseudonym2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0]._id, testData.users.emptyPseudonymWithPseudonym2.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.emptyPseudonymWithPseudonym2.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].pseudonym, null, "Pseudonym is encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
 	});
 
 	describe('getEmailPreferences', function () {
@@ -367,6 +514,73 @@ describe('UserDataStore', function() {
 			userDataStore.getEmailPreferences(function (err, data) {
 				assert.ok(err, "Error is set.");
 				assert.ok(!data, "No data is set.");
+
+				done();
+			});
+		});
+
+
+		it('should return `null` if the user does not have a pseudonym, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getEmailPrefWithoutPref.uuid);
+
+			userDataStore.getEmailPreferences(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.equal(data, null, "Null set.");
+
+				done();
+			});
+		});
+
+		it('should return `null` if the user does not have a pseudonym, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getEmailPrefWithoutPref2.eRightsId);
+
+			userDataStore.getEmailPreferences(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.equal(data, null, "Null set.");
+
+				done();
+			});
+		});
+
+		it('should return the email preferences if the user have them set, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getEmailPrefWithPartialPref.uuid);
+
+			userDataStore.getEmailPreferences(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.equal(data, testData.users.getEmailPrefWithPartialPref.initialData.emailPreferences, "Saved email preferences returned.");
+
+				done();
+			});
+		});
+
+		it('should return the email preferences if the user have them set, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getPseudonymWithPseudonym2.eRightsId);
+
+			userDataStore.getEmailPreferences(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.equal(data, testData.users.getPseudonymWithPseudonym2.initialData.emailPreferences, "Saved email preferences returned.");
+
+				done();
+			});
+		});
+
+		it('should return the email preferences if the user have them set, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getEmailPrefWithPref.uuid);
+
+			userDataStore.getEmailPreferences(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.equal(data, testData.users.getEmailPrefWithPref.initialData.emailPreferences, "Saved email preferences returned.");
+
+				done();
+			});
+		});
+
+		it('should return the email preferences if the user have them set, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getEmailPrefWithPref2.eRightsId);
+
+			userDataStore.getEmailPreferences(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.equal(data, testData.users.getEmailPrefWithPref2.initialData.emailPreferences, "Saved email preferences returned.");
 
 				done();
 			});
@@ -403,6 +617,264 @@ describe('UserDataStore', function() {
 				done();
 			});
 		});
+
+
+
+		it('should return error if the `comments` field has invalid value', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefInv.uuid);
+
+			let comments = 'daily';
+
+			userDataStore.setEmailPreferences({
+				comments: comments
+			}, function (err) {
+				assert.ok(err, "Error is set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefInv.uuid
+					});
+
+					assert.equal(userStorage.emailPreferences, undefined, "No email preference is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should return error if the `likes` field has invalid value', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefInv.uuid);
+
+			let likes = 'now';
+
+			userDataStore.setEmailPreferences({
+				likes: likes
+			}, function (err) {
+				assert.ok(err, "Error is set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefInv.uuid
+					});
+
+					assert.equal(userStorage.emailPreferences, undefined, "No email preference is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should return error if the `replies` field has invalid value', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefInv.uuid);
+
+			let replies = 'instantly';
+
+			userDataStore.setEmailPreferences({
+				replies: replies
+			}, function (err) {
+				assert.ok(err, "Error is set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefInv.uuid
+					});
+
+					assert.equal(userStorage.emailPreferences, undefined, "No email preference is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should return error if the `autoFollow` field has invalid value', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefInv.uuid);
+
+			let autoFollow = 'off';
+
+			userDataStore.setEmailPreferences({
+				autoFollow: autoFollow
+			}, function (err) {
+				assert.ok(err, "Error is set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefInv.uuid
+					});
+
+					assert.equal(userStorage.emailPreferences, undefined, "No email preference is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should set the email preferences, no pref saved, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefNoPrefSaved.uuid);
+
+			let emailPreferences = {
+				comments: 'never',
+				likes: 'hourly',
+				replies: 'immediately',
+				autoFollow: false
+			};
+			userDataStore.setEmailPreferences(emailPreferences, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefNoPrefSaved.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setEmailPrefNoPrefSaved.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setEmailPrefNoPrefSaved.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].emailPreferences, emailPreferences, "Email preferences is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should set the email preferences, no pref saved, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefNoPrefSaved2.eRightsId);
+
+			let emailPreferences = {
+				comments: 'never',
+				likes: 'hourly',
+				replies: 'immediately',
+				autoFollow: false
+			};
+			userDataStore.setEmailPreferences(emailPreferences, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefNoPrefSaved2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setEmailPrefNoPrefSaved2.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setEmailPrefNoPrefSaved2.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].emailPreferences, emailPreferences, "Email preferences is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should update the email preferences by merging it (maintaining the ones that are not updated), pref partially saved, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefPartiallySaved.uuid);
+
+			let emailPreferences = {
+				likes: 'hourly',
+				replies: 'immediately'
+			};
+			userDataStore.setEmailPreferences(emailPreferences, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefPartiallySaved.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setEmailPrefPartiallySaved.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setEmailPrefPartiallySaved.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].emailPreferences,
+							_.extend({}, testData.users.setEmailPrefPartiallySaved.initialData.emailPreferences, emailPreferences),
+							"Email preferences is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should update the email preferences by merging it (maintaining the ones that are not updated), pref partially saved, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefPartiallySaved2.uuid);
+
+			let emailPreferences = {
+				likes: 'hourly',
+				replies: 'immediately'
+			};
+			userDataStore.setEmailPreferences(emailPreferences, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefPartiallySaved2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setEmailPrefPartiallySaved2.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setEmailPrefPartiallySaved2.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].emailPreferences,
+							_.extend({}, testData.users.setEmailPrefPartiallySaved2.initialData.emailPreferences, emailPreferences),
+							"Email preferences is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+
+		it('should update the email preferences by merging it (maintaining the ones that are not updated), pref fully saved, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefFullySaved.uuid);
+
+			let emailPreferences = {
+				replies: 'hourly',
+				autoFollow: true
+			};
+			userDataStore.setEmailPreferences(emailPreferences, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefFullySaved.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setEmailPrefFullySaved.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setEmailPrefFullySaved.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].emailPreferences,
+							_.extend({}, testData.users.setEmailPrefFullySaved.initialData.emailPreferences, emailPreferences),
+							"Email preferences is saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should update the email preferences by merging it (maintaining the ones that are not updated), pref fully saved, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.setEmailPrefFullySaved2.uuid);
+
+			let emailPreferences = {
+				replies: 'hourly',
+				autoFollow: true
+			};
+			userDataStore.setEmailPreferences(emailPreferences, function (err) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.setEmailPrefFullySaved2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.setEmailPrefFullySaved2.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.setEmailPrefFullySaved2.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].emailPreferences,
+							_.extend({}, testData.users.setEmailPrefFullySaved2.initialData.emailPreferences, emailPreferences),
+							"Email preferences is saved.");
+
+					done();
+				}, 10);
+			});
+		});
 	});
 
 	describe('getUserData', function () {
@@ -429,6 +901,38 @@ describe('UserDataStore', function() {
 			let userDataStore = new UserDataStore('notfound');
 
 			userDataStore.getUserData(function (err, data) {
+				assert.ok(err, "Error is set.");
+				assert.ok(!data, "No data is set.");
+
+				done();
+			});
+		});
+	});
+
+	describe('updateBasicUserData', function () {
+		it('should throw error if no callback is provided', function () {
+			let userDataStore = new UserDataStore(testData.users.withERightsId);
+
+			assert.throws(function () {
+				userDataStore.updateBasicUserData({});
+			}, Error);
+		});
+
+		it('should return error if no user ID is provided', function (done) {
+			let userDataStore = new UserDataStore();
+
+			userDataStore.updateBasicUserData({}, function (err, data) {
+				assert.ok(err, "Error is set.");
+				assert.ok(!data, "No data is set.");
+
+				done();
+			});
+		});
+
+		it('should return error if the user does not exist', function (done) {
+			let userDataStore = new UserDataStore('notfound');
+
+			userDataStore.updateBasicUserData({}, function (err, data) {
 				assert.ok(err, "Error is set.");
 				assert.ok(!data, "No data is set.");
 

@@ -100,16 +100,13 @@ var UserDataStore = function (userId) {
 
 				getUuidOfUserId(function (errUuid, userUuid) {
 					if (errUuid) {
-						callback(errUuid);
+						done(errUuid);
 						return;
 					}
 
 					if (userUuid) {
 						connection.collection('users').find({
-							$or: [
-								{_id: mongoSanitize(userUuid)},
-								{lfUserId: mongoSanitize(userUuid)}
-							]
+							_id: mongoSanitize(userUuid)
 						}).toArray(function (errDb, data) {
 							if (errDb) {
 								consoleLogger.log(userId, 'cache retrieval failed');
@@ -123,7 +120,9 @@ var UserDataStore = function (userId) {
 								storedData = data[0];
 
 								if (!storedData.uuid) {
-									upsertStoredData('uuid', userUuid);
+									upsertStoredData({
+										uuid: userUuid
+									});
 								}
 
 								consoleLogger.log(userId, 'cached data retrieved');
@@ -131,57 +130,13 @@ var UserDataStore = function (userId) {
 
 								done(null, storedData);
 							} else {
-								getERightsIdOfUserId(function (errERights, userERightsId) {
-									if (errERights) {
-										callback(errERights);
-										return;
-									}
+								consoleLogger.log(userId, 'no cached data found');
 
-									if (userERightsId) {
-										// find by lfUserId
-										connection.collection('users').find({
-											lfUserId: mongoSanitize(userERightsId)
-										}).toArray(function (errDbLfId, dataByLfId) {
-											if (errDbLfId) {
-												consoleLogger.log(userId, 'cache retrieval failed');
-												consoleLogger.debug(userId, errDbLfId);
-
-												done(errDbLfId);
-												return;
-											}
-
-											if (dataByLfId && dataByLfId.length) {
-												toBeRefreshed = false;
-												storedData = dataByLfId[0];
-
-												upsertStoredData('_id', userUuid, {
-													lfUserId: userERightsId
-												});
-
-												if (!storedData.uuid) {
-													upsertStoredData('uuid', userUuid, {
-														lfUserId: userERightsId
-													});
-												}
-
-												done(null, storedData);
-											} else {
-												consoleLogger.log(userId, 'no cached data found, create an entry with the UUID.');
-
-												upsertStoredData('uuid', userUuid);
-												done(null, {
-													uuid: userUuid
-												});
-											}
-										});
-									} else {
-										callback(null, null);
-									}
-								});
+								done();
 							}
 						});
 					} else {
-						callback(new Error("User not found"));
+						done(new Error("User not found"));
 						return;
 					}
 				});
@@ -190,17 +145,28 @@ var UserDataStore = function (userId) {
 	};
 
 
-	let atLeastOneUpdateMade = false;
-	const upsertStoredData = function (field, data, customQuery, callback) {
-		if (typeof customQuery === 'function' && !callback) {
-			callback = customQuery;
-			customQuery = false;
-		}
 
+
+	const sanitizeData = function (data) {
+		if (data && typeof data === 'object' && Object.keys(data).length) {
+			let keys = Object.keys(data);
+			let newData = {};
+
+			keys.forEach((key) => {
+				newData[mongoSanitize(key)] = sanitizeData(data[key]);
+			});
+
+			return newData;
+		} else {
+			return data;
+		}
+	};
+
+	let atLeastOneUpdateMade = false;
+	const upsertStoredData = function (data, callback) {
 		callback = callback || function () {};
 
-		var setData = {};
-		setData[mongoSanitize(field)] = data;
+		var sanitizedData = sanitizeData(data);
 
 		db.getConnection(env.mongo.uri, function (errConn, connection) {
 			if (errConn) {
@@ -210,76 +176,73 @@ var UserDataStore = function (userId) {
 			}
 
 			consoleLogger.log(userId, 'upsert cache');
-			consoleLogger.debug(userId, 'field: ' + field, 'data:', data);
+			consoleLogger.debug(userId, 'data:', sanitizedData);
 
 
-			const upsert = function (query) {
-				connection.collection('users').update(query, {
-					$set: setData
-				}, {
-					upsert: true
-				}, function (err, result) {
-					if (err) {
-						if (typeof callback === 'function') {
-							callback(err);
-						}
-						return;
-					}
-
-					// reset storage cache
-					toBeRefreshed = true;
-
-					if (!atLeastOneUpdateMade && result !== 1) {
-						atLeastOneUpdateMade = true;
-
-						// insert, should set an expire
-						consoleLogger.log(userId, 'upsert', 'new entry, set uuid if it was not set');
-
-						if (!setData.hasOwnProperty('uuid')) {
-							getUuidOfUserId(function (errUuid, userUuid) {
-								if (errUuid) {
-									callback(errUuid);
-									return;
-								}
-
-								if (userUuid) {
-									connection.collection('users').update(query, {
-										$set: {
-											'uuid': userUuid
-										}
-									});
-
-									callback();
-								} else {
-									callback(new Error("User not found"));
-									return;
-								}
-							});
-						}
-					}
-				});
-			};
-
-
-			if (customQuery) {
-				upsert(customQuery);
-			} else {
-				getUuidOfUserId(function (errUuid, userUuid) {
+			getUuidOfUserId(function (errUuid, userUuid) {
 					if (errUuid) {
 						callback(errUuid);
 						return;
 					}
 
 					if (userUuid) {
-						upsert({
+						connection.collection('users').update({
 							_id: mongoSanitize(userUuid)
+						}, {
+							$set: sanitizedData
+						}, {
+							upsert: true
+						}, function (err, result) {
+							if (err) {
+								if (typeof callback === 'function') {
+									callback(err);
+								}
+								return;
+							}
+
+							// reset storage cache
+							toBeRefreshed = true;
+
+							if (!atLeastOneUpdateMade && result !== 1) {
+								atLeastOneUpdateMade = true;
+
+								// insert, should set an expire
+								consoleLogger.log(userId, 'upsert', 'new entry, set uuid if it was not set');
+
+								if (!sanitizedData.hasOwnProperty('uuid')) {
+									getUuidOfUserId(function (errUuid, userUuid) {
+										if (errUuid) {
+											callback(errUuid);
+											return;
+										}
+
+										if (userUuid) {
+											connection.collection('users').update({
+												_id: mongoSanitize(userUuid)
+											}, {
+												$set: {
+													uuid: userUuid
+												}
+											});
+
+											callback();
+										} else {
+											callback(new Error("User not found"));
+											return;
+										}
+									});
+								} else {
+									callback();
+								}
+							} else {
+								callback();
+							}
 						});
 					} else {
 						callback(new Error("User not found"));
 						return;
 					}
 				});
-			}
 		});
 	};
 
@@ -313,7 +276,9 @@ var UserDataStore = function (userId) {
 		});
 	};
 	const upsertLivefyrePreferredUserId = function (lfUserId) {
-		upsertStoredData('lfUserId', lfUserId);
+		upsertStoredData({
+			lfUserId: lfUserId
+		});
 	};
 	this.getLivefyrePreferredUserId = function (callback) {
 		if (typeof callback !== 'function') {
@@ -397,8 +362,9 @@ var UserDataStore = function (userId) {
 			return;
 		}
 
-		if (!pseudonym) {
+		if (!pseudonym || typeof pseudonym !== 'string') {
 			callback(new Error("Pseudonym is blank."));
+			return;
 		}
 
 		getStoredData(function (errCache, storedData) {
@@ -410,7 +376,9 @@ var UserDataStore = function (userId) {
 				return;
 			}
 
-			upsertStoredData('pseudonym', crypto.encrypt(pseudonym), function (errUpsert) {
+			upsertStoredData({
+				pseudonym: crypto.encrypt(pseudonym)
+			}, function (errUpsert) {
 				if (errUpsert) {
 					callback(errUpsert);
 					return;
@@ -441,7 +409,9 @@ var UserDataStore = function (userId) {
 				return;
 			}
 
-			upsertStoredData('pseudonym', null, function (errUpsert) {
+			upsertStoredData({
+				pseudonym: null
+			}, function (errUpsert) {
 				if (errUpsert) {
 					callback(errUpsert);
 					return;
@@ -494,6 +464,11 @@ var UserDataStore = function (userId) {
 			return;
 		}
 
+		if (!emailPreferences || typeof emailPreferences !== 'object') {
+			callback(new Error("emailPreferences not provided."));
+			return;
+		}
+
 		var validValues = ['never', 'immediately', 'hourly'];
 
 		if (emailPreferences.comments) {
@@ -533,6 +508,7 @@ var UserDataStore = function (userId) {
 				return;
 			}
 		} else {
+			console.log('delete autoFollow');
 			delete emailPreferences.autoFollow;
 		}
 
@@ -546,35 +522,21 @@ var UserDataStore = function (userId) {
 				return;
 			}
 
-
-			var upserts = {};
-			var getUpsertFunction = function (key) {
-				return function (callback) {
-					upsertStoredData('emailPreferences.' + key, emailPreferences[key], function (errUpsert) {
-						if (errUpsert) {
-							callback(errUpsert);
-							return;
-						}
-
-						callback();
-					});
-				};
-			};
+			let upsertData = {};
 			for (let key in emailPreferences) {
 				if (emailPreferences.hasOwnProperty(key)) {
-					upserts[key] = getUpsertFunction(key);
+					upsertData['emailPreferences.' + key] = emailPreferences[key];
 				}
 			}
 
-			async.parallel(upserts, function (errUpserts, results) {
-				if (errUpserts) {
-					callback(errUpserts);
+			upsertStoredData(upsertData, function (errUpsert) {
+				if (errUpsert) {
+					callback(errUpsert);
 					return;
 				}
 
 				callback();
 			});
-
 		});
 	};
 
@@ -709,56 +671,41 @@ var UserDataStore = function (userId) {
 			throw new Error("UserDataStore.updateBasicUserData: callback not provided");
 		}
 
-		async.parallel({
-			email: function (callbackAsync) {
-				if (userData.hasOwnProperty('email')) {
-					upsertStoredData('email', crypto.encrypt(userData.email), function (err) {
-						if (err) {
-							callbackAsync(err);
-							return;
-						}
+		if (!userId) {
+			callback(new Error("User ID is not provided."));
+			return;
+		}
 
-						callbackAsync();
-					});
-				} else {
-					callbackAsync();
-				}
-			},
-			firstName: function (callbackAsync) {
-				if (userData.hasOwnProperty('firstName')) {
-					upsertStoredData('firstName', crypto.encrypt(userData.firstName), function (err) {
-						if (err) {
-							callbackAsync(err);
-							return;
-						}
-
-						callbackAsync();
-					});
-				} else {
-					callbackAsync();
-				}
-			},
-			lastName: function (callbackAsync) {
-				if (userData.hasOwnProperty('lastName')) {
-					upsertStoredData('lastName', crypto.encrypt(userData.lastName), function (err) {
-						if (err) {
-							callbackAsync(err);
-							return;
-						}
-
-						callbackAsync();
-					});
-				} else {
-					callbackAsync();
-				}
-			}
-		}, function (errUpsert) {
-			if (errUpsert) {
-				callback(errUpsert);
+		getStoredData(function (errCache, storedData) {
+			if (errCache) {
+				// fetch
+				consoleLogger.log(userId, 'getEmailPreferences', 'error retrieving email preferences');
+				consoleLogger.debug(userId, errCache);
+				callback(errCache);
 				return;
 			}
 
-			callback();
+			let upsertData = {};
+			if (userData.hasOwnProperty('email')) {
+				upsertData.email = crypto.encrypt(userData.email);
+			}
+
+			if (userData.hasOwnProperty('firstName')) {
+				upsertData.firstName = crypto.encrypt(userData.firstName);
+			}
+
+			if (userData.hasOwnProperty('lastName')) {
+				upsertData.lastName = crypto.encrypt(userData.lastName);
+			}
+
+			upsertStoredData(upsertData, function (err) {
+				if (err) {
+					callback(err);
+					return;
+				}
+
+				callback();
+			});
 		});
 	};
 };

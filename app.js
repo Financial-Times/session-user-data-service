@@ -115,7 +115,7 @@ app.use(function(err, req, res, next) {
 
 
 process.on('uncaughtException', function(err) {
-	consoleLogger.error('Uncaught exception: ' + err);
+	consoleLogger.error('Uncaught exception: ', err);
 });
 
 

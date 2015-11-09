@@ -388,7 +388,7 @@ var SessionDataStore = function (sessionId) {
 
 			if (storedData && storedData.authMetadata) {
 				consoleLogger.log(sessionId, 'getAuthMetadata', 'data loaded from the cache');
-				callback(null, _.extend({}, storedData.authMetadata, {pseudonym: crypto.decrypt(storedData.authMetadata.pseudonym)}));
+				callback(null, storedData.authMetadata);
 			} else {
 				// fetch and save
 				consoleLogger.log(sessionId, 'getAuthMetadata', 'not found in cache');

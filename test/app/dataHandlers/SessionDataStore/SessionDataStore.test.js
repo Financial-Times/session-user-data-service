@@ -182,9 +182,7 @@ describe('SessionDataStore', function() {
 
 			sessionDataStore.getAuthMetadata(function (err, data) {
 				assert.ok(!err, "Error is not set.");
-				assert.deepEqual(data,
-					_.extend({}, testData.sessions.cached.initialCache.authMetadata, {pseudonym: crypto.decrypt(testData.sessions.cached.initialCache.authMetadata.pseudonym)}),
-				"Auth metadata correctly read from cache and the pseudonym is decrypted.");
+				assert.deepEqual(data, testData.sessions.cached.initialCache.authMetadata, "Auth metadata correctly read from cache and the pseudonym is decrypted.");
 
 				setTimeout(function () {
 					var sessionCache = testData.mockInstances.mongodb.findInDb('sessions', {
@@ -247,7 +245,7 @@ describe('SessionDataStore', function() {
 			sessionDataStore.getAuthMetadata(function (err, data) {
 				assert.ok(!err, "Error is not returned.");
 				assert.deepEqual(Object.keys(data), ['token', 'expires', 'pseudonym', 'emailPreferences'], "Response has the expected fields.");
-				assert.equal(data.emailPreferences, null, "No email preference.");
+				assert.deepEqual(data.emailPreferences, null, "No email preference.");
 
 				assert.deepEqual(Object.keys(data.token), ['userId', 'displayName', 'expires'], "Token has the expected fields.");
 				assert.equal(data.token.userId, testData.users[testData.sessions.withPseudonymNoEmailPreference.uuid].deprecatedIds.erightsId, "ErightsID is used if available.");
@@ -275,7 +273,7 @@ describe('SessionDataStore', function() {
 			sessionDataStore.getAuthMetadata(function (err, data) {
 				assert.ok(!err, "Error is not returned.");
 				assert.deepEqual(Object.keys(data), ['token', 'expires', 'pseudonym', 'emailPreferences'], "Response has the expected fields.");
-				assert.equal(data.emailPreferences, testData.users[testData.sessions.withCompleteUserInfo.uuid].userData.emailPreferences, "Email preference set.");
+				assert.deepEqual(data.emailPreferences, testData.users[testData.sessions.withCompleteUserInfo.uuid].userData.emailPreferences, "Email preference set.");
 
 				assert.deepEqual(Object.keys(data.token), ['userId', 'displayName', 'expires'], "Token has the expected fields.");
 				assert.equal(data.token.userId, testData.users[testData.sessions.withCompleteUserInfo.uuid].deprecatedIds.erightsId, "ErightsID is used if available.");
@@ -303,7 +301,7 @@ describe('SessionDataStore', function() {
 			sessionDataStore.getAuthMetadata(function (err, data) {
 				assert.ok(!err, "Error is not returned.");
 				assert.deepEqual(Object.keys(data), ['token', 'expires', 'pseudonym', 'emailPreferences'], "Response has the expected fields.");
-				assert.equal(data.emailPreferences, null, "No email preference.");
+				assert.deepEqual(data.emailPreferences, null, "No email preference.");
 
 				assert.deepEqual(Object.keys(data.token), ['userId', 'displayName', 'expires'], "Token has the expected fields.");
 				assert.equal(data.token.userId, testData.users[testData.sessions.withoutERightsId.uuid].id, "UUID is used if eRights ID is not available.");

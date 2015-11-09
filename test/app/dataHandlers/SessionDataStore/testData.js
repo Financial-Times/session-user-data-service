@@ -202,11 +202,22 @@ const needleMock = new NeedleMock({
 	global: true
 });
 
+
+var cachedSession1 = _.cloneDeep(sessions.cached.initialCache);
+if (cachedSession1.authMetadata && cachedSession1.authMetadata.pseudonym) {
+	cachedSession1.authMetadata.pseudonym = crypto.encrypt(sessions.cached.initialCache.authMetadata.pseudonym);
+}
+
+var cachedSession2 = _.cloneDeep(sessions.cached2.initialCache);
+if (cachedSession2.authMetadata && cachedSession2.authMetadata.pseudonym) {
+	cachedSession2.authMetadata.pseudonym = crypto.encrypt(sessions.cached2.initialCache.authMetadata.pseudonym);
+}
+
 const mongodbMock = new MongodbMock({
 	dbMock: {
 		sessions: [
-			_.extend({}, sessions.cached.initialCache, {pseudonym: crypto.encrypt(sessions.cached.initialCache.authMetadata.pseudonym)}),
-			_.extend({}, sessions.cached2.initialCache, {pseudonym: crypto.encrypt(sessions.cached2.initialCache.authMetadata.pseudonym)}),
+			cachedSession1,
+			cachedSession2
 		],
 		users: usersMongoContent
 	},

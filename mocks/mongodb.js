@@ -1,5 +1,6 @@
 "use strict";
 
+const _ = require('lodash');
 
 module.exports = function (config) {
 	config = config || {};
@@ -86,7 +87,7 @@ module.exports = function (config) {
 										return {
 											toArray(callbackFind) {
 												if (query) {
-													callbackFind(null, findInDb(collectionName, query));
+													callbackFind(null, _.cloneDeep(findInDb(collectionName, query)));
 												} else {
 													callbackFind(new Error("Invalid query."));
 													return;

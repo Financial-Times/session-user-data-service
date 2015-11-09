@@ -547,7 +547,7 @@ describe('UserDataStore', function() {
 
 			userDataStore.getEmailPreferences(function (err, data) {
 				assert.ok(!err, "Error is not set.");
-				assert.equal(data, testData.users.getEmailPrefWithPartialPref.initialData.emailPreferences, "Saved email preferences returned.");
+				assert.deepEqual(data, testData.users.getEmailPrefWithPartialPref.initialData.emailPreferences, "Saved email preferences returned.");
 
 				done();
 			});
@@ -558,7 +558,7 @@ describe('UserDataStore', function() {
 
 			userDataStore.getEmailPreferences(function (err, data) {
 				assert.ok(!err, "Error is not set.");
-				assert.equal(data, testData.users.getPseudonymWithPseudonym2.initialData.emailPreferences, "Saved email preferences returned.");
+				assert.deepEqual(data, testData.users.getPseudonymWithPseudonym2.initialData.emailPreferences, "Saved email preferences returned.");
 
 				done();
 			});
@@ -569,7 +569,7 @@ describe('UserDataStore', function() {
 
 			userDataStore.getEmailPreferences(function (err, data) {
 				assert.ok(!err, "Error is not set.");
-				assert.equal(data, testData.users.getEmailPrefWithPref.initialData.emailPreferences, "Saved email preferences returned.");
+				assert.deepEqual(data, testData.users.getEmailPrefWithPref.initialData.emailPreferences, "Saved email preferences returned.");
 
 				done();
 			});
@@ -580,7 +580,7 @@ describe('UserDataStore', function() {
 
 			userDataStore.getEmailPreferences(function (err, data) {
 				assert.ok(!err, "Error is not set.");
-				assert.equal(data, testData.users.getEmailPrefWithPref2.initialData.emailPreferences, "Saved email preferences returned.");
+				assert.deepEqual(data, testData.users.getEmailPrefWithPref2.initialData.emailPreferences, "Saved email preferences returned.");
 
 				done();
 			});

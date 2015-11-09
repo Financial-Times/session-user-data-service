@@ -10,8 +10,8 @@ const consoleLogger = require('../../utils/consoleLogger');
 
 
 exports.metadata = function(req, res, next) {
-	if (!req.query.articleId) {
-		res.status(400).send('"articleId" should be provided.');
+	if (!req.query.articleId && !req.query.url) {
+		res.status(400).send('"articleId" and "url" should be provided.');
 		return;
 	}
 

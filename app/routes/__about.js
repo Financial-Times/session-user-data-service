@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const env = require('../../../env');
+const env = require('../../env');
 
 
 var controller = function (req, res, next) {
@@ -15,3 +15,5 @@ var controller = function (req, res, next) {
 };
 
 router.get('/__health', controller);
+
+module.exports = router;

@@ -13,6 +13,7 @@ var urlParser = require('url');
 var routes = {
 	index: require('./app/routes/index'),
 	__health: require('./app/routes/__health'),
+	__about: require('./app/routes/__about'),
 	v1: {
 		livefyre: require('./app/routes/v1/livefyre'),
 		user: require('./app/routes/v1/user'),
@@ -88,6 +89,7 @@ if (env.maintenanceModeOn) {
 	app.use('/v1', routes.v1.__gtg);
 	app.use('/', routes.v1.__gtg);
 	app.use('/', routes.__health);
+	app.use('/', routes.__about);
 }
 
 

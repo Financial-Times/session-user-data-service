@@ -879,7 +879,7 @@ describe('UserDataStore', function() {
 
 	describe('getUserData', function () {
 		it('should throw error if no callback is provided', function () {
-			let userDataStore = new UserDataStore(testData.users.withERightsId);
+			let userDataStore = new UserDataStore(testData.users.withERightsId.uuid);
 
 			assert.throws(function () {
 				userDataStore.getUserData();
@@ -905,6 +905,278 @@ describe('UserDataStore', function() {
 				assert.ok(!data, "No data is set.");
 
 				done();
+			});
+		});
+
+
+		it('should return error if the email service is down and the user does not have his data saved', function (done) {
+			let userDataStore = new UserDataStore('service-down');
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(err, "Error is set.");
+				assert.ok(!data, "No data is set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: 'service-down'
+					});
+
+					assert.equal(userStorage.length, 0, "DB entry not created.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should fetch from the email service, cache and return the user\'s data, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataWithoutInternalData.uuid);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataWithoutInternalData.uuid,
+						lfUserId: testData.users.getUserDataWithoutInternalData.eRightsId,
+					}, testData.users.getUserDataWithoutInternalData.basicUserInfo), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataWithoutInternalData.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.getUserDataWithoutInternalData.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.getUserDataWithoutInternalData.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].lfUserId, testData.users.getUserDataWithoutInternalData.eRightsId, "lfUserId is set");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataWithoutInternalData.basicUserInfo.email), "Email saved encrypted.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataWithoutInternalData.basicUserInfo.firstName), "First name saved encrypted.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.getUserDataWithoutInternalData.basicUserInfo.lastName), "Last name saved encrypted.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should fetch from the email service, cache and return the user\'s data, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataWithoutInternalData2.eRightsId);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataWithoutInternalData2.uuid,
+						lfUserId: testData.users.getUserDataWithoutInternalData2.eRightsId,
+					}, testData.users.getUserDataWithoutInternalData2.basicUserInfo), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataWithoutInternalData2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.getUserDataWithoutInternalData2.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.getUserDataWithoutInternalData2.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].lfUserId, testData.users.getUserDataWithoutInternalData2.eRightsId, "lfUserId is set");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataWithoutInternalData2.basicUserInfo.email), "Email saved encrypted.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataWithoutInternalData2.basicUserInfo.firstName), "First name saved encrypted.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.getUserDataWithoutInternalData2.basicUserInfo.lastName), "Last name saved encrypted.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should fetch from the email service, cache and return the user\'s data, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataWithInternalData.uuid);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataWithInternalData.uuid,
+						lfUserId: testData.users.getUserDataWithInternalData.eRightsId,
+						pseudonym: testData.users.getUserDataWithInternalData.initialData.pseudonym,
+						emailPreferences: testData.users.getUserDataWithInternalData.initialData.emailPreferences
+					}, testData.users.getUserDataWithInternalData.basicUserInfo), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataWithInternalData.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataWithInternalData.basicUserInfo.email), "Email saved encrypted.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataWithInternalData.basicUserInfo.firstName), "First name saved encrypted.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.getUserDataWithInternalData.basicUserInfo.lastName), "Last name saved encrypted.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should fetch from the email service, cache and return the user\'s data, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataWithInternalData2.eRightsId);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataWithInternalData2.uuid,
+						lfUserId: testData.users.getUserDataWithInternalData2.eRightsId,
+						pseudonym: testData.users.getUserDataWithInternalData2.initialData.pseudonym,
+						emailPreferences: testData.users.getUserDataWithInternalData2.initialData.emailPreferences
+					}, testData.users.getUserDataWithInternalData2.basicUserInfo), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataWithInternalData2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataWithInternalData2.basicUserInfo.email), "Email saved encrypted.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataWithInternalData2.basicUserInfo.firstName), "First name saved encrypted.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.getUserDataWithInternalData2.basicUserInfo.lastName), "Last name saved encrypted.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should fetch from the email service (partially received), cache and return the user\'s data, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataWithPartialData.uuid);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataWithPartialData.uuid,
+						lfUserId: testData.users.getUserDataWithPartialData.eRightsId
+					}, testData.users.getUserDataWithPartialData.basicUserInfo), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataWithPartialData.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataWithPartialData.basicUserInfo.email), "Email saved encrypted.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataWithPartialData.basicUserInfo.firstName), "First name saved encrypted.");
+					assert.deepEqual(userStorage[0].lastName, null, "Last name saved as null.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should fetch from the email service (partially received), cache and return the user\'s data, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataWithPartialData2.eRightsId);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataWithPartialData2.uuid,
+						lfUserId: testData.users.getUserDataWithPartialData2.eRightsId
+					}, testData.users.getUserDataWithPartialData2.basicUserInfo), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataWithPartialData2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataWithPartialData2.basicUserInfo.email), "Email saved encrypted.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataWithPartialData2.basicUserInfo.firstName), "First name saved encrypted.");
+					assert.deepEqual(userStorage[0].lastName, null, "Last name saved as null.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should fetch from the email service, cache and return the user\'s data, without eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataWithoutERightsId.uuid);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataWithoutERightsId.uuid,
+						lfUserId: testData.users.getUserDataWithoutERightsId.uuid,
+					}, testData.users.getUserDataWithoutERightsId.basicUserInfo), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataWithoutERightsId.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0]._id, testData.users.getUserDataWithoutERightsId.uuid, "_id is set");
+					assert.deepEqual(userStorage[0].uuid, testData.users.getUserDataWithoutERightsId.uuid, "UUID is set");
+					assert.deepEqual(userStorage[0].lfUserId, testData.users.getUserDataWithoutERightsId.uuid, "lfUserId is set");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataWithoutERightsId.basicUserInfo.email), "Email saved encrypted.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataWithoutERightsId.basicUserInfo.firstName), "First name saved encrypted.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.getUserDataWithoutERightsId.basicUserInfo.lastName), "Last name saved encrypted.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should fetch from the email service (partially received), cache and return the user\'s data, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataCached.uuid);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataCached.uuid,
+						lfUserId: testData.users.getUserDataCached.eRightsId,
+						emailPreferences: testData.users.getUserDataCached.initialData.emailPreferences
+					}, _.pick(testData.users.getUserDataCached.initialData, ['email', 'firstName', 'lastName'])), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataCached.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataCached.initialData.email), "Saved email did not change.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataCached.initialData.firstName), "Saved firstName did not change.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.getUserDataCached.initialData.lastName), "Saved lastName did not change.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should fetch from the email service (partially received), cache and return the user\'s data, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.getUserDataCached.eRightsId);
+
+			userDataStore.getUserData(function (err, data) {
+				assert.ok(!err, "Error is not set.");
+				assert.deepEqual(data,
+					_.extend({
+						uuid: testData.users.getUserDataCached.uuid,
+						lfUserId: testData.users.getUserDataCached.eRightsId,
+						emailPreferences: testData.users.getUserDataCached.initialData.emailPreferences
+					}, _.pick(testData.users.getUserDataCached.initialData, ['email', 'firstName', 'lastName'])), "Data is correct.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.getUserDataCached.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(testData.users.getUserDataCached.initialData.email), "Saved email did not change.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.getUserDataCached.initialData.firstName), "Saved firstName did not change.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.getUserDataCached.initialData.lastName), "Saved lastName did not change.");
+
+					done();
+				}, 10);
 			});
 		});
 	});
@@ -937,6 +1209,259 @@ describe('UserDataStore', function() {
 				assert.ok(!data, "No data is set.");
 
 				done();
+			});
+		});
+
+
+		it('should save in the cache partial data, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_partial_notsaved.uuid);
+
+			let userData = {
+				lastName: 'updated'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_partial_notsaved.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0].email, null, "Email saved as null.");
+					assert.deepEqual(userStorage[0].firstName, null, "FirstName saved as null.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(userData.lastName), "Last name encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should save in the cache partial data, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_partial_notsaved2.eRightsId);
+
+			let userData = {
+				lastName: 'updated'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_partial_notsaved2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0].email, null, "Email saved as null.");
+					assert.deepEqual(userStorage[0].firstName, null, "FirstName saved as null.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(userData.lastName), "Last name encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+
+		it('should save in the cache full data, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_full_notsaved.uuid);
+
+			let userData = {
+				email: 'updatedEmail',
+				firstName: 'updatedFirstName',
+				lastName: 'updatedLastName'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_full_notsaved.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and saved.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(userData.firstName), "First name encrypted and saved.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(userData.lastName), "Last name encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should save in the cache full data, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_full_notsaved2.eRightsId);
+
+			let userData = {
+				email: 'updatedEmail',
+				firstName: 'updatedFirstName',
+				lastName: 'updatedLastName'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_full_notsaved2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry created.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and saved.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(userData.firstName), "First name encrypted and saved.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(userData.lastName), "Last name encrypted and saved.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should update the cache with partial data, partially saved, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_partial_partiallySaved.uuid);
+
+			let userData = {
+				email: 'updatedEmail'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_partial_partiallySaved.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and updated.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.updateBasicUserData_partial_partiallySaved.initialData.firstName), "First name left untouched.");
+					assert.deepEqual(userStorage[0].lastName, userData.lastName, "Last name left untouched.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should update the cache with partial data, partially saved, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_partial_partiallySaved2.eRightsId);
+
+			let userData = {
+				email: 'updatedEmail'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_partial_partiallySaved2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and updated.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.updateBasicUserData_partial_partiallySaved2.initialData.firstName), "First name left untouched.");
+					assert.deepEqual(userStorage[0].lastName, userData.lastName, "Last name left untouched.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should update the cache with partial data, fully saved, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_partial_saved.uuid);
+
+			let userData = {
+				email: 'updatedEmail'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_partial_saved.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and updated.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.updateBasicUserData_partial_saved.initialData.firstName), "First name left untouched.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.updateBasicUserData_partial_saved.initialData.lastName), "Last name left untouched.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should update the cache with partial data, fully saved, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_partial_saved2.eRightsId);
+
+			let userData = {
+				email: 'updatedEmail'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_partial_saved2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and updated.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.updateBasicUserData_partial_saved2.initialData.firstName), "First name left untouched.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(testData.users.updateBasicUserData_partial_saved2.initialData.lastName), "Last name left untouched.");
+
+					done();
+				}, 10);
+			});
+		});
+
+
+		it('should update the cache with full data, fully saved, by UUID', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_full_saved.uuid);
+
+			let userData = {
+				email: 'updatedEmail',
+				firstName: 'updatedFirstName',
+				lastName: 'updatedLastName'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_full_saved.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and updated.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(userData.firstName), "First name encrypted and updated.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(userData.lastName), "Last name encrypted and updated.");
+
+					done();
+				}, 10);
+			});
+		});
+
+		it('should update the cache with full data, fully saved, by eRightsId', function (done) {
+			let userDataStore = new UserDataStore(testData.users.updateBasicUserData_full_saved2.eRightsId);
+
+			let userData = {
+				email: 'updatedEmail',
+				firstName: 'updatedFirstName',
+				lastName: 'updatedLastName'
+			};
+			userDataStore.updateBasicUserData(userData, function (err, data) {
+				assert.ok(!err, "Error is not set.");
+
+				setTimeout(function () {
+					var userStorage = testData.mockInstances.mongodb.findInDb('users', {
+						_id: testData.users.updateBasicUserData_full_saved2.uuid
+					});
+
+					assert.equal(userStorage.length, 1, "DB entry still in place.");
+					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and updated.");
+					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(userData.firstName), "First name encrypted and updated.");
+					assert.deepEqual(userStorage[0].lastName, crypto.encrypt(userData.lastName), "Last name encrypted and updated.");
+
+					done();
+				}, 10);
 			});
 		});
 	});

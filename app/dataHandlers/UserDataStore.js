@@ -5,7 +5,6 @@ const consoleLogger = require('../utils/consoleLogger');
 const mongoSanitize = require('mongo-sanitize');
 const EventEmitter = require('events');
 const eRightsToUuid = require('../services/eRightsToUuid');
-const async = require('async');
 const emailService = require('../services/email');
 const crypto = require('../utils/crypto');
 const env = require('../../env');
@@ -508,7 +507,6 @@ var UserDataStore = function (userId) {
 				return;
 			}
 		} else {
-			console.log('delete autoFollow');
 			delete emailPreferences.autoFollow;
 		}
 
@@ -605,10 +603,16 @@ var UserDataStore = function (userId) {
 							returnData.emailPreferences = storedData.emailPreferences;
 						}
 
-						if (storedData.email && storedData.firstName && storedData.lastName) {
-							returnData.email = crypto.decrypt(storedData.email);
-							returnData.firstName = crypto.decrypt(storedData.firstName);
-							returnData.lastName = crypto.decrypt(storedData.lastName);
+						if (storedData.hasOwnProperty('email') && storedData.hasOwnProperty('firstName') || storedData.hasOwnProperty('lastName')) {
+							if (storedData.email) {
+								returnData.email = crypto.decrypt(storedData.email);
+							}
+							if (storedData.firstName) {
+								returnData.firstName = crypto.decrypt(storedData.firstName);
+							}
+							if (storedData.lastName) {
+								returnData.lastName = crypto.decrypt(storedData.lastName);
+							}
 
 							callback(null, returnData);
 							return;
@@ -623,14 +627,14 @@ var UserDataStore = function (userId) {
 									if (basicUserInfo.hasOwnProperty('email')) {
 										returnData.email = basicUserInfo.email;
 									}
-									if (basicUserInfo.firstName) {
+									if (basicUserInfo.hasOwnProperty('firstName')) {
 										returnData.firstName = basicUserInfo.firstName;
 									}
-									if (basicUserInfo.lastName) {
+									if (basicUserInfo.hasOwnProperty('lastName')) {
 										returnData.lastName = basicUserInfo.lastName;
 									}
 
-									self.updateBasicUserData(basicUserInfo);
+									self.updateBasicUserData(basicUserInfo, function () {});
 								}
 
 								callback(null, returnData);
@@ -644,17 +648,17 @@ var UserDataStore = function (userId) {
 							}
 
 							if (basicUserInfo) {
-								if (basicUserInfo.email) {
+								if (basicUserInfo.hasOwnProperty('email')) {
 									returnData.email = basicUserInfo.email;
 								}
-								if (basicUserInfo.firstName) {
+								if (basicUserInfo.hasOwnProperty('firstName')) {
 									returnData.firstName = basicUserInfo.firstName;
 								}
-								if (basicUserInfo.lastName) {
+								if (basicUserInfo.hasOwnProperty('lastName')) {
 									returnData.lastName = basicUserInfo.lastName;
 								}
 
-								self.updateBasicUserData(basicUserInfo);
+								self.updateBasicUserData(basicUserInfo, function () {});
 							}
 
 							callback(null, returnData);
@@ -688,14 +692,20 @@ var UserDataStore = function (userId) {
 			let upsertData = {};
 			if (userData.hasOwnProperty('email')) {
 				upsertData.email = crypto.encrypt(userData.email);
+			} else if (!storedData || !storedData.hasOwnProperty('email')) {
+				upsertData.email = null;
 			}
 
 			if (userData.hasOwnProperty('firstName')) {
 				upsertData.firstName = crypto.encrypt(userData.firstName);
+			} else if (!storedData || !storedData.hasOwnProperty('firstName')) {
+				upsertData.firstName = null;
 			}
 
 			if (userData.hasOwnProperty('lastName')) {
 				upsertData.lastName = crypto.encrypt(userData.lastName);
+			} else if (!storedData || !storedData.hasOwnProperty('lastName')) {
+				upsertData.lastName = null;
 			}
 
 			upsertStoredData(upsertData, function (err) {

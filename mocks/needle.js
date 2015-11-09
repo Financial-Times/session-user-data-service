@@ -78,6 +78,8 @@ module.exports = function (config) {
 								statusCode: 200,
 								body: config.usersEmailService[id]
 							});
+						} else if (typeof id === 'string' && id.indexOf('down') !== -1) {
+							callback(new Error("Service is down."));
 						} else {
 							callback(null, {
 								statusCode: 404

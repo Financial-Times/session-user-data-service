@@ -18,7 +18,7 @@ var getArticleData = function (uuid, callback) {
 			callback(null, article);
 		}, function (err) {
 			if (err && err.statusCode !== 404) {
-				consoleLogger.error('CAPI error', err);
+				consoleLogger.warn('CAPI error', err);
 			}
 
 			callback(err);

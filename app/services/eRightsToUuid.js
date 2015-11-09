@@ -3,6 +3,7 @@
 const needle = require('needle');
 const isUuid = require('../utils/isUuid');
 const env = require('../../env');
+const consoleLogger = require('../utils/consoleLogger');
 
 exports.getUuid = function (userId, callback) {
 	if (typeof callback !== 'function') {
@@ -19,6 +20,8 @@ exports.getUuid = function (userId, callback) {
 
 	needle.get(byErightsUrl, function (err, response) {
 		if (err) {
+			consoleLogger.warn(userId, 'eRightsToUuid service error', err);
+
 			callback(err);
 			return;
 		} else if (response.statusCode !== 200 || !response.body) {
@@ -45,6 +48,8 @@ exports.getERightsId = function (userId, callback) {
 
 		needle.get(byUuidUrl, function (err, response) {
 			if (err) {
+				consoleLogger.warn(userId, 'eRightsToUuid service error', err);
+
 				callback(err);
 				return;
 			} else if (response.statusCode !== 200 || !response.body) {
@@ -64,6 +69,8 @@ exports.getERightsId = function (userId, callback) {
 
 		needle.get(byErightsUrl, function (err, response) {
 			if (err) {
+				consoleLogger.warn(userId, 'eRightsToUuid service error', err);
+
 				callback(err);
 				return;
 			} else if (response.statusCode !== 200) {

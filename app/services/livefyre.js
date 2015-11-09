@@ -108,6 +108,10 @@ exports.collectionExists = function (articleId, callback) {
 
 		needle.get(url, function (err, response) {
 			if (err || response.statusCode !== 200) {
+				if (err) {
+					consoleLogger.warn(articleId, 'livefyre.collectionExists error', err);
+				}
+
 				callback(null, false);
 				return;
 			}
@@ -166,6 +170,8 @@ exports.callPingToPull = function (userId, callback) {
 
 	needle.post(url, function (err, response) {
 		if (err) {
+			consoleLogger.warn(userId, 'livefyre.pingToPull error', err);
+
 			callback(err);
 			return;
 		}

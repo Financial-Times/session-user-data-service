@@ -3,6 +3,7 @@
 const needle = require('needle');
 const _ = require('lodash');
 const env = require('../../env');
+const consoleLogger = require('../utils/consoleLogger');
 
 
 exports.getSessionData = function (sessionId, callback) {
@@ -21,6 +22,8 @@ exports.getSessionData = function (sessionId, callback) {
 
 	needle.get(url, options, function (err, response) {
 		if (err) {
+			consoleLogger.warn(sessionId, 'sessionAPI error', err);
+
 			callback(err);
 			return;
 		}

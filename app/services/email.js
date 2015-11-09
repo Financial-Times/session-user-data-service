@@ -3,6 +3,7 @@
 const needle = require('needle');
 const _ = require('lodash');
 const env = require('../../env');
+const consoleLogger = require('../utils/consoleLogger');
 
 
 exports.getUserData = function (userId, callback) {
@@ -14,6 +15,10 @@ exports.getUserData = function (userId, callback) {
 		password: env.emailService.auth.pass
 	}, function (err, response) {
 		if (err || response.statusCode !== 200 || !response.body) {
+			if (err) {
+				consoleLogger.warn(userId, 'email service error', err);
+			}
+
 			callback(err || new Error("User not found."));
 			return;
 		}

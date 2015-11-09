@@ -2,6 +2,8 @@
 
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
+const consoleLogger = require('../utils/consoleLogger');
+
 let connections = {};
 
 
@@ -26,11 +28,15 @@ function getConnection (uri, callback) {
 
 	MongoClient.connect(uri, function(err, dbConn) {
 		if (err) {
+			consoleLogger.warn('Mongo connection failed', err);
+
 			callCallback(err);
 			return;
 		}
 
 		dbConn.on('close', function() {
+			consoleLogger.warn('Mongo connection lost', err);
+
 			connections[uri] = null;
 
 			if (this._callBackStore) {

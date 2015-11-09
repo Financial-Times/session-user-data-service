@@ -49,8 +49,7 @@ var SessionDataStore = function (sessionId) {
 
 			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
-					consoleLogger.log(sessionId, 'error retrieving the cache');
-					consoleLogger.debug(sessionId, errConn);
+					consoleLogger.warn(sessionId, 'error retrieving the cache', errConn);
 
 					done(errConn);
 					return;
@@ -60,8 +59,7 @@ var SessionDataStore = function (sessionId) {
 					_id: mongoSanitize(sessionId)
 				}).toArray(function (errDb, data) {
 					if (errDb) {
-						consoleLogger.log(sessionId, 'cache retrieval failed');
-						consoleLogger.debug(sessionId, errDb);
+						consoleLogger.warn(sessionId, 'cache retrieval failed', errDb);
 
 						done(errDb);
 						return;
@@ -94,8 +92,7 @@ var SessionDataStore = function (sessionId) {
 
 		db.getConnection(env.mongo.uri, function (errConn, connection) {
 			if (errConn) {
-				consoleLogger.log(sessionId, 'upsert failed');
-				consoleLogger.debug(errConn);
+				consoleLogger.warn(sessionId, 'upsert failed', errConn);
 				return;
 			}
 
@@ -110,8 +107,7 @@ var SessionDataStore = function (sessionId) {
 				upsert: true
 			}, function (errUpsert, result) {
 				if (errUpsert) {
-					consoleLogger.log(sessionId, 'upsert failed');
-					consoleLogger.debug(sessionId, errUpsert);
+					consoleLogger.warn(sessionId, 'upsert failed', errUpsert);
 					return;
 				}
 
@@ -139,7 +135,7 @@ var SessionDataStore = function (sessionId) {
 	function deleteStoredData (callback) {
 		db.getConnection(env.mongo.uri, function (errConn, connection) {
 			if (errConn) {
-				consoleLogger.log(sessionId, 'delete failed');
+				consoleLogger.warn(sessionId, 'delete failed', errConn);
 				callback(errConn);
 				return;
 			}
@@ -150,8 +146,8 @@ var SessionDataStore = function (sessionId) {
 				_id: mongoSanitize(sessionId)
 			}, function (errDelete) {
 				if (errDelete) {
-					consoleLogger.log(sessionId, 'delete failed');
-					consoleLogger.debug(sessionId, errDelete);
+					consoleLogger.warn(sessionId, 'delete failed', errDelete);
+
 					callback(errDelete);
 					return;
 				}
@@ -224,8 +220,6 @@ var SessionDataStore = function (sessionId) {
 		consoleLogger.log(sessionId, 'fetch session data');
 		userSessionApi.getSessionData(sessionId, function (err, data) {
 			if (err) {
-				consoleLogger.warn(sessionId, 'Session service error');
-				consoleLogger.debug(sessionId, 'Error:', err);
 				callback(err);
 				return;
 			}
@@ -253,7 +247,6 @@ var SessionDataStore = function (sessionId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(sessionId, 'getSessionData', 'error retrieving cache');
-				consoleLogger.debug(sessionId, errCache);
 				fetchSessionData(callback);
 				return;
 			}
@@ -381,7 +374,7 @@ var SessionDataStore = function (sessionId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(sessionId, 'getAuthMetadata', 'error retrieving cache');
-				consoleLogger.debug(sessionId, errCache);
+
 				generateAuthMetadata(callback);
 				return;
 			}

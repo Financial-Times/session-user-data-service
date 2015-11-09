@@ -90,8 +90,7 @@ var UserDataStore = function (userId) {
 
 			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
-					consoleLogger.log(userId, 'error retrieving the cache');
-					consoleLogger.debug(userId, errConn);
+					consoleLogger.warn(userId, 'error retrieving the cache', errConn);
 
 					done(errConn);
 					return;
@@ -108,8 +107,8 @@ var UserDataStore = function (userId) {
 							_id: mongoSanitize(userUuid)
 						}).toArray(function (errDb, data) {
 							if (errDb) {
-								consoleLogger.log(userId, 'cache retrieval failed');
-								consoleLogger.debug(userId, errDb);
+								consoleLogger.warn(userId, 'cache retrieval failed', errDb);
+
 								done(errDb);
 								return;
 							}
@@ -169,8 +168,8 @@ var UserDataStore = function (userId) {
 
 		db.getConnection(env.mongo.uri, function (errConn, connection) {
 			if (errConn) {
-				consoleLogger.log(userId, 'upsert failed');
-				consoleLogger.debug(errConn);
+				consoleLogger.warn(userId, 'upsert failed', errConn);
+
 				return;
 			}
 
@@ -191,10 +190,12 @@ var UserDataStore = function (userId) {
 							$set: sanitizedData
 						}, {
 							upsert: true
-						}, function (err, result) {
-							if (err) {
+						}, function (errUps, result) {
+							if (errUps) {
+								consoleLogger.warn(userId, 'upsert failed', errUps);
+
 								if (typeof callback === 'function') {
-									callback(err);
+									callback(errUps);
 								}
 								return;
 							}
@@ -293,7 +294,7 @@ var UserDataStore = function (userId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(userId, 'getLivefyrePreferredUserId', 'error retrieving cache');
-				consoleLogger.debug(userId, errCache);
+
 				fetchLivefyrePreferredUserId(callback);
 				return;
 			}
@@ -334,7 +335,7 @@ var UserDataStore = function (userId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(userId, 'getPseudonym', 'error retrieving pseudonym');
-				consoleLogger.debug(userId, errCache);
+
 				callback(errCache);
 				return;
 			}
@@ -370,7 +371,7 @@ var UserDataStore = function (userId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(userId, 'setPseudonym', 'error with the storage');
-				consoleLogger.debug(userId, errCache);
+
 				callback(errCache);
 				return;
 			}
@@ -403,7 +404,7 @@ var UserDataStore = function (userId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(userId, 'emptyPseudonym', 'error with the storage');
-				consoleLogger.debug(userId, errCache);
+
 				callback(errCache);
 				return;
 			}
@@ -438,7 +439,7 @@ var UserDataStore = function (userId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(userId, 'getEmailPreferences', 'error retrieving email preferences');
-				consoleLogger.debug(userId, errCache);
+
 				callback(errCache);
 				return;
 			}
@@ -514,7 +515,6 @@ var UserDataStore = function (userId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(userId, 'setEmailPreferences', 'error with the storage');
-				consoleLogger.debug(userId, errCache);
 
 				callback(errCache);
 				return;
@@ -548,6 +548,8 @@ var UserDataStore = function (userId) {
 
 			emailService.getUserData(userUuid, function (err, data) {
 				if (err) {
+					consoleLogger.log(userId, 'fetch basic user info failed');
+
 					callback(err);
 					return;
 				}
@@ -684,7 +686,7 @@ var UserDataStore = function (userId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(userId, 'getEmailPreferences', 'error retrieving email preferences');
-				consoleLogger.debug(userId, errCache);
+
 				callback(errCache);
 				return;
 			}
@@ -710,6 +712,9 @@ var UserDataStore = function (userId) {
 
 			upsertStoredData(upsertData, function (err) {
 				if (err) {
+					consoleLogger.log(userId, 'failed to update basic info');
+					consoleLogger.debug(userId, 'upsert data', upsertData);
+
 					callback(err);
 					return;
 				}

@@ -46,8 +46,7 @@ var ArticleDataStore = function (articleId) {
 
 			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
-					consoleLogger.log(articleId, 'error retrieving the cache');
-					consoleLogger.debug(articleId, errConn);
+					consoleLogger.warn(articleId, 'error retrieving the cache', errConn);
 
 					fetchingStoreInProgress = false;
 					done(errConn);
@@ -58,8 +57,7 @@ var ArticleDataStore = function (articleId) {
 					_id: mongoSanitize(articleId)
 				}).toArray(function (errDb, data) {
 					if (errDb) {
-						consoleLogger.log(articleId, 'cache retrieval failed');
-						consoleLogger.debug(articleId, errDb);
+						consoleLogger.warn(articleId, 'cache retrieval failed', errDb);
 
 						done(errDb);
 						return;
@@ -88,8 +86,7 @@ var ArticleDataStore = function (articleId) {
 
 		db.getConnection(env.mongo.uri, function (errConn, connection) {
 			if (errConn) {
-				consoleLogger.log(articleId, 'upsert failed');
-				consoleLogger.debug(errConn);
+				consoleLogger.warn(articleId, 'upsert failed', errConn);
 				return;
 			}
 
@@ -104,8 +101,7 @@ var ArticleDataStore = function (articleId) {
 				upsert: true
 			}, function (errUpsert) {
 				if (errUpsert) {
-					consoleLogger.log(articleId, 'upsert failed');
-					consoleLogger.debug(articleId, errUpsert);
+					consoleLogger.warn(articleId, 'upsert failed', errUpsert);
 				}
 
 				// reset storage cache
@@ -215,8 +211,7 @@ var ArticleDataStore = function (articleId) {
 		getStoredData(function (errCache, storedData) {
 			if (errCache) {
 				// fetch
-				consoleLogger.log(articleId, 'articleTags', 'error retrieving cache');
-				consoleLogger.debug(articleId, errCache);
+
 				fetchCapiTags(function (errFetch, tags) {
 					if (errFetch) {
 						callback(null, getTagsByUrl(url), errFetch.statusCode !== 404 ? true : false);
@@ -391,7 +386,6 @@ var ArticleDataStore = function (articleId) {
 			if (errCache) {
 				// fetch
 				consoleLogger.log(articleId, 'collectionDetails', 'cache down');
-				consoleLogger.debug(articleId, errCache);
 
 				fetchLivefyreCollectionDetails(config, callback);
 				return;

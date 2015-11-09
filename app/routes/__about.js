@@ -14,6 +14,6 @@ var controller = function (req, res, next) {
 	});
 };
 
-router.get('/__health', controller);
+router.get('/__about', controller);
 
 module.exports = router;

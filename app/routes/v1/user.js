@@ -5,20 +5,134 @@ const router = express.Router();
 const userController = require('../../controllers/v1/user');
 
 
-
+/**
+ * @api {get} v1/user/getauth Auth
+ * @apiVersion 1.1.0
+ * @apiGroup v1/user
+ * @apiName getauth
+ * @apiDescription Returns authentication information about the user.
+ *
+ * @apiParam {String} sessionId Session ID of the user. Optional, if not present FTSession is read from the cookies.
+ *
+ * @apiSuccess (success) {Object} auth Data about the user
+ * @apiSuccess (success) {Boolean} auth.token Auth token of Livefyre. See [Livefyre documentation](http://answers.livefyre.com/developers/getting-started/tokens/auth/)
+ * @apiSuccess (success) {Boolean} auth.expires Timestamp of when the token expires.
+ * @apiSuccess (success) {Boolean} auth.displayName The user's pseudonym (nickname).
+ * @apiSuccess (success) {Boolean} auth.settings The user's email notification settings.
+ *
+ * @apiSuccess (no pseudonym) {Object} auth Data about the user
+ * @apiSuccess (no pseudonym) {Boolean} auth.pseudonym Pseudonym false is the flag that the user does not have a pseudonym yet.
+ *
+ *
+ * @apiSuccessExample Full response
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJmdC0xHRV4567GGRVJDSoiOTAyNjUwMiIsImRpc3BsYXlfbmFtZSGS45681265dsSDGbjMiLCJleHBpcmVmdIDGKSDOaswLjQxNSwiaWF0IjoxNDQ3MDgzNTAxfQ.vDVUaBrd-qGFQFKvAEQMGSD45239SHDuCh_tXZR1WwRg",
+ *       "expires": 1462635461193,
+ *       "displayName": "the avenger",
+ *       "settings": {
+ *           "emailcomments": "hourly",
+ *           "emaillikes": "never",
+ *           "emailreplies": "immediately",
+ *           "emailautofollow": "off"
+ *       }
+ *   }
+ *
+ *
+ * @apiSuccessExample No pseudonym
+ *  HTTP/1.1 200 OK
+ *   {
+ *      "pseudonym": false
+ *   }
+ *
+ * @apiErrorExample {401} Unauthorized
+ *  HTTP/1.1 401 Unauthorized
+ *    Unauthorized
+ */
 router.get('/getauth', userController.getAuth);
 
-
+/**
+ * @api {get / post} v1/user/setPseudonym Set pseudonym
+ * @apiVersion 1.1.0
+ * @apiGroup v1/user
+ * @apiName setPseudonym
+ * @apiDescription Updates the user's pseudonym.
+ *
+ * @apiParam {String} pseudonym Pseudonym to be set.
+ * @apiParam {String} sessionId Session ID of the user. Optional, if not present FTSession is read from the cookies.
+ *
+ * @apiSuccess {String} status Status of the update.
+ *
+ * @apiError {String} status Status of the update.
+ * @apiError {String} error Error message.
+ *
+ * @apiSuccessExample Full response
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "status": "ok"
+ *   }
+ *
+ * @apiErrorExample {400} Pseudonym empty
+ *  HTTP/1.1 400 Bad request
+ *   {
+ *       "status": "error",
+ *       "error": "Pseudonym invalid or not provided."
+ *   }
+ *
+ * @apiErrorExample {401} Not logged in
+ *  HTTP/1.1 401 Unauthorized
+ *   {
+ *       "status": "error",
+ *       "error": "User session is not valid."
+ *   }
+ */
 router.get('/setPseudonym', userController.setPseudonym);
 router.post('/setPseudonym', userController.setPseudonym);
 
 
+
+/**
+ * @api {get / post} v1/user/updateuser Update user
+ * @apiVersion 1.1.0
+ * @apiGroup v1/user
+ * @apiName updateUser
+ * @apiDescription Updates the user's comments settings: pseudonym, email notification preferences.
+ */
 router.get('/updateuser', userController.updateUser);
 router.post('/updateuser', userController.updateUser);
 
 
-
+/**
+ * @api {get / post} v1/user/emptyPseudonym Empty pseudonym
+ * @apiVersion 1.1.0
+ * @apiGroup v1/user
+ * @apiName emptyPseudonym
+ * @apiDescription Empties the user's pseudonym.
+ *
+ * @apiParam {String} sessionId Session ID of the user. Optional, if not present FTSession is read from the cookies.
+ *
+ * @apiSuccess {String} status Status of the update.
+ *
+ * @apiError {String} status Status of the update.
+ * @apiError {String} error Error message.
+ *
+ * @apiSuccessExample Full response
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "status": "ok"
+ *   }
+ *
+ *
+ *  @apiErrorExample {401} Not logged in
+ *  HTTP/1.1 401 Unauthorized
+ *   {
+ *       "status": "error",
+ *       "error": "User session is not valid."
+ *   }
+ *
+ */
 router.get('/emptypseudonym', userController.emptyPseudonym);
+router.post('/emptypseudonym', userController.emptyPseudonym);
 
 
 router.post('/userUpdated/:uuid', userController.updateUserBasicInfo);

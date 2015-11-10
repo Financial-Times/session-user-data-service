@@ -83,13 +83,15 @@ if (env.maintenanceModeOn) {
 		res.status(503).send("Maintenance");
 	});
 } else {
-	app.use('/', routes.index);
 	app.use('/v1/livefyre', routes.v1.livefyre);
 	app.use('/v1/user', routes.v1.user);
 	app.use('/v1', routes.v1.__gtg);
 	app.use('/', routes.v1.__gtg);
 	app.use('/', routes.__health);
 	app.use('/', routes.__about);
+	app.get('/', function (req, res) {
+		res.redirect('/apidoc');
+	});
 }
 
 

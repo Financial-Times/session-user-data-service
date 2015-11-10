@@ -55,17 +55,23 @@ var loggerFunction = (function () {
 			if (enabled === true) {
 				if (level >= minLevel) {
 					if (filters.length === 0 || filters.indexOf(module) !== -1) {
-						try {
-							console.log.apply(console, args);
-						} catch (e) {
-							for (var i = 0; i < args.length; i++) {
-								args[i] = JSON.stringify(args[i]);
-							}
+						args.unshift(levels[level].toUpperCase());
 
+						try {
+							console[levels[level]].apply(console, args);
+						} catch (e) {
 							try {
-								console[levels[level]](args.join(' '));
-							} catch (exc) {
-								console.log(args.join(' '));
+								console.log.apply(console, args);
+							} catch (e2) {
+								for (var i = 0; i < args.length; i++) {
+									args[i] = JSON.stringify(args[i]);
+								}
+
+								try {
+									console[levels[level]](args.join(' '));
+								} catch (exc) {
+									console.log(args.join(' '));
+								}
 							}
 						}
 					}

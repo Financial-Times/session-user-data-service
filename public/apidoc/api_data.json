@@ -15,7 +15,7 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "uuid",
-            "description": "<p>ID of the article.</p> "
+            "description": "<p>Required. ID of the article.</p> "
           }
         ]
       }
@@ -58,42 +58,42 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "articleId",
-            "description": "<p>ID of the article.</p> "
+            "description": "<p>Required. ID of the article.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "url",
-            "description": "<p>Url of the article.</p> "
+            "description": "<p>Required. Url of the article.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "title",
-            "description": "<p>Title of the article.</p> "
+            "description": "<p>Required. Title of the article.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "stream_type",
-            "description": "<p>Can be one of 'livecomments', 'liveblog', 'livechat'. Default is 'livecomments'.</p> "
+            "description": "<p>Optional. Can be one of 'livecomments', 'liveblog', 'livechat'. Default is 'livecomments'.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "tags",
-            "description": "<p>Additional tags for the collection (added to the CAPI and URL based tags). Comma separated.</p> "
+            "description": "<p>Optional. Additional tags for the collection (added to the CAPI and URL based tags). Comma separated.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "sessionId",
-            "description": "<p>Session ID of the user. Optional, if not present FTSession is read from the cookies.</p> "
+            "description": "<p>Session ID of the user. Optional, but if not present, FTSession cookie is used.</p> "
           }
         ]
       }
@@ -183,49 +183,49 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "articleId",
-            "description": "<p>ID of the article.</p> "
+            "description": "<p>Required. ID of the article.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "url",
-            "description": "<p>Url of the article.</p> "
+            "description": "<p>Required. Url of the article.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "title",
-            "description": "<p>Title of the article.</p> "
+            "description": "<p>Required. Title of the article.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "el",
-            "description": "<p>ID of a DOM element in which the widget should be loaded. It is echoed in the response.</p> "
+            "description": "<p>Required. ID of a DOM element in which the widget should be loaded. It is echoed in the response.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "stream_type",
-            "description": "<p>Can be one of 'livecomments', 'liveblog', 'livechat'. Default is 'livecomments'.</p> "
+            "description": "<p>Optional. Can be one of 'livecomments', 'liveblog', 'livechat'. Default is 'livecomments'.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "tags",
-            "description": "<p>Additional tags for the collection (added to the default of CAPI and URL based tags). Comma separated.</p> "
+            "description": "<p>Optional. Additional tags for the collection (added to the default of CAPI and URL based tags). Comma separated.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "sessionId",
-            "description": "<p>Session ID of the user. Optional, if not present FTSession is read from the cookies.</p> "
+            "description": "<p>Session ID of the user. Optional, but if not present, FTSession cookie is used.</p> "
           }
         ]
       }
@@ -252,7 +252,7 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "init.articleId",
-            "description": ""
+            "description": "<p>Article ID.</p> "
           },
           {
             "group": "success",
@@ -380,14 +380,14 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "articleId",
-            "description": "<p>ID of the article.</p> "
+            "description": "<p>Required. ID of the article.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "url",
-            "description": "<p>Url of the article.</p> "
+            "description": "<p>Required. Url of the article.</p> "
           }
         ]
       }
@@ -449,14 +449,14 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "id",
-            "description": "<p>ID of the user (either eRights ID or UUID).</p> "
+            "description": "<p>Required. ID of the user (either eRights ID or UUID).</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "lftoken",
-            "description": "<p>System token of the Livefyre network. See <a href=\"http://answers.livefyre.com/developers/libraries/methods/network/#link-buildlivefyretoken-nodejs\">Livefyre documentation</a></p> "
+            "description": "<p>Required. System token of the Livefyre network. It should be valid in order the API to respond. See <a href=\"http://answers.livefyre.com/developers/libraries/methods/network/#link-buildlivefyretoken-nodejs\">Livefyre documentation</a></p> "
           }
         ]
       }
@@ -570,7 +570,7 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "sessionId",
-            "description": "<p>Session ID of the user. Optional, if not present FTSession is read from the cookies.</p> "
+            "description": "<p>Session ID of the user. Optional, but if not present, FTSession cookie is used.</p> "
           }
         ]
       }
@@ -641,7 +641,7 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "sessionId",
-            "description": "<p>Session ID of the user. Optional, if not present FTSession is read from the cookies.</p> "
+            "description": "<p>Session ID of the user. Optional, but if not present, FTSession cookie is used.</p> "
           }
         ]
       }
@@ -743,14 +743,14 @@
             "type": "<p>String</p> ",
             "optional": false,
             "field": "pseudonym",
-            "description": "<p>Pseudonym to be set.</p> "
+            "description": "<p>Required. Pseudonym to be set.</p> "
           },
           {
             "group": "Parameter",
             "type": "<p>String</p> ",
             "optional": false,
             "field": "sessionId",
-            "description": "<p>Session ID of the user. Optional, if not present FTSession is read from the cookies.</p> "
+            "description": "<p>Session ID of the user. Optional, but if not present, FTSession cookie is used.</p> "
           }
         ]
       }
@@ -818,6 +818,195 @@
     "group": "v1_user",
     "name": "updateUser",
     "description": "<p>Updates the user's comments settings: pseudonym, email notification preferences.</p> ",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "pseudonym",
+            "description": "<p>Optional. Pseudonym to be set.</p> "
+          },
+          {
+            "group": "Parameter",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "emailcomments",
+            "description": "<p>Optional. Pseudonym to be set.</p> "
+          },
+          {
+            "group": "Parameter",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "emaillikes",
+            "description": "<p>Optional. Pseudonym to be set.</p> "
+          },
+          {
+            "group": "Parameter",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "emailreplies",
+            "description": "<p>Optional. Pseudonym to be set.</p> "
+          },
+          {
+            "group": "Parameter",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "emailautofollow",
+            "description": "<p>Optional. Pseudonym to be set.</p> "
+          },
+          {
+            "group": "Parameter",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "sessionId",
+            "description": "<p>Session ID of the user. Optional, but if not present, FTSession cookie is used.</p> "
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Status of the update</p> "
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Full response",
+          "content": "HTTP/1.1 200 OK\n {\n     \"status\": \"ok\"\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Status of the update.</p> "
+          },
+          {
+            "group": "Error 4xx",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "error",
+            "description": "<p>Error message.</p> "
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Not logged in",
+          "content": "HTTP/1.1 401 Unauthorized\n {\n     \"status\": \"error\",\n     \"error\": \"User session is not valid.\"\n }",
+          "type": "401"
+        }
+      ]
+    },
+    "filename": "app/routes/v1/user.js",
+    "groupTitle": "v1_user"
+  },
+  {
+    "type": "post",
+    "url": "v1/user/userUpdated",
+    "title": "User updated",
+    "version": "1.1.0",
+    "group": "v1_user",
+    "name": "userUpdated",
+    "description": "<p>Endpoint to notify this system that basic user information has changed.</p> ",
+    "parameter": {
+      "fields": {
+        "get": [
+          {
+            "group": "get",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "apiKey",
+            "description": "<p>Required. Only with a valid API key can this endpoint be called.</p> "
+          }
+        ],
+        "post": [
+          {
+            "group": "post",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "email",
+            "description": "<p>Required. Email address</p> "
+          },
+          {
+            "group": "post",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "firstName",
+            "description": "<p>Optional. First name</p> "
+          },
+          {
+            "group": "post",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "lastName",
+            "description": "<p>Optional. Last name</p> "
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Status of the update.</p> "
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Full response",
+          "content": "HTTP/1.1 200 OK\n {\n     \"status\": \"ok\"\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Status of the update.</p> "
+          },
+          {
+            "group": "Error 4xx",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "error",
+            "description": "<p>Error message.</p> "
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Not logged in",
+          "content": "HTTP/1.1 401 Unauthorized\n {\n     \"status\": \"error\",\n     \"error\": \"User session is not valid.\"\n }",
+          "type": "401"
+        }
+      ]
+    },
     "filename": "app/routes/v1/user.js",
     "groupTitle": "v1_user"
   }

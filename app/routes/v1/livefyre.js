@@ -12,11 +12,11 @@ const livefyreControllerV1 = require('../../controllers/v1/livefyre.js');
  * @apiName metadata
  *
  *
- * @apiParam {String} articleId ID of the article.
- * @apiParam {String} url Url of the article.
+ * @apiParam {String} articleId 	Required. ID of the article.
+ * @apiParam {String} url 			Required. Url of the article.
  *
- * @apiSuccess {Array} - List of tags based on CAPI and the URL of the article.
- * @apiError  {Array} - Empty list
+ * @apiSuccess 	{Array} - 	List of tags based on CAPI and the URL of the article.
+ * @apiError  	{Array} - 	Empty list
  *
  * @apiSuccessExample Success
  *  HTTP/1.1 200 OK
@@ -41,17 +41,17 @@ router.get('/metadata', livefyreControllerV1.metadata);
  * @apiGroup v1/livefyre
  * @apiName getcollectiondetails
  *
- * @apiParam {String} articleId ID of the article.
- * @apiParam {String} url Url of the article.
- * @apiParam {String} title Title of the article.
- * @apiParam {String} stream_type Can be one of 'livecomments', 'liveblog', 'livechat'. Default is 'livecomments'.
- * @apiParam {String} tags Additional tags for the collection (added to the CAPI and URL based tags). Comma separated.
- * @apiParam {String} sessionId Session ID of the user. Optional, if not present FTSession is read from the cookies.
+ * @apiParam {String} articleId 	Required. ID of the article.
+ * @apiParam {String} url 			Required. Url of the article.
+ * @apiParam {String} title 		Required. Title of the article.
+ * @apiParam {String} stream_type 	Optional. Can be one of 'livecomments', 'liveblog', 'livechat'. Default is 'livecomments'.
+ * @apiParam {String} tags 			Optional. Additional tags for the collection (added to the CAPI and URL based tags). Comma separated.
+ * @apiParam {String} sessionId 	Session ID of the user. Optional, but if not present, FTSession cookie is used.
  *
- * @apiSuccess (success) {Number} siteId See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
- * @apiSuccess (success) {String} articleId ID of the article, echo of the input parameter.
- * @apiSuccess (success) {String} collectionMeta See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
- * @apiSuccess (success) {String} checksum See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
+ * @apiSuccess (success) {Number} siteId 			See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
+ * @apiSuccess (success) {String} articleId 		ID of the article, echo of the input parameter.
+ * @apiSuccess (success) {String} collectionMeta 	See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
+ * @apiSuccess (success) {String} checksum 			See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
  * @apiSuccess (success) {String} notAllowedToCreateCollection Present only if the user is not authenticated and the collection does not exist. In this case this user is not allowed to create the collection.
  *
  * @apiSuccessExample Normal success
@@ -90,31 +90,31 @@ router.get('/getcollectiondetails', livefyreControllerV1.getCollectionDetails);
  * @apiGroup v1/livefyre
  * @apiName init
  *
- * @apiParam {String} articleId ID of the article.
- * @apiParam {String} url Url of the article.
- * @apiParam {String} title Title of the article.
- * @apiParam {String} el ID of a DOM element in which the widget should be loaded. It is echoed in the response.
- * @apiParam {String} stream_type Can be one of 'livecomments', 'liveblog', 'livechat'. Default is 'livecomments'.
- * @apiParam {String} tags Additional tags for the collection (added to the default of CAPI and URL based tags). Comma separated.
- * @apiParam {String} sessionId Session ID of the user. Optional, if not present FTSession is read from the cookies.
+ * @apiParam {String} articleId 	Required. ID of the article.
+ * @apiParam {String} url 			Required. Url of the article.
+ * @apiParam {String} title 		Required. Title of the article.
+ * @apiParam {String} el 			Required. ID of a DOM element in which the widget should be loaded. It is echoed in the response.
+ * @apiParam {String} stream_type 	Optional. Can be one of 'livecomments', 'liveblog', 'livechat'. Default is 'livecomments'.
+ * @apiParam {String} tags 			Optional. Additional tags for the collection (added to the default of CAPI and URL based tags). Comma separated.
+ * @apiParam {String} sessionId 	Session ID of the user. Optional, but if not present, FTSession cookie is used.
  *
- * @apiSuccess (success) {Object} init Data about the article
- * @apiSuccess (success) {Number} init.siteId See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
- * @apiSuccess (success) {String} init.articleId
- * @apiSuccess (success) {String} init.collectionMeta See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
- * @apiSuccess (success) {String} init.checksum See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
+ * @apiSuccess (success) {Object} init 					Data about the article
+ * @apiSuccess (success) {Number} init.siteId 			See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
+ * @apiSuccess (success) {String} init.articleId		Article ID.
+ * @apiSuccess (success) {String} init.collectionMeta 	See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
+ * @apiSuccess (success) {String} init.checksum 		See [Livefyre documentation](http://answers.livefyre.com/developers/app-integrations/comments/#convConfigObject)
  * @apiSuccess (success) {String} init.notAllowedToCreateCollection Present only if the user is not authenticated and the collection does not exist. In this case this user is not allowed to create the collection.
- * @apiSuccess (success) {Object} auth Data about the user
- * @apiSuccess (success) {Boolean} auth.token Auth token of Livefyre. See [Livefyre documentation](http://answers.livefyre.com/developers/getting-started/tokens/auth/)
- * @apiSuccess (success) {Boolean} auth.expires Timestamp of when the token expires.
- * @apiSuccess (success) {Boolean} auth.displayName The user's pseudonym (nickname).
- * @apiSuccess (success) {Boolean} auth.settings The user's email notification settings.
+ * @apiSuccess (success) {Object} auth 					Data about the user
+ * @apiSuccess (success) {Boolean} auth.token 			Auth token of Livefyre. See [Livefyre documentation](http://answers.livefyre.com/developers/getting-started/tokens/auth/)
+ * @apiSuccess (success) {Boolean} auth.expires 		Timestamp of when the token expires.
+ * @apiSuccess (success) {Boolean} auth.displayName 	The user's pseudonym (nickname).
+ * @apiSuccess (success) {Boolean} auth.settings 		The user's email notification settings.
  *
- * @apiSuccess (unclassified) {Object} init Data about the article
- * @apiSuccess (unclassified) {Boolean} init.unclassifiedArticle Relates to the legacy mapping of articles to different sites based on primary section/URL. If the URL was not mapped by the legacy mapping logic, flag it.
+ * @apiSuccess (unclassified) {Object} init 						Data about the article
+ * @apiSuccess (unclassified) {Boolean} init.unclassifiedArticle 	Relates to the legacy mapping of articles to different sites based on primary section/URL. If the URL was not mapped by the legacy mapping logic, flag it.
  *
- * @apiSuccess (no pseudonym) {Object} auth Data about the user
- * @apiSuccess (no pseudonym) {Boolean} auth.pseudonym Pseudonym false is the flag that the user does not have a pseudonym yet.
+ * @apiSuccess (no pseudonym) {Object} auth 						Data about the user
+ * @apiSuccess (no pseudonym) {Boolean} auth.pseudonym 				Pseudonym false is the flag that the user does not have a pseudonym yet.
  *
  *
  * @apiSuccessExample Full response
@@ -173,7 +173,7 @@ router.get('/init', livefyreControllerV1.init);
  * @apiName get_lf_bootstrap
  * @apiDescription See [Livefyre documentation](http://answers.livefyre.com/developers/advanced-topics/bootstrap-html/)
  *
- * @apiParam {String} uuid ID of the article.
+ * @apiParam {String} uuid 		Required. ID of the article.
  *
  * @apiSuccess (success) {String} url URL which points to a ready rendered version of the comments widget.
  *
@@ -192,20 +192,20 @@ router.get('/get_lf_bootstrap', livefyreControllerV1.getLfBootstrap);
  * @apiName profile
  * @apiDescription Used for Livefyre's ping for pull mechanism. It returns the user's profile in a format that Livefyre understands. See [Livefyre documentation](http://answers.livefyre.com/developers/identity-integration/your-identity/#BuildTheResponse)
  *
- * @apiParam {String} id ID of the user (either eRights ID or UUID).
- * @apiParam {String} lftoken System token of the Livefyre network. See [Livefyre documentation](http://answers.livefyre.com/developers/libraries/methods/network/#link-buildlivefyretoken-nodejs)
+ * @apiParam {String} id 		Required. ID of the user (either eRights ID or UUID).
+ * @apiParam {String} lftoken 	Required. System token of the Livefyre network. It should be valid in order the API to respond. See [Livefyre documentation](http://answers.livefyre.com/developers/libraries/methods/network/#link-buildlivefyretoken-nodejs)
  *
- * @apiSuccess (success) {String} id ID of the user (eRights ID if it exists, otherwise UUID)
- * @apiSuccess (success) {String} email Email address of the user
- * @apiSuccess (success) {String} first_name First name of the user
- * @apiSuccess (success) {String} last_name Last name of the user
- * @apiSuccess (success) {String} display_name Pseudonym (nickname) of the user
- * @apiSuccess (success) {String} email_notifications Email notifications
- * @apiSuccess (success) {String} email_notifications.comments Email notifications in case someone comments in a conversation the user is following
- * @apiSuccess (success) {String} email_notifications.likes Email notifications in case someone likes the user's comment
- * @apiSuccess (success) {String} email_notifications.replies Email notifications in case someone replies to the user's comment
- * @apiSuccess (success) {String} autofollow_conversations Auto-follow any conversation after the user posts a comment in it
- * @apiSuccess (success) {String} settings_url URL to the user's profile page
+ * @apiSuccess (success) {String} id 			ID of the user (eRights ID if it exists, otherwise UUID)
+ * @apiSuccess (success) {String} email 		Email address of the user
+ * @apiSuccess (success) {String} first_name 	First name of the user
+ * @apiSuccess (success) {String} last_name 	Last name of the user
+ * @apiSuccess (success) {String} display_name 	Pseudonym (nickname) of the user
+ * @apiSuccess (success) {String} email_notifications 			Email notifications
+ * @apiSuccess (success) {String} email_notifications.comments 	Email notifications in case someone comments in a conversation the user is following
+ * @apiSuccess (success) {String} email_notifications.likes 	Email notifications in case someone likes the user's comment
+ * @apiSuccess (success) {String} email_notifications.replies 	Email notifications in case someone replies to the user's comment
+ * @apiSuccess (success) {String} autofollow_conversations 		Auto-follow any conversation after the user posts a comment in it
+ * @apiSuccess (success) {String} settings_url 					URL to the user's profile page
  *
  * @apiSuccessExample Success
  *  HTTP/1.1 200 OK

@@ -10,7 +10,7 @@ const consoleLogger = require('../../utils/consoleLogger');
 
 
 exports.metadata = function(req, res, next) {
-	if (!req.query.articleId && !req.query.url) {
+	if (!req.query.articleId || !req.query.url) {
 		res.status(400).send('"articleId" and "url" should be provided.');
 		return;
 	}
@@ -261,6 +261,13 @@ exports.profile = function (req, res, next) {
 		return;
 	}
 
+
+	const emailSettingsMappings = {
+		'never': 'never',
+		'hourly': 'often',
+		'immediately': 'immediately'
+	};
+
 	var userDataStore = new UserDataStore(req.query.id);
 	userDataStore.getUserData(function (err, data) {
 		if (err) {
@@ -289,20 +296,20 @@ exports.profile = function (req, res, next) {
 		if (data.emailPreferences) {
 			returnData.email_notifications = {};
 
-			if (data.emailPreferences.comments) {
-				returnData.email_notifications.comments = data.emailPreferences.comments;
+			if (data.emailPreferences.comments && emailSettingsMappings[data.emailPreferences.comments]) {
+				returnData.email_notifications.comments = emailSettingsMappings[data.emailPreferences.comments];
 			} else {
 				returnData.email_notifications.comments = 'never';
 			}
 
-			if (data.emailPreferences.likes) {
-				returnData.email_notifications.likes = data.emailPreferences.likes;
+			if (data.emailPreferences.likes && emailSettingsMappings[data.emailPreferences.likes]) {
+				returnData.email_notifications.likes = emailSettingsMappings[data.emailPreferences.likes];
 			} else {
 				returnData.email_notifications.likes = 'never';
 			}
 
-			if (data.emailPreferences.replies) {
-				returnData.email_notifications.replies = data.emailPreferences.replies;
+			if (data.emailPreferences.replies && emailSettingsMappings[data.emailPreferences.replies]) {
+				returnData.email_notifications.replies = emailSettingsMappings[data.emailPreferences.replies];
 			} else {
 				returnData.email_notifications.replies = 'never';
 			}

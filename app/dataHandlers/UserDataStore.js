@@ -605,7 +605,7 @@ var UserDataStore = function (userId) {
 							returnData.emailPreferences = storedData.emailPreferences;
 						}
 
-						if (storedData.hasOwnProperty('email') && storedData.hasOwnProperty('firstName') || storedData.hasOwnProperty('lastName')) {
+						if (storedData.hasOwnProperty('email')) {
 							if (storedData.email) {
 								returnData.email = crypto.decrypt(storedData.email);
 							}

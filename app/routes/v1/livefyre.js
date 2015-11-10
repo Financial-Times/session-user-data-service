@@ -10,7 +10,7 @@ const livefyreControllerV1 = require('../../controllers/v1/livefyre.js');
  * @apiVersion 1.1.0
  * @apiGroup v1/livefyre
  * @apiName metadata
- *
+ * @apiDescription Returns the list of tags of an article based on CAPI and the URL structure.
  *
  * @apiParam {String} articleId 	Required. ID of the article.
  * @apiParam {String} url 			Required. Url of the article.
@@ -40,6 +40,7 @@ router.get('/metadata', livefyreControllerV1.metadata);
  * @apiVersion 1.1.0
  * @apiGroup v1/livefyre
  * @apiName getcollectiondetails
+ * @apiDescription Generates information needed by Livefyre about the article.
  *
  * @apiParam {String} articleId 	Required. ID of the article.
  * @apiParam {String} url 			Required. Url of the article.
@@ -89,6 +90,7 @@ router.get('/getcollectiondetails', livefyreControllerV1.getCollectionDetails);
  * @apiVersion 1.1.0
  * @apiGroup v1/livefyre
  * @apiName init
+ * @apiDescription Endpoint to init the comments application. It returns both article and user informations.
  *
  * @apiParam {String} articleId 	Required. ID of the article.
  * @apiParam {String} url 			Required. Url of the article.

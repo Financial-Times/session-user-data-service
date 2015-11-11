@@ -17,6 +17,11 @@ function sendResponse(req, res, status, json) {
 }
 
 exports.getAuth = function (req, res, next) {
+	res.jsonp({
+		serviceUp: false
+	});
+	return;
+
 	var userSession;
 	if (req.cookies && req.cookies['FTSession']) {
 		userSession = req.cookies['FTSession'];
@@ -33,7 +38,7 @@ exports.getAuth = function (req, res, next) {
 		sessionDataStore.getAuthMetadata(function (errAuth, data) {
 			if (errAuth) {
 				res.jsonp({
-					servicesUp: false
+					serviceUp: false
 				});
 				return;
 			}

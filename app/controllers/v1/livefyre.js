@@ -9,6 +9,7 @@ const async = require('async');
 const consoleLogger = require('../../utils/consoleLogger');
 
 
+
 exports.metadata = function(req, res, next) {
 	if (!req.query.articleId || !req.query.url) {
 		res.status(400).send('"articleId" and "url" should be provided.');
@@ -144,11 +145,16 @@ exports.init = function (req, res, next) {
 			});
 		},
 		auth: function (callback) {
+			callback(null, {
+				serviceUp: false
+			});
+			return;
+
 			if (userSession) {
 				sessionDataStore.getAuthMetadata(function (errAuth, data) {
 					if (errAuth) {
 						callback(null, {
-							servicesUp: false
+							serviceUp: false
 						});
 						return;
 					}

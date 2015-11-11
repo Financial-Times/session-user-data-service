@@ -17,10 +17,10 @@ function sendResponse(req, res, status, json) {
 }
 
 exports.getAuth = function (req, res, next) {
-	res.jsonp({
+	/*res.jsonp({
 		serviceUp: false
 	});
-	return;
+	return;*/
 
 	var userSession;
 	if (req.cookies && req.cookies['FTSession']) {

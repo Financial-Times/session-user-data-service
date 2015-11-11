@@ -145,10 +145,10 @@ exports.init = function (req, res, next) {
 			});
 		},
 		auth: function (callback) {
-			callback(null, {
+			/*callback(null, {
 				serviceUp: false
 			});
-			return;
+			return;*/
 
 			if (userSession) {
 				sessionDataStore.getAuthMetadata(function (errAuth, data) {

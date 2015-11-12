@@ -141,7 +141,7 @@ exports.init = function (req, res, next) {
 					return;
 				}
 
-				callback(null, data);
+				callback(null, _.omit(data, ['collectionExists']));
 			});
 		},
 		auth: function (callback) {
@@ -394,9 +394,12 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataStore, sessionDa
 
 			if (exists) {
 				consoleLogger.log(config.articleId, 'auth restricted collection creation, collection exists');
+				collectionDetails.collectionExists = true;
+
 				callCallback(null, collectionDetails);
 			} else {
 				consoleLogger.log(config.articleId, 'auth restricted collection creation, collection does not exist');
+				collectionDetails.collectionExists = false;
 
 				if (sessionDataStore) {
 					sessionDataStore.getSessionData(function (err, sessionData) {

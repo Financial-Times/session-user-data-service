@@ -72,7 +72,7 @@ exports.getCollectionDetails = function (req, res, next) {
 
 				if (err.unclassified) {
 					res.jsonp({
-						unclassified: true
+						unclassifiedArticle: true
 					});
 					return;
 				}
@@ -132,7 +132,7 @@ exports.init = function (req, res, next) {
 				if (err) {
 					if (typeof err === 'object' && err.unclassified) {
 						callback(null, {
-							unclassified: true
+							unclassifiedArticle: true
 						});
 						return;
 					}

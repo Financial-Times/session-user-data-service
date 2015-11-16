@@ -409,14 +409,7 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataStore, sessionDa
 						}
 
 						if (sessionData) {
-							fetchLivefyreCollectionDetails(articleDataStore, config, function (errFetch, collectionDetails) {
-								if (errFetch) {
-									callCallback(err);
-									return;
-								}
-
-								callCallback(null, collectionDetails);
-							});
+							callCallback(null, collectionDetails);
 						} else {
 							let returnData = collectionDetails;
 

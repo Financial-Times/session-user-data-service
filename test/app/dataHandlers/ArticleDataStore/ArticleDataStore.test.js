@@ -473,10 +473,11 @@ describe('ArticleDataStore', function() {
 				url: testData.articles.normal.url
 			}, function (err, data) {
 				assert.ok(!err, "Error is not returned.");
+
 				assert.deepEqual(data, {
 					siteId: testData.articles.normal.siteId,
 					articleId: testData.articles.normal.id,
-					collectionMeta: {
+					collectionMeta: JSON.stringify({
 						collectionMeta: {
 							tags: testData.defaultTagListCollectionMeta,
 							networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -488,8 +489,8 @@ describe('ArticleDataStore', function() {
 							articleId: testData.articles.normal.id,
 							url: testData.articles.normal.url
 						}
-					},
-					checksum: {
+					}),
+					checksum: JSON.stringify({
 						checksum: {
 							tags: testData.defaultTagListCollectionMeta,
 							networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -501,7 +502,7 @@ describe('ArticleDataStore', function() {
 							articleId: testData.articles.normal.id,
 							url: testData.articles.normal.url
 						}
-					}
+					})
 				}, "Collection details is correctly returned.");
 
 				done();
@@ -517,10 +518,11 @@ describe('ArticleDataStore', function() {
 				tags: ['tag1', 'tag2', 'tag 3']
 			}, function (err, data) {
 				assert.ok(!err, "Error is not returned.");
+
 				assert.deepEqual(data, {
 					siteId: testData.articles.blogs.siteId,
 					articleId: testData.articles.blogs.id,
-					collectionMeta: {
+					collectionMeta: JSON.stringify({
 						collectionMeta: {
 							tags: testData.defaultTagListCollectionMeta + ',blog,the-world,tag1,tag2,tag_3',
 							networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -532,8 +534,8 @@ describe('ArticleDataStore', function() {
 							articleId: testData.articles.blogs.id,
 							url: testData.articles.blogs.url
 						}
-					},
-					checksum: {
+					}),
+					checksum: JSON.stringify({
 						checksum: {
 							tags: testData.defaultTagListCollectionMeta + ',blog,the-world,tag1,tag2,tag_3',
 							networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -545,7 +547,7 @@ describe('ArticleDataStore', function() {
 							articleId: testData.articles.blogs.id,
 							url: testData.articles.blogs.url
 						}
-					}
+					})
 				}, "Collection details is correctly returned.");
 
 				done();
@@ -561,10 +563,11 @@ describe('ArticleDataStore', function() {
 				stream_type: 'liveblogs'
 			}, function (err, data) {
 				assert.ok(!err, "Error is not returned.");
+
 				assert.deepEqual(data, {
 					siteId: testData.articles.ftalphaville.siteId,
 					articleId: testData.articles.ftalphaville.id,
-					collectionMeta: {
+					collectionMeta: JSON.stringify({
 						collectionMeta: {
 							tags: testData.defaultTagListCollectionMeta + ',alphaville,blog',
 							networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -576,8 +579,8 @@ describe('ArticleDataStore', function() {
 							articleId: testData.articles.ftalphaville.id,
 							url: testData.articles.ftalphaville.url
 						}
-					},
-					checksum: {
+					}),
+					checksum: JSON.stringify({
 						checksum: {
 							tags: testData.defaultTagListCollectionMeta + ',alphaville,blog',
 							networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -589,7 +592,7 @@ describe('ArticleDataStore', function() {
 							articleId: testData.articles.ftalphaville.id,
 							url: testData.articles.ftalphaville.url
 						}
-					}
+					})
 				}, "Collection details is correctly returned.");
 
 				done();
@@ -643,7 +646,7 @@ describe('ArticleDataStore', function() {
 					assert.deepEqual(articleCache[0].livefyre.metadata.data, {
 						siteId: testData.articles.toBeUpdated.siteId,
 						articleId: testData.articles.toBeUpdated.id,
-						collectionMeta: {
+						collectionMeta: JSON.stringify({
 							collectionMeta: {
 								tags: testData.defaultTagListCollectionMeta,
 								networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -655,8 +658,8 @@ describe('ArticleDataStore', function() {
 								articleId: testData.articles.toBeUpdated.id,
 								url: testData.articles.toBeUpdated.url
 							}
-						},
-						checksum: {
+						}),
+						checksum: JSON.stringify({
 							checksum: {
 								tags: testData.defaultTagListCollectionMeta,
 								networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -668,7 +671,7 @@ describe('ArticleDataStore', function() {
 								articleId: testData.articles.toBeUpdated.id,
 								url: testData.articles.toBeUpdated.url
 							}
-						}
+						})
 					}, "Correct tags cached.");
 					assert.ok(articleCache[0].livefyre.metadata.expires >= new Date(startTime.getTime() + testData.mocks.env.cacheExpiryHours.articles * 60 * 60 * 1000) &&
 							articleCache[0].livefyre.metadata.expires <= new Date(endTime.getTime() + testData.mocks.env.cacheExpiryHours.articles * 60 * 60 * 1000), "Expiry time of the cache is around the one specified in the configs.");
@@ -699,7 +702,7 @@ describe('ArticleDataStore', function() {
 					assert.deepEqual(articleCache[0].livefyre.metadata.data, {
 						siteId: testData.articles.capiDown2.siteId,
 						articleId: testData.articles.capiDown2.id,
-						collectionMeta: {
+						collectionMeta: JSON.stringify({
 							collectionMeta: {
 								tags: '',
 								networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -711,8 +714,8 @@ describe('ArticleDataStore', function() {
 								articleId: testData.articles.capiDown2.id,
 								url: testData.articles.capiDown2.url
 							}
-						},
-						checksum: {
+						}),
+						checksum: JSON.stringify({
 							checksum: {
 								tags: '',
 								networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -724,7 +727,7 @@ describe('ArticleDataStore', function() {
 								articleId: testData.articles.capiDown2.id,
 								url: testData.articles.capiDown2.url
 							}
-						}
+						})
 					}, "Correct tags cached.");
 
 					// expires in 5 minutes
@@ -757,7 +760,7 @@ describe('ArticleDataStore', function() {
 					assert.deepEqual(articleCache[0].livefyre.metadata.data, {
 						siteId: testData.articles.capiDownCached.siteId,
 						articleId: testData.articles.capiDownCached.id,
-						collectionMeta: {
+						collectionMeta: JSON.stringify({
 							collectionMeta: {
 								tags: '',
 								networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -769,8 +772,8 @@ describe('ArticleDataStore', function() {
 								articleId: testData.articles.capiDownCached.id,
 								url: testData.articles.capiDownCached.url
 							}
-						},
-						checksum: {
+						}),
+						checksum: JSON.stringify({
 							checksum: {
 								tags: '',
 								networkName: testData.mocks.env.livefyre.network.name + '.fyre.co',
@@ -782,7 +785,7 @@ describe('ArticleDataStore', function() {
 								articleId: testData.articles.capiDownCached.id,
 								url: testData.articles.capiDownCached.url
 							}
-						}
+						})
 					}, "Correct tags cached.");
 
 					// expires in 5 minutes

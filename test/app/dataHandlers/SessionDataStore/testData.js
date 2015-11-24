@@ -23,6 +23,15 @@ const env = {
 	crypto: {
 		key: 'g2ggrtg45g5ggr'
 	},
+	livefyre: {
+		network: {
+			name: 'ft-1',
+			key: 'network-key'
+		},
+		api: {
+			userProfileUrl: 'http://{networkName}.fyre.co/userProfileUrl'
+		}
+	},
 	erightsToUuidService: {
 		urls: {
 			byUuid: 'http://erights-to-uuid/get?userId={userId}',
@@ -175,6 +184,28 @@ for (let key in users) {
 	}
 }
 
+let livefyreUserProfiles = {};
+for (let key in users) {
+	if (users.hasOwnProperty(key)) {
+		let id;
+		if (users[key].deprecatedIds) {
+			id = users[key].deprecatedIds.erightsId;
+		} else {
+			id = users[key].id;
+		}
+
+		livefyreUserProfiles[id] = {
+			data: {
+				modScopes: {
+					collections: [id],
+					sites: [],
+					networks: []
+				}
+			}
+		};
+	}
+}
+
 
 let usersMongoContent = [];
 for (let key in users) {
@@ -199,6 +230,7 @@ const needleMock = new NeedleMock({
 	env: env,
 	sessions: sessionsById,
 	usersErightsMapping: usersList,
+	livefyreUserProfiles: livefyreUserProfiles,
 	global: true
 });
 
@@ -245,3 +277,4 @@ exports.mocks = {
 exports.sessions = sessions;
 exports.sessionsById = sessionsById;
 exports.users = users;
+exports.livefyreUserProfiles = livefyreUserProfiles;

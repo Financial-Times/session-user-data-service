@@ -10,11 +10,11 @@ module.exports = function (config) {
 					return config.systemToken;
 				},
 				buildUserAuthToken: function (userId, displayName, expires) {
-					return {
+					return JSON.stringify({
 						userId: userId,
 						displayName: displayName,
 						expires: expires
-					};
+					});
 				},
 				getSite: function (siteId, siteKey) {
 					return {
@@ -30,17 +30,18 @@ module.exports = function (config) {
 								articleId: articleId,
 								url: url
 							};
+
 							return {
 								data: data,
 								buildCollectionMetaToken: function () {
-									return {
+									return JSON.stringify({
 										collectionMeta: data
-									};
+									});
 								},
 								buildChecksum: function () {
-									return {
+									return JSON.stringify({
 										checksum: data
-									};
+									});
 								}
 							};
 						}

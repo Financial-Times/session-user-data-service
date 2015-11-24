@@ -1,5 +1,8 @@
 "use strict";
 
+const urlParser = require('url');
+const queryStringParser = require('querystring');
+
 module.exports = function (config) {
 	config = config || {};
 
@@ -46,6 +49,16 @@ module.exports = function (config) {
 				if (matchCollectionExistsUrl && matchCollectionExistsUrl.length) {
 					type = 'livefyreCollectionExists';
 					match = matchCollectionExistsUrl;
+				}
+			}
+
+			if (config.env.livefyre.api.userProfileUrl) {
+				let matchLivefyreUserProfile = url.match(new RegExp(config.env.livefyre.api.userProfileUrl
+																			.replace(/\{networkName\}/g, '([^\.\/]+)')
+																			.replace('?', '\\?') + '(.*)'));
+				if (matchLivefyreUserProfile && matchLivefyreUserProfile.length) {
+					type = 'livefyreUserProfile';
+					match = matchLivefyreUserProfile;
 				}
 			}
 
@@ -156,6 +169,53 @@ module.exports = function (config) {
 								statusCode: 401
 							});
 						}
+						break;
+					case 'livefyreUserProfile':
+						(() => {
+							const networkName = match[1];
+							const parsedUrl = urlParser.parse(url);
+							const parsedQueryString = queryStringParser.parse(parsedUrl.query);
+							const lfToken = parsedQueryString.lftoken;
+
+							if (networkName !== config.env.livefyre.network.name) {
+								callback(new Error("Network is not correct."));
+								return;
+							}
+
+							if (lfToken && lfToken.indexOf('down') !== -1) {
+								callback(new Error("Service down"));
+								return;
+							}
+
+							let userProfile = config.livefyreUserProfiles[lfToken];
+							if (userProfile) {
+								callback(null, {
+									statusCode: 200,
+									body: userProfile
+								});
+								return;
+							}
+
+							try {
+								let lfTokenJson = JSON.parse(lfToken);
+								if (lfTokenJson && lfTokenJson.userId) {
+									userProfile = config.livefyreUserProfiles[lfTokenJson.userId];
+									if (userProfile) {
+										callback(null, {
+											statusCode: 200,
+											body: userProfile
+										});
+										return;
+									}
+								}
+							} catch (e) {
+							}
+
+							console.log('404');
+							callback(null, {
+								statusCode: 404
+							});
+						}());
 						break;
 
 					default:

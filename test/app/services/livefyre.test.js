@@ -61,6 +61,17 @@ const validToken = 'tafg342fefwef';
 
 const systemToken = 'system-token';
 
+const lfUserProfile = {
+	data: {
+		modScopes: {
+			collections: [],
+			sites: [423453],
+			networks: ['ft-1']
+		}
+	}
+};
+
+
 const env = {
 	livefyre: {
 		network: {
@@ -78,7 +89,8 @@ const env = {
 		api: {
 			collectionExistsUrl: 'http://{networkName}.collection-exists.livefyre.com/{articleIdBase64}',
 			pingToPullUrl: 'http://{networkName}.ping-to-pull.livefyre.com/{userId}?token={token}',
-			bootstrapUrl: 'http://bootstrap.{networkName}.fyre.co/bs3/{networkName}.fyre.co/{siteId}/{articleIdBase64}/bootstrap.html'
+			bootstrapUrl: 'http://bootstrap.{networkName}.fyre.co/bs3/{networkName}.fyre.co/{siteId}/{articleIdBase64}/bootstrap.html',
+			userProfileUrl: 'http://{networkName}.fyre.co/userProfileUrl'
 		}
 	},
 	mongo: {
@@ -87,12 +99,16 @@ const env = {
 	'@global': true
 };
 
+const livefyreUserProfiles = {};
+livefyreUserProfiles[validToken] = lfUserProfile;
+
 
 const needleMock = new NeedleMock({
 	env: env,
 	articlesCollectionExists: articleCollectionExists,
 	systemToken: systemToken,
 	userIdsPingToPull: [userId],
+	livefyreUserProfiles: livefyreUserProfiles,
 	global: true
 });
 
@@ -205,10 +221,11 @@ describe('livefyreService', function() {
 				url: articles.normal.url
 			}, function (err, data) {
 				assert.ok(!err, "Error is not returned.");
+
 				assert.deepEqual(data, {
 					siteId: articles.normal.siteId,
 					articleId: articles.normal.id,
-					collectionMeta: {
+					collectionMeta: JSON.stringify({
 						collectionMeta: {
 							tags: '',
 							networkName: env.livefyre.network.name + '.fyre.co',
@@ -220,8 +237,8 @@ describe('livefyreService', function() {
 							articleId: articles.normal.id,
 							url: articles.normal.url
 						}
-					},
-					checksum: {
+					}),
+					checksum: JSON.stringify({
 						checksum: {
 							tags: '',
 							networkName: env.livefyre.network.name + '.fyre.co',
@@ -233,7 +250,7 @@ describe('livefyreService', function() {
 							articleId: articles.normal.id,
 							url: articles.normal.url
 						}
-					}
+					})
 				}, "Collection details is correctly returned.");
 
 				done();
@@ -248,10 +265,11 @@ describe('livefyreService', function() {
 				tags: ['tag1', 'tag2', 'tag 3']
 			}, function (err, data) {
 				assert.ok(!err, "Error is not returned.");
+
 				assert.deepEqual(data, {
 					siteId: articles.normal.siteId,
 					articleId: articles.normal.id,
-					collectionMeta: {
+					collectionMeta: JSON.stringify({
 						collectionMeta: {
 							tags: 'tag1,tag2,tag_3',
 							networkName: env.livefyre.network.name + '.fyre.co',
@@ -263,8 +281,8 @@ describe('livefyreService', function() {
 							articleId: articles.normal.id,
 							url: articles.normal.url
 						}
-					},
-					checksum: {
+					}),
+					checksum: JSON.stringify({
 						checksum: {
 							tags: 'tag1,tag2,tag_3',
 							networkName: env.livefyre.network.name + '.fyre.co',
@@ -276,7 +294,7 @@ describe('livefyreService', function() {
 							articleId: articles.normal.id,
 							url: articles.normal.url
 						}
-					}
+					})
 				}, "Collection details is correctly returned.");
 
 				done();
@@ -291,10 +309,11 @@ describe('livefyreService', function() {
 				stream_type: 'liveblogs'
 			}, function (err, data) {
 				assert.ok(!err, "Error is not returned.");
+
 				assert.deepEqual(data, {
 					siteId: articles.normal.siteId,
 					articleId: articles.normal.id,
-					collectionMeta: {
+					collectionMeta: JSON.stringify({
 						collectionMeta: {
 							tags: '',
 							networkName: env.livefyre.network.name + '.fyre.co',
@@ -306,8 +325,8 @@ describe('livefyreService', function() {
 							articleId: articles.normal.id,
 							url: articles.normal.url
 						}
-					},
-					checksum: {
+					}),
+					checksum: JSON.stringify({
 						checksum: {
 							tags: '',
 							networkName: env.livefyre.network.name + '.fyre.co',
@@ -319,7 +338,7 @@ describe('livefyreService', function() {
 							articleId: articles.normal.id,
 							url: articles.normal.url
 						}
-					}
+					})
 				}, "Collection details is correctly returned.");
 
 				done();
@@ -419,6 +438,9 @@ describe('livefyreService', function() {
 				displayName: displayName
 			}, function (err, data) {
 				assert.ok(!err, "Error is not returned.");
+
+				data.token = JSON.parse(data.token);
+
 				assert.deepEqual(Object.keys(data), ['token', 'expires'], "Response has the expected fields.");
 				assert.deepEqual(Object.keys(data.token), ['userId', 'displayName', 'expires'], "Token has the expected fields.");
 				assert.deepEqual(_.pick(data.token, ['userId', 'displayName']), {
@@ -435,6 +457,8 @@ describe('livefyreService', function() {
 				userId: userId,
 				displayName: displayName
 			}, function (err, data) {
+				data.token = JSON.parse(data.token);
+
 				assert.ok(Math.abs(new Date(new Date().getTime() + data.token.expires * 1000).getTime() - new Date(data.expires).getTime()) < 10, "Expires field and the expiration field in token point to the same date.");
 
 				done();
@@ -450,6 +474,8 @@ describe('livefyreService', function() {
 				expires: expiresIn
 			}, function (err, data) {
 				var end = new Date();
+
+				data.token = JSON.parse(data.token);
 
 				assert.ok(data.token.expires >= expiresIn - 1 && data.token.expires <= expiresIn + 1, "Expires value in the token states an expiration in approximately 24 hours.");
 				assert.ok(data.expires >= new Date(start.getTime() + expiresIn * 1000).getTime() && data.expires <= new Date(end.getTime() + expiresIn * 1000).getTime(), "Expires value states an expiration data approximately in the specified time.");
@@ -467,6 +493,8 @@ describe('livefyreService', function() {
 				displayName: displayName,
 				expiresAt: expiresAt
 			}, function (err, data) {
+				data.token = JSON.parse(data.token);
+
 				assert.ok(data.token.expires >= expiresIn - 1 && data.token.expires <= expiresIn + 1, "Expires value in the token states an expiration in approximately 24 hours.");
 				assert.ok(Math.abs(data.expires - expiresAt.getTime()) < 10, "Expires value states an expiration data in the specified time.");
 
@@ -499,6 +527,35 @@ describe('livefyreService', function() {
 		it('should call the service with no issues if valid user ID is specified', function (done) {
 			livefyreService.callPingToPull(userId, function (err) {
 				assert.ok(!err, "Error not returned.");
+
+				done();
+			});
+		});
+	});
+
+	describe('getModerationRights', function () {
+		it('should return error if the livefyre service returns error', function (done) {
+			livefyreService.getModerationRights('service-down', function (err, data) {
+				assert.ok(err, "Error is returned.");
+				assert.ok(data === undefined || data === null, "Data is not set.");
+
+				done();
+			});
+		});
+
+		it('should return error if the user does not exist', function (done) {
+			livefyreService.getModerationRights('notfound', function (err, data) {
+				assert.ok(err, "Error is returned.");
+				assert.ok(data === undefined || data === null, "Data is not set.");
+
+				done();
+			});
+		});
+
+		it('should return the moderation rights if the user exists', function (done) {
+			livefyreService.getModerationRights(validToken, function (err, data) {
+				assert.ok(!err, "Error is not returned.");
+				assert.deepEqual(data, lfUserProfile.data.modScopes, "Collection exists.");
 
 				done();
 			});

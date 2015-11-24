@@ -163,7 +163,8 @@ exports.init = function (req, res, next) {
 						var returnData = {
 							token: data.token,
 							expires: data.expires,
-							displayName: data.pseudonym
+							displayName: data.pseudonym,
+							moderationRights: data.moderationRights
 						};
 
 						if (data.emailPreferences && Object.keys(data.emailPreferences).length) {

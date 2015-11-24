@@ -317,10 +317,20 @@ var SessionDataStore = function (sessionId) {
 												return;
 											}
 
-											callbackAsync(null, {
-												token: authToken.token,
-												expires: authToken.expires,
-												pseudonym: pseudonym
+											livefyreService.getModerationRights(authToken.token, function (errModRights, modRights) {
+												if (errModRights) {
+													callbackAsync(errModRights);
+													return;
+												}
+
+												console.log(modRights);
+
+												callbackAsync(null, {
+													token: authToken.token,
+													expires: authToken.expires,
+													pseudonym: pseudonym,
+													moderationRights: modRights
+												});
 											});
 										});
 									},

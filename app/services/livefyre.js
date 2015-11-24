@@ -185,3 +185,45 @@ exports.callPingToPull = function (userId, callback) {
 		}
 	});
 };
+
+exports.getModerationRights = function (token, callback) {
+	if (typeof callback !== 'function') {
+		throw new Error("livefyre.callPingToPull: callback not provided");
+	}
+
+	if (!token) {
+		callback({
+			statusCode: 400,
+			error: new Error("'token' should be provided.")
+		});
+		return;
+	}
+
+	let url = env.livefyre.api.userProfileUrl;
+	url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
+
+	needle.get(url + '?lftoken=' + token, (err, response) => {
+		if (err || !response || (response.statusCode < 200 || response.statusCode >= 300)) {
+			callback({
+				error: err,
+				responseBody: response ? response.body : null,
+				statusCode: response ? response.statusCode : 503
+			});
+
+			if (err) {
+				consoleLogger.warn('livefyre.getUserDetails error', err);
+			}
+			return;
+		}
+
+		if (response.body && response.body.data && response.body.data.modScopes) {
+			callback(null, response.body.data.modScopes);
+		} else {
+			callback({
+				statusCode: 503,
+				error: new Error("Invalid response received from Livefyre."),
+				responseBody: response ? response.body : null
+			});
+		}
+	});
+};

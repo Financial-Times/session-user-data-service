@@ -211,7 +211,6 @@ module.exports = function (config) {
 							} catch (e) {
 							}
 
-							console.log('404');
 							callback(null, {
 								statusCode: 404
 							});

@@ -117,31 +117,33 @@ var ArticleDataStore = function (articleId) {
 
 			var tags = [];
 
-			var matches = parsedUrl.hostname.match(/([^\.]+)\.ft\.com$/);
-			if (matches && matches.length) {
-				switch (matches[1]) {
-					case 'blogs':
-						tags.push('blog');
-						break;
-					case 'discussions':
-						tags.push('discussion');
-						break;
-					case 'ftalphaville':
-						tags.push('alphaville');
-						tags.push('blog');
-						break;
-					case 'lexicon':
-						tags.push('lexicon');
-						break;
-					default:
-						break;
-				}
-			}
-
-			if (parsedUrl.hostname.endsWith('blogs.ft.com') || parsedUrl.hostname.endsWith('discussions.ft.com')) {
-				matches = parsedUrl.pathname.match(/\/([^\/]+)/);
+			if (parsedUrl && parsedUrl.hostname) {
+				var matches = parsedUrl.hostname.match(/([^\.]+)\.ft\.com$/);
 				if (matches && matches.length) {
-					tags.push(matches[1]);
+					switch (matches[1]) {
+						case 'blogs':
+							tags.push('blog');
+							break;
+						case 'discussions':
+							tags.push('discussion');
+							break;
+						case 'ftalphaville':
+							tags.push('alphaville');
+							tags.push('blog');
+							break;
+						case 'lexicon':
+							tags.push('lexicon');
+							break;
+						default:
+							break;
+					}
+				}
+
+				if (parsedUrl.hostname.endsWith('blogs.ft.com') || parsedUrl.hostname.endsWith('discussions.ft.com')) {
+					matches = parsedUrl.pathname.match(/\/([^\/]+)/);
+					if (matches && matches.length) {
+						tags.push(matches[1]);
+					}
 				}
 			}
 

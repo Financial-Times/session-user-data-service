@@ -323,8 +323,6 @@ var SessionDataStore = function (sessionId) {
 													return;
 												}
 
-												console.log(modRights);
-
 												callbackAsync(null, {
 													token: authToken.token,
 													expires: authToken.expires,

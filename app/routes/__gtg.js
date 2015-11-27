@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const health = require('../../health/health.js');
+const health = require('../health/health.js');
 
 
 router.get('/__gtg', function (req, res, next) {

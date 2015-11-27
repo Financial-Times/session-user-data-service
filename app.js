@@ -14,10 +14,10 @@ var routes = {
 	index: require('./app/routes/index'),
 	__health: require('./app/routes/__health'),
 	__about: require('./app/routes/__about'),
+	__gtg: require('./app/routes/__gtg'),
 	v1: {
 		livefyre: require('./app/routes/v1/livefyre'),
-		user: require('./app/routes/v1/user'),
-		__gtg: require('./app/routes/v1/__gtg')
+		user: require('./app/routes/v1/user')
 	}
 };
 
@@ -85,8 +85,7 @@ if (env.maintenanceModeOn) {
 } else {
 	app.use('/v1/livefyre', routes.v1.livefyre);
 	app.use('/v1/user', routes.v1.user);
-	app.use('/v1', routes.v1.__gtg);
-	app.use('/', routes.v1.__gtg);
+	app.use('/', routes.__gtg);
 	app.use('/', routes.__health);
 	app.use('/', routes.__about);
 	app.get('/', function (req, res) {

@@ -7,12 +7,18 @@ const livefyreService = require('../../services/livefyre');
 const _ = require('lodash');
 const async = require('async');
 const consoleLogger = require('../../utils/consoleLogger');
+const validUrl = require('valid-url');
 
 
 
 exports.metadata = function(req, res, next) {
 	if (!req.query.articleId || !req.query.url) {
 		res.status(400).send('"articleId" and "url" should be provided.');
+		return;
+	}
+
+	if (!validUrl.isUri(req.query.url)) {
+		res.status(400).send('"url" is not a valid URL.');
 		return;
 	}
 
@@ -35,6 +41,11 @@ exports.metadata = function(req, res, next) {
 exports.getCollectionDetails = function (req, res, next) {
 	if (!req.query.articleId || !req.query.title || !req.query.url) {
 		res.status(400).send('"articleId", "url" and "title" should be provided.');
+		return;
+	}
+
+	if (!validUrl.isUri(req.query.url)) {
+		res.status(400).send('"url" is not a valid URL.');
 		return;
 	}
 
@@ -92,6 +103,11 @@ exports.getCollectionDetails = function (req, res, next) {
 exports.init = function (req, res, next) {
 	if (!req.query.articleId || !req.query.title || !req.query.url || !req.query.el) {
 		res.status(400).send('"articleId", "url", "title" and "el" (element ID) should be provided.');
+		return;
+	}
+
+	if (!validUrl.isUri(req.query.url)) {
+		res.status(400).send('"url" is not a valid URL.');
 		return;
 	}
 

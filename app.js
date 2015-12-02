@@ -111,12 +111,12 @@ app.use(function(err, req, res, next) {
     message: err.message,
     error: {}
   });
-  consoleLogger.error("Unhandled ERROR", err);
+  consoleLogger.error("ERROR", err, err.stack);
 });
 
 
 process.on('uncaughtException', function(err) {
-	consoleLogger.error('Uncaught exception: ', err, err.stack);
+	consoleLogger.error('Uncaught EXCEPTION: ', err, err.stack);
 });
 
 

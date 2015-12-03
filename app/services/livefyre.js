@@ -49,23 +49,27 @@ exports.getCollectionDetails = function (config, callback) {
 		}
 
 		if (env.livefyre.siteKeys[siteId]) {
-			var site = network.getSite(siteId, env.livefyre.siteKeys[siteId]);
+			try {
+				var site = network.getSite(siteId, env.livefyre.siteKeys[siteId]);
 
-			var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);
-			if (config.tags) {
-				collection.data.tags = config.tags.join(',').replace(/ /g, '_');
-			}
+				var collection = site.buildCollection(stream_type, config.title, config.articleId, config.url);
+				if (config.tags) {
+					collection.data.tags = config.tags.join(',').replace(/ /g, '_');
+				}
 
-			var collectionMeta = collection.buildCollectionMetaToken();
-			var checksum = collection.buildChecksum();
+				var collectionMeta = collection.buildCollectionMetaToken();
+				var checksum = collection.buildChecksum();
 
-			if (collectionMeta) {
-				callback(null, {
-					siteId: siteId,
-					articleId: config.articleId,
-					collectionMeta: collectionMeta,
-					checksum: checksum
-				});
+				if (collectionMeta) {
+					callback(null, {
+						siteId: siteId,
+						articleId: config.articleId,
+						collectionMeta: collectionMeta,
+						checksum: checksum
+					});
+				}
+			} catch (e) {
+				callback(e);
 			}
 		} else {
 			callback(new Error("SiteID is not configured properly."));

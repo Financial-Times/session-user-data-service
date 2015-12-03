@@ -5,7 +5,7 @@ var legacySiteMapping = require('./legacySiteMapping');
 var needle = require('needle');
 var consoleLogger = require('../utils/consoleLogger');
 var env = require('../../env');
-var validUrl = require('valid-url');
+var urlParser = require('url');
 
 var network = livefyre.getNetwork(env.livefyre.network.name + '.fyre.co', env.livefyre.network.key);
 
@@ -35,7 +35,8 @@ exports.getCollectionDetails = function (config, callback) {
 		return;
 	}
 
-	if (!validUrl.isUri(config.url)) {
+	var parsedUrl = urlParser.parse(config.url);
+	if (!parsedUrl || !parsedUrl.host || parsedUrl.host.indexOf('.') === -1) {
 		callback(new Error('"url" is not a valid URL.'));
 		return;
 	}

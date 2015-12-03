@@ -7,7 +7,7 @@ const livefyreService = require('../../services/livefyre');
 const _ = require('lodash');
 const async = require('async');
 const consoleLogger = require('../../utils/consoleLogger');
-const validUrl = require('valid-url');
+const urlParser = require('url');
 
 
 
@@ -17,7 +17,8 @@ exports.metadata = function(req, res, next) {
 		return;
 	}
 
-	if (!validUrl.isUri(req.query.url)) {
+	var parsedUrl = urlParser.parse(req.query.url);
+	if (!parsedUrl || !parsedUrl.host || parsedUrl.host.indexOf('.') === -1) {
 		res.status(400).send('"url" is not a valid URL.');
 		return;
 	}
@@ -44,7 +45,8 @@ exports.getCollectionDetails = function (req, res, next) {
 		return;
 	}
 
-	if (!validUrl.isUri(req.query.url)) {
+	var parsedUrl = urlParser.parse(req.query.url);
+	if (!parsedUrl || !parsedUrl.host || parsedUrl.host.indexOf('.') === -1) {
 		res.status(400).send('"url" is not a valid URL.');
 		return;
 	}
@@ -106,7 +108,8 @@ exports.init = function (req, res, next) {
 		return;
 	}
 
-	if (!validUrl.isUri(req.query.url)) {
+	var parsedUrl = urlParser.parse(req.query.url);
+	if (!parsedUrl || !parsedUrl.host || parsedUrl.host.indexOf('.') === -1) {
 		res.status(400).send('"url" is not a valid URL.');
 		return;
 	}

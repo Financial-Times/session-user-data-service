@@ -4,6 +4,16 @@ const needle = require('needle');
 const isUuid = require('../utils/isUuid');
 const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');
+const Timer = require('../utils/Timer');
+
+const endTimer = function (timer, serviceName, userId) {
+	let elapsedTime = timer.getElapsedTime();
+	if (elapsedTime > 5000) {
+		consoleLogger.warn(userId, 'eRightsToUuid.'+ serviceName +': high response time', elapsedTime + 'ms');
+	} else {
+		consoleLogger.info(userId, 'eRightsToUuid.'+ serviceName +': response time', elapsedTime + 'ms');
+	}
+};
 
 exports.getUuid = function (userId, callback) {
 	if (typeof callback !== 'function') {
@@ -18,7 +28,11 @@ exports.getUuid = function (userId, callback) {
 	var byErightsUrl = env.erightsToUuidService.urls.byErights;
 	byErightsUrl = byErightsUrl.replace(/\{userId\}/g, userId);
 
+	let timer = new Timer();
+
 	needle.get(byErightsUrl, function (err, response) {
+		endTimer(timer, 'getUuid', userId);
+
 		if (err) {
 			consoleLogger.warn(userId, 'eRightsToUuid service error', err);
 
@@ -42,11 +56,17 @@ exports.getERightsId = function (userId, callback) {
 		throw new Error("eRightsToUuid.getERightsId: callback not provided");
 	}
 
+	let timer;
+
 	if (isUuid(userId)) {
 		var byUuidUrl = env.erightsToUuidService.urls.byUuid;
 		byUuidUrl = byUuidUrl.replace(/\{userId\}/g, userId);
 
+		timer = new Timer();
+
 		needle.get(byUuidUrl, function (err, response) {
+			endTimer(timer, 'getERightsId', userId);
+
 			if (err) {
 				consoleLogger.warn(userId, 'eRightsToUuid service error', err);
 
@@ -67,7 +87,11 @@ exports.getERightsId = function (userId, callback) {
 		var byErightsUrl = env.erightsToUuidService.urls.byErights;
 		byErightsUrl = byErightsUrl.replace(/\{userId\}/g, userId);
 
+		timer = new Timer();
+
 		needle.get(byErightsUrl, function (err, response) {
+			endTimer(timer, 'getERightsId', userId);
+
 			if (err) {
 				consoleLogger.warn(userId, 'eRightsToUuid service error', err);
 

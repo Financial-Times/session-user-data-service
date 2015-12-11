@@ -12,6 +12,7 @@ const async = require('async');
 const EventEmitter = require('events');
 const env = require('../../env');
 const _ = require('lodash');
+const Timer = require('../utils/Timer');
 
 var SessionDataStore = function (sessionId) {
 	var storedData = null;
@@ -38,14 +39,23 @@ var SessionDataStore = function (sessionId) {
 			callback(err, data);
 		});
 
-		var done = function (err, data) {
-			fetchingStoreInProgress = false;
-			storeEvents.emit('storedDataFetched', err, data);
-		};
-
 
 		if (!fetchingStoreInProgress) {
 			fetchingStoreInProgress = true;
+
+			let timer = new Timer();
+
+			var done = function (err, data) {
+				let elapsedTime = timer.getElapsedTime();
+				if (elapsedTime > 5000) {
+					consoleLogger.warn('SessionDataStore.getStoredData: high response time', elapsedTime + 'ms');
+				} else {
+					consoleLogger.info('SessionDataStore.getStoredData: response time', elapsedTime + 'ms');
+				}
+
+				fetchingStoreInProgress = false;
+				storeEvents.emit('storedDataFetched', err, data);
+			};
 
 			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {

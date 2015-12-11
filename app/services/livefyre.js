@@ -6,6 +6,16 @@ var needle = require('needle');
 var consoleLogger = require('../utils/consoleLogger');
 var env = require('../../env');
 var urlParser = require('url');
+const Timer = require('../utils/Timer');
+
+const endTimer = function (timer, serviceName, id) {
+	let elapsedTime = timer.getElapsedTime();
+	if (elapsedTime > 5000) {
+		consoleLogger.warn(id ? id : '', 'livefyre.'+ serviceName +': high response time', elapsedTime + 'ms');
+	} else {
+		consoleLogger.info(id ? id : '', 'livefyre.'+ serviceName +': response time', elapsedTime + 'ms');
+	}
+};
 
 var network = livefyre.getNetwork(env.livefyre.network.name + '.fyre.co', env.livefyre.network.key);
 
@@ -117,7 +127,11 @@ exports.collectionExists = function (articleId, callback) {
 
 		url = url.replace(/\{siteId\}/g, siteId);
 
+		let timer = new Timer();
+
 		needle.get(url, function (err, response) {
+			endTimer(timer, 'collectionExists', articleId);
+
 			if (err || response.statusCode !== 200) {
 				if (err) {
 					consoleLogger.warn(articleId, 'livefyre.collectionExists error', err);
@@ -179,7 +193,11 @@ exports.callPingToPull = function (userId, callback) {
 		.replace(/\{userId\}/g, userId)
 		.replace(/\{token\}/g, getSystemToken());
 
+	let timer = new Timer();
+
 	needle.post(url, function (err, response) {
+		endTimer(timer, 'callPingToPull', userId);
+
 		if (err) {
 			consoleLogger.warn(userId, 'livefyre.pingToPull error', err);
 
@@ -213,7 +231,11 @@ exports.getModerationRights = function (token, callback) {
 	let url = env.livefyre.api.userProfileUrl;
 	url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
 
+	let timer = new Timer();
+
 	needle.get(url + '?lftoken=' + token, (err, response) => {
+		endTimer(timer, 'getModerationRights');
+
 		if (err || !response || (response.statusCode < 200 || response.statusCode >= 300)) {
 			callback({
 				error: err,

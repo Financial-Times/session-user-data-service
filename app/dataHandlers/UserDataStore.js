@@ -8,6 +8,7 @@ const eRightsToUuid = require('../services/eRightsToUuid');
 const emailService = require('../services/email');
 const crypto = require('../utils/crypto');
 const env = require('../../env');
+const Timer = require('../utils/Timer');
 
 var UserDataStore = function (userId) {
 	var storedData = null;
@@ -80,13 +81,22 @@ var UserDataStore = function (userId) {
 		});
 
 
-		var done = function (err, data) {
-			fetchingStoreInProgress = false;
-			storeEvents.emit('storedDataFetched', err, data);
-		};
-
 		if (!fetchingStoreInProgress) {
 			fetchingStoreInProgress = true;
+
+			let timer = new Timer();
+
+			var done = function (err, data) {
+				let elapsedTime = timer.getElapsedTime();
+				if (elapsedTime > 5000) {
+					consoleLogger.warn('UserDataStore.getStoredData: high response time', elapsedTime + 'ms');
+				} else {
+					consoleLogger.info('UserDataStore.getStoredData: response time', elapsedTime + 'ms');
+				}
+
+				fetchingStoreInProgress = false;
+				storeEvents.emit('storedDataFetched', err, data);
+			};
 
 			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {

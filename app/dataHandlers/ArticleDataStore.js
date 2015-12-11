@@ -8,6 +8,8 @@ const mongoSanitize = require('mongo-sanitize');
 const EventEmitter = require('events');
 const env = require('../../env');
 const urlParser = require('url');
+const Timer = require('../utils/Timer');
+
 
 var ArticleDataStore = function (articleId) {
 	var storedData = null;
@@ -35,14 +37,22 @@ var ArticleDataStore = function (articleId) {
 		});
 
 
-		var done = function (err, data) {
-			fetchingStoreInProgress = false;
-			storeEvents.emit('storedDataFetched', err, data);
-		};
-
-
 		if (!fetchingStoreInProgress) {
 			fetchingStoreInProgress = true;
+
+			let timer = new Timer();
+
+			var done = function (err, data) {
+				let elapsedTime = timer.getElapsedTime();
+				if (elapsedTime > 5000) {
+					consoleLogger.warn('ArticleDataStore.getStoredData: high response time', elapsedTime + 'ms');
+				} else {
+					consoleLogger.info('ArticleDataStore.getStoredData: response time', elapsedTime + 'ms');
+				}
+
+				fetchingStoreInProgress = false;
+				storeEvents.emit('storedDataFetched', err, data);
+			};
 
 			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {

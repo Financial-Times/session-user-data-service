@@ -2,6 +2,17 @@
 
 const db = require('./db');
 const env = require('../../env');
+const Timer = require('../utils/Timer');
+const consoleLogger = require('../utils/consoleLogger');
+
+const endTimer = function (timer, articleId) {
+	let elapsedTime = timer.getElapsedTime();
+	if (elapsedTime > 5000) {
+		consoleLogger.warn(articleId, 'legacySiteMapping.getSiteId: high response time', elapsedTime + 'ms');
+	} else {
+		consoleLogger.info(articleId, 'legacySiteMapping.getSiteId: response time', elapsedTime + 'ms');
+	}
+};
 
 const defaultSiteId = parseInt(env.livefyre.defaultSiteId, 10);
 
@@ -9,6 +20,8 @@ exports.getSiteId = function (articleId, callback) {
 	if (typeof callback !== 'function') {
 		throw new Error("legacySiteMapping.getSiteId: callback not provided");
 	}
+
+	let timer = new Timer();
 
 	db.getConnection(env.mongo.uri, function (err, connection) {
 		if (err) {
@@ -19,6 +32,8 @@ exports.getSiteId = function (articleId, callback) {
 		connection.collection('legacy_site_mapping').find({
 			_id: articleId
 		}).toArray(function (err, dbEntries) {
+			endTimer(timer, articleId);
+
 			if (err) {
 				callback(err);
 				return;

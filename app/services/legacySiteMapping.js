@@ -8,9 +8,9 @@ const consoleLogger = require('../utils/consoleLogger');
 const endTimer = function (timer, articleId) {
 	let elapsedTime = timer.getElapsedTime();
 	if (elapsedTime > 5000) {
-		consoleLogger.warn(articleId, 'legacySiteMapping.getSiteId: high response time', elapsedTime + 'ms');
+		consoleLogger.warn(articleId, 'legacySiteMapping.getSiteId: service high response time', elapsedTime + 'ms');
 	} else {
-		consoleLogger.info(articleId, 'legacySiteMapping.getSiteId: response time', elapsedTime + 'ms');
+		consoleLogger.info(articleId, 'legacySiteMapping.getSiteId: service response time', elapsedTime + 'ms');
 	}
 };
 

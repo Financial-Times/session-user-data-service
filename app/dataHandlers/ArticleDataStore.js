@@ -45,9 +45,9 @@ var ArticleDataStore = function (articleId) {
 			var done = function (err, data) {
 				let elapsedTime = timer.getElapsedTime();
 				if (elapsedTime > 5000) {
-					consoleLogger.warn('ArticleDataStore.getStoredData: high response time', elapsedTime + 'ms');
+					consoleLogger.warn('ArticleDataStore.getStoredData: service high response time', elapsedTime + 'ms');
 				} else {
-					consoleLogger.info('ArticleDataStore.getStoredData: response time', elapsedTime + 'ms');
+					consoleLogger.info('ArticleDataStore.getStoredData: service response time', elapsedTime + 'ms');
 				}
 
 				fetchingStoreInProgress = false;

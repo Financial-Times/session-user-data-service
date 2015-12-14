@@ -12,9 +12,9 @@ var ftApiClient = require('ft-api-client')(env.capi.key, {
 const endTimer = function (timer, uuid) {
 	let elapsedTime = timer.getElapsedTime();
 	if (elapsedTime > 5000) {
-		consoleLogger.warn(uuid, 'capi_v1.getArticleData: high response time', elapsedTime + 'ms');
+		consoleLogger.warn(uuid, 'capi_v1.getArticleData: service high response time', elapsedTime + 'ms');
 	} else {
-		consoleLogger.info(uuid, 'capi_v1.getArticleData: response time', elapsedTime + 'ms');
+		consoleLogger.info(uuid, 'capi_v1.getArticleData: service response time', elapsedTime + 'ms');
 	}
 };
 

@@ -9,9 +9,9 @@ const Timer = require('../utils/Timer');
 const endTimer = function (timer) {
 	let elapsedTime = timer.getElapsedTime();
 	if (elapsedTime > 5000) {
-		consoleLogger.warn('userSessionApi.getSessionData: high response time', elapsedTime + 'ms');
+		consoleLogger.warn('userSessionApi.getSessionData: service high response time', elapsedTime + 'ms');
 	} else {
-		consoleLogger.info('userSessionApi.getSessionData: response time', elapsedTime + 'ms');
+		consoleLogger.info('userSessionApi.getSessionData: service response time', elapsedTime + 'ms');
 	}
 };
 

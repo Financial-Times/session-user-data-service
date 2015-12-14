@@ -8,9 +8,9 @@ const Timer = require('../utils/Timer');
 const endTimer = function (timer) {
 	let elapsedTime = timer.getElapsedTime();
 	if (elapsedTime > 5000) {
-		consoleLogger.warn('db.getConnection: high response time', elapsedTime + 'ms');
+		consoleLogger.warn('db.getConnection: service high response time', elapsedTime + 'ms');
 	} else {
-		consoleLogger.info('db.getConnection: response time', elapsedTime + 'ms');
+		consoleLogger.info('db.getConnection: service response time', elapsedTime + 'ms');
 	}
 };
 

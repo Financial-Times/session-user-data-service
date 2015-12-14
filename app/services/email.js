@@ -9,9 +9,9 @@ const Timer = require('../utils/Timer');
 const endTimer = function (timer, userId) {
 	let elapsedTime = timer.getElapsedTime();
 	if (elapsedTime > 5000) {
-		consoleLogger.warn(userId, 'email.getUserData: high response time', elapsedTime + 'ms');
+		consoleLogger.warn(userId, 'email.getUserData: service high response time', elapsedTime + 'ms');
 	} else {
-		consoleLogger.info(userId, 'email.getUserData: response time', elapsedTime + 'ms');
+		consoleLogger.info(userId, 'email.getUserData: service response time', elapsedTime + 'ms');
 	}
 };
 

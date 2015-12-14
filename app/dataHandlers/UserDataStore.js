@@ -89,9 +89,9 @@ var UserDataStore = function (userId) {
 			var done = function (err, data) {
 				let elapsedTime = timer.getElapsedTime();
 				if (elapsedTime > 5000) {
-					consoleLogger.warn('UserDataStore.getStoredData: high response time', elapsedTime + 'ms');
+					consoleLogger.warn('UserDataStore.getStoredData: service high response time', elapsedTime + 'ms');
 				} else {
-					consoleLogger.info('UserDataStore.getStoredData: response time', elapsedTime + 'ms');
+					consoleLogger.info('UserDataStore.getStoredData: service response time', elapsedTime + 'ms');
 				}
 
 				fetchingStoreInProgress = false;

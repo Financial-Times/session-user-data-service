@@ -48,9 +48,9 @@ var SessionDataStore = function (sessionId) {
 			var done = function (err, data) {
 				let elapsedTime = timer.getElapsedTime();
 				if (elapsedTime > 5000) {
-					consoleLogger.warn('SessionDataStore.getStoredData: high response time', elapsedTime + 'ms');
+					consoleLogger.warn('SessionDataStore.getStoredData: service high response time', elapsedTime + 'ms');
 				} else {
-					consoleLogger.info('SessionDataStore.getStoredData: response time', elapsedTime + 'ms');
+					consoleLogger.info('SessionDataStore.getStoredData: service response time', elapsedTime + 'ms');
 				}
 
 				fetchingStoreInProgress = false;
@@ -376,6 +376,7 @@ var SessionDataStore = function (sessionId) {
 	};
 	var upsertAuthMetadata = function (authMetadata) {
 		consoleLogger.log(sessionId, 'upsert livefyre auth token');
+
 		upsertStoredData('authMetadata', _.extend({}, authMetadata, {pseudonym: crypto.encrypt(authMetadata.pseudonym)}), authMetadata.expires);
 	};
 	this.getAuthMetadata = function (callback) {

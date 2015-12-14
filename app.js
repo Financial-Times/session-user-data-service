@@ -9,6 +9,12 @@ var cors = require('cors');
 var consoleLogger = require('./app/utils/consoleLogger');
 var env = require('./env');
 var urlParser = require('url');
+var needle = require('needle');
+
+
+needle.defaults({
+	open_timeout: 25000
+});
 
 var routes = {
     index: require('./app/routes/index'),

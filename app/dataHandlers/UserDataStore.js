@@ -710,19 +710,19 @@ var UserDataStore = function (userId) {
 			}
 
 			let upsertData = {};
-			if (userData.hasOwnProperty('email')) {
+			if (userData.email) {
 				upsertData.email = crypto.encrypt(userData.email);
 			} else if (!storedData || !storedData.hasOwnProperty('email')) {
 				upsertData.email = null;
 			}
 
-			if (userData.hasOwnProperty('firstName')) {
+			if (userData.firstName) {
 				upsertData.firstName = crypto.encrypt(userData.firstName);
 			} else if (!storedData || !storedData.hasOwnProperty('firstName')) {
 				upsertData.firstName = null;
 			}
 
-			if (userData.hasOwnProperty('lastName')) {
+			if (userData.lastName) {
 				upsertData.lastName = crypto.encrypt(userData.lastName);
 			} else if (!storedData || !storedData.hasOwnProperty('lastName')) {
 				upsertData.lastName = null;

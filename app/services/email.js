@@ -40,7 +40,7 @@ exports.getUserData = function (userId, callback) {
 		if (response.body) {
 			callback(null, _.pick(response.body, ['email', 'firstName', 'lastName']));
 		} else {
-			callback(new Error("No eRights ID found."));
+			callback(new Error("User not found."));
 		}
 	});
 };

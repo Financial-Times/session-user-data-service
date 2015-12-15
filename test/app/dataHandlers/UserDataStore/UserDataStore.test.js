@@ -1333,7 +1333,7 @@ describe('UserDataStore', function() {
 					assert.equal(userStorage.length, 1, "DB entry still in place.");
 					assert.deepEqual(userStorage[0].email, crypto.encrypt(userData.email), "Email encrypted and updated.");
 					assert.deepEqual(userStorage[0].firstName, crypto.encrypt(testData.users.updateBasicUserData_partial_partiallySaved.initialData.firstName), "First name left untouched.");
-					assert.deepEqual(userStorage[0].lastName, userData.lastName, "Last name left untouched.");
+					assert.deepEqual(userStorage[0].lastName, testData.users.updateBasicUserData_partial_partiallySaved.initialData.lastName, "Last name left untouched.");
 
 					done();
 				}, 10);

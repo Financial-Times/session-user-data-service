@@ -9,6 +9,7 @@ const emailService = require('../services/email');
 const crypto = require('../utils/crypto');
 const env = require('../../env');
 const Timer = require('../utils/Timer');
+const async = require('async');
 
 var UserDataStore = function (userId) {
 	var storedData = null;
@@ -17,10 +18,15 @@ var UserDataStore = function (userId) {
 
 	let toBeRefreshed;
 
+	if (!isNaN(userId)) {
+		userId = parseInt(userId, 10);
+	}
+
+
 
 
 	let uuidCache = null;
-	const getUuidOfUserId = function (callback) {
+	const fetchUuidOfUserId = function (callback) {
 		if (uuidCache) {
 			callback(null, uuidCache);
 			return;
@@ -36,13 +42,13 @@ var UserDataStore = function (userId) {
 				uuidCache = userUuid;
 				callback(null, userUuid);
 			} else {
-				callback();
+				callback(new Error("User not found"));
 			}
 		});
 	};
 
 	let eRightsIdCache = null;
-	const getERightsIdOfUserId = function (callback) {
+	const fetchERightsIdOfUserId = function (callback) {
 		if (eRightsIdCache) {
 			callback(null, eRightsIdCache);
 			return;
@@ -60,6 +66,45 @@ var UserDataStore = function (userId) {
 			} else {
 				callback();
 			}
+		});
+	};
+
+
+	const initStorage = function (callback) {
+		async.parallel({
+			uuid: fetchUuidOfUserId,
+			eRightsId: fetchERightsIdOfUserId
+		}, function (err, results) {
+			if (err) {
+				callback(err);
+				return;
+			}
+
+			var userData = {};
+			userData.uuid = results.uuid;
+			userData.lfUserId = results.eRightsId ? results.eRightsId : results.uuid;
+
+			db.getConnection(env.mongo.uri, function (errConn, connection) {
+				if (errConn) {
+					callback(errConn);
+					return;
+				}
+
+				connection.collection('users').update({
+					_id: mongoSanitize(userData.uuid)
+				}, {
+					$set: userData
+				}, {
+					upsert: true
+				}, function (err, result) {
+					if (err) {
+						callback(err);
+						return;
+					}
+
+					callback(null, userData);
+				});
+			});
 		});
 	};
 
@@ -106,46 +151,45 @@ var UserDataStore = function (userId) {
 					return;
 				}
 
-				getUuidOfUserId(function (errUuid, userUuid) {
-					if (errUuid) {
-						done(errUuid);
+				connection.collection('users').find({
+					'$or': [
+						{
+							_id: mongoSanitize(userId)
+						},
+						{
+							lfUserId: mongoSanitize(userId)
+						}
+					]
+				}).toArray(function (errDb, data) {
+					if (errDb) {
+						consoleLogger.warn(userId, 'cache retrieval failed', errDb);
+
+						done(errDb);
 						return;
 					}
 
-					if (userUuid) {
-						connection.collection('users').find({
-							_id: mongoSanitize(userUuid)
-						}).toArray(function (errDb, data) {
-							if (errDb) {
-								consoleLogger.warn(userId, 'cache retrieval failed', errDb);
+					if (data && data.length) {
+						toBeRefreshed = false;
+						storedData = data[0];
 
-								done(errDb);
+						done(null, storedData);
+
+						consoleLogger.log(userId, 'cached data retrieved');
+						consoleLogger.debug(userId, storedData);
+					} else {
+						initStorage(function (errInit, userIds) {
+							if (errInit) {
+								done(errInit);
 								return;
 							}
 
-							if (data && data.length) {
-								toBeRefreshed = false;
-								storedData = data[0];
+							storedData = {};
+							storedData._id = userIds.uuid;
+							storedData.uuid = userIds.uuid;
+							storedData.lfUserId = userIds.lfUserId;
 
-								if (!storedData.uuid) {
-									upsertStoredData({
-										uuid: userUuid
-									});
-								}
-
-								consoleLogger.log(userId, 'cached data retrieved');
-								consoleLogger.debug(userId, storedData);
-
-								done(null, storedData);
-							} else {
-								consoleLogger.log(userId, 'no cached data found');
-
-								done();
-							}
+							done(null, storedData);
 						});
-					} else {
-						done(new Error("User not found"));
-						return;
 					}
 				});
 			});
@@ -153,6 +197,16 @@ var UserDataStore = function (userId) {
 	};
 
 
+	const getUuidOfUserId = function (callback) {
+		getStoredData(function (errStore, data) {
+			if (errStore) {
+				fetchUuidOfUserId(callback);
+				return;
+			}
+
+			callback(null, data.uuid);
+		});
+	};
 
 
 	const sanitizeData = function (data) {
@@ -178,7 +232,6 @@ var UserDataStore = function (userId) {
 		}
 	};
 
-	let atLeastOneUpdateMade = false;
 	const upsertStoredData = function (data, callback) {
 		callback = callback || function () {};
 
@@ -194,79 +247,44 @@ var UserDataStore = function (userId) {
 			consoleLogger.log(userId, 'upsert cache');
 			consoleLogger.debug(userId, 'data:', sanitizedData);
 
-
 			getUuidOfUserId(function (errUuid, userUuid) {
-					if (errUuid) {
-						callback(errUuid);
-						return;
-					}
+				if (errUuid) {
+					callback(errUuid);
+					return;
+				}
 
-					if (userUuid) {
-						connection.collection('users').update({
-							_id: mongoSanitize(userUuid)
-						}, {
-							$set: sanitizedData
-						}, {
-							upsert: true
-						}, function (errUps, result) {
-							if (errUps) {
-								consoleLogger.warn(userId, 'upsert failed', errUps);
+				if (userUuid) {
+					connection.collection('users').update({
+						_id: mongoSanitize(userUuid)
+					}, {
+						$set: sanitizedData
+					}, {
+						upsert: true
+					}, function (errUps, result) {
+						if (errUps) {
+							consoleLogger.warn(userId, 'upsert failed', errUps);
 
-								if (typeof callback === 'function') {
-									callback(errUps);
-								}
-								return;
+							if (typeof callback === 'function') {
+								callback(errUps);
 							}
+							return;
+						}
 
-							// reset storage cache
-							toBeRefreshed = true;
-
-							if (!atLeastOneUpdateMade && result !== 1) {
-								atLeastOneUpdateMade = true;
-
-								// insert, should set an expire
-								consoleLogger.log(userId, 'upsert', 'new entry, set uuid if it was not set');
-
-								if (!sanitizedData.hasOwnProperty('uuid')) {
-									getUuidOfUserId(function (errUuid, userUuid) {
-										if (errUuid) {
-											callback(errUuid);
-											return;
-										}
-
-										if (userUuid) {
-											connection.collection('users').update({
-												_id: mongoSanitize(userUuid)
-											}, {
-												$set: {
-													uuid: userUuid
-												}
-											});
-
-											callback();
-										} else {
-											callback(new Error("User not found"));
-											return;
-										}
-									});
-								} else {
-									callback();
-								}
-							} else {
-								callback();
-							}
-						});
-					} else {
-						callback(new Error("User not found"));
-						return;
-					}
-				});
+						// reset storage cache
+						toBeRefreshed = true;
+						callback();
+					});
+				} else {
+					callback(new Error("User not found"));
+					return;
+				}
+			});
 		});
 	};
 
 
 	const fetchLivefyrePreferredUserId = function (callback) {
-		getERightsIdOfUserId(function (errERights, userERightsId) {
+		fetchERightsIdOfUserId(function (errERights, userERightsId) {
 			if (errERights) {
 				callback(errERights);
 				return;
@@ -277,7 +295,7 @@ var UserDataStore = function (userId) {
 				return;
 			} else {
 				// eRights does not exist, use UUID for Livefyre as well
-				getUuidOfUserId(function (errUuid, userUuid) {
+				fetchUuidOfUserId(function (errUuid, userUuid) {
 					if (errERights) {
 						callback(errERights);
 						return;

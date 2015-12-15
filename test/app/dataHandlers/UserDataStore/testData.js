@@ -452,7 +452,7 @@ const users = {
 		initialData: {
 			_id: '7edad54a-dc3d-44ae-8975-d2e242caf0d2',
 			uuid: '7edad54a-dc3d-44ae-8975-d2e242caf0d2',
-			eRightsId: 7345345,
+			lfUserId: 7345345,
 			email: 'testEmail7345345',
 			firstName: 'testFirstName7345345',
 			lastName: null
@@ -464,7 +464,7 @@ const users = {
 		initialData: {
 			_id: '7ce4ec99-668d-4f4a-b251-bdd3b42dd0ad',
 			uuid: '7ce4ec99-668d-4f4a-b251-bdd3b42dd0ad',
-			eRightsId: 6245345,
+			lfUserId: 6245345,
 			email: 'testEmail6245345',
 			firstName: 'testFirstName6245345',
 			lastName: null
@@ -477,7 +477,7 @@ const users = {
 		initialData: {
 			_id: '0fc4e40a-ffc5-4583-b4f5-de98234942a1',
 			uuid: '0fc4e40a-ffc5-4583-b4f5-de98234942a1',
-			eRightsId: 723455,
+			lfUserId: 723455,
 			email: 'testEmail723455',
 			firstName: 'testfirstName723455',
 			lastName: 'testlastName723455'
@@ -489,7 +489,7 @@ const users = {
 		initialData: {
 			_id: 'cdc18a4e-5ad4-4db8-b0dc-bd6fa8808ac0',
 			uuid: 'cdc18a4e-5ad4-4db8-b0dc-bd6fa8808ac0',
-			eRightsId: 6723454,
+			lfUserId: 6723454,
 			email: 'testEmail6723454',
 			firstName: 'testfirstName6723454',
 			lastName: 'testlastName6723454'
@@ -502,7 +502,7 @@ const users = {
 		initialData: {
 			_id: '8a24635e-f6e4-43d6-a3bc-ed8954e5c9ec',
 			uuid: '8a24635e-f6e4-43d6-a3bc-ed8954e5c9ec',
-			eRightsId: 13654654,
+			lfUserId: 13654654,
 			email: 'testEmail13654654',
 			firstName: 'testFirstName13654654',
 			lastName: 'testlastName13654654'
@@ -514,7 +514,7 @@ const users = {
 		initialData: {
 			_id: '414946f8-ce60-4a25-93df-45a35f7f0b03',
 			uuid: '414946f8-ce60-4a25-93df-45a35f7f0b03',
-			eRightsId: 6234364,
+			lfUserId: 6234364,
 			email: 'testEmail6234364',
 			firstName: 'testFirstName6234364',
 			lastName: 'testlastName6234364'

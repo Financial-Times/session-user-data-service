@@ -8,12 +8,12 @@ var env = require('../../env');
 var urlParser = require('url');
 const Timer = require('../utils/Timer');
 
-const endTimer = function (timer, serviceName, id) {
+const endTimer = function (timer, serviceName, url) {
 	let elapsedTime = timer.getElapsedTime();
 	if (elapsedTime > 5000) {
-		consoleLogger.warn(id ? id : '', 'livefyre.'+ serviceName +': service high response time', elapsedTime + 'ms');
+		consoleLogger.warn('livefyre.'+ serviceName +': service high response time', elapsedTime + 'ms', url);
 	} else {
-		consoleLogger.info(id ? id : '', 'livefyre.'+ serviceName +': service response time', elapsedTime + 'ms');
+		consoleLogger.info('livefyre.'+ serviceName +': service response time', elapsedTime + 'ms', url);
 	}
 };
 
@@ -130,7 +130,7 @@ exports.collectionExists = function (articleId, callback) {
 		let timer = new Timer();
 
 		needle.get(url, function (err, response) {
-			endTimer(timer, 'collectionExists', articleId);
+			endTimer(timer, 'collectionExists', url);
 
 			if (err || response.statusCode !== 200) {
 				if (err) {
@@ -196,7 +196,7 @@ exports.callPingToPull = function (userId, callback) {
 	let timer = new Timer();
 
 	needle.post(url, function (err, response) {
-		endTimer(timer, 'callPingToPull', userId);
+		endTimer(timer, 'callPingToPull', url);
 
 		if (err) {
 			consoleLogger.warn(userId, 'livefyre.pingToPull error', err);
@@ -234,7 +234,7 @@ exports.getModerationRights = function (token, callback) {
 	let timer = new Timer();
 
 	needle.get(url + '?lftoken=' + token, (err, response) => {
-		endTimer(timer, 'getModerationRights');
+		endTimer(timer, 'getModerationRights', url + '?lftoken=' + token);
 
 		if (err || !response || (response.statusCode < 200 || response.statusCode >= 300)) {
 			callback({

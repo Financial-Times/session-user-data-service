@@ -297,7 +297,7 @@ exports.profile = function (req, res, next) {
 	var userDataStore = new UserDataStore(req.query.id);
 	userDataStore.getUserData(function (err, data) {
 		if (err) {
-			res.sendStatus(err.statusCode || 503);
+			res.sendStatus(404);
 			return;
 		}
 

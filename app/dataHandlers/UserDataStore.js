@@ -600,10 +600,7 @@ var UserDataStore = function (userId) {
 		}
 
 		if (!userId) {
-			callback({
-				error: new Error("User ID is not provided."),
-				statusCode: 404
-			});
+			callback(new Error("User ID is not provided."));
 			return;
 		}
 

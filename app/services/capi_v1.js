@@ -33,8 +33,8 @@ var getArticleData = function (uuid, callback) {
 	ftApiClient.getItem(uuid, function (err, article) {
 		endTimer(timer, uuid);
 
-		if (err && (err.statusCode < 200 || err.statusCode >= 400)) {
-			consoleLogger.warn('CAPI error', err);
+		if (err || (err.statusCode < 200 || err.statusCode >= 400) || !article) {
+			consoleLogger.warn('CAPI error', err || new Error("Response null."));
 			callback(err);
 			return;
 		}

@@ -4,8 +4,12 @@ const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');
 const Timer = require('../utils/Timer');
 
-var ftApiClient = require('ft-api-client')(env.capi.key, {
-	pollForPages: false
+
+var FtApi = require('ft-api-client');
+var ftApiClient  = new FtApi({
+	apiKey: env.capi.key,
+	featureFlags: ['blogposts'],
+	logLevel: FtApi.LOG_LEVEL_NONE
 });
 
 
@@ -26,20 +30,17 @@ var getArticleData = function (uuid, callback) {
 
 	let timer = new Timer();
 
-	ftApiClient.get(uuid)
-		.then(function (article) {
-			endTimer(timer, uuid);
+	ftApiClient.getItem(uuid, function (err, article) {
+		endTimer(timer, uuid);
 
-			callback(null, article);
-		}, function (err) {
-			if (err && err.statusCode !== 404) {
-				consoleLogger.warn('CAPI error', err);
-			}
-
-			endTimer(timer, uuid);
-
+		if (err && (err.statusCode < 200 || err.statusCode >= 400)) {
+			consoleLogger.warn('CAPI error', err);
 			callback(err);
-		});
+			return;
+		}
+
+		callback(null, article);
+	});
 };
 
 exports.getArticleData = getArticleData;

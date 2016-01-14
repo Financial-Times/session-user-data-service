@@ -5,26 +5,22 @@ module.exports = function (config) {
 
 	this.mock = function () {
 		return {
-			get: function (uuid) {
-				return {
-					then: function (callback, error) {
-						if (articleData[uuid]) {
-							callback(articleData[uuid]);
-							return;
-						}
+			getItem: function (uuid, callback) {
+				if (articleData[uuid]) {
+					callback(null, articleData[uuid]);
+					return;
+				}
 
-						if (uuid.indexOf('capi-down') !== -1) {
-							error({
-								statusCode: 503
-							});
-							return;
-						}
+				if (uuid.indexOf('capi-down') !== -1) {
+					callback({
+						statusCode: 503
+					});
+					return;
+				}
 
-						error({
-							statusCode: 404
-						});
-					}
-				};
+				callback({
+					statusCode: 404
+				});
 			}
 		};
 	};

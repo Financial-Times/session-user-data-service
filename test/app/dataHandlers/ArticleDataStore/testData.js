@@ -161,30 +161,46 @@ for (let key in articles) {
 
 
 const capiData = {
-	brand: {
-		name: 'Brand1',
-		taxonomy: 'brand'
-	},
-	authors: [
-		{
-			name: 'Author1',
-			taxonomy: 'author'
-		},
-		{
-			name: 'Author2',
-			taxonomy: 'author'
+	item: {
+		metadata: {
+			brand: [
+				{
+					term: {
+						name: 'Brand1',
+						taxonomy: 'brand'
+					}
+				}
+			],
+			authors: [
+				{
+					term: {
+						name: 'Author1',
+						taxonomy: 'author'
+					}
+				},
+				{
+					term: {
+						name: 'Author2',
+						taxonomy: 'author'
+					}
+				}
+			],
+			sections: [
+				{
+					term: {
+						name: 'Section1',
+						taxonomy: 'section'
+					}
+				},
+				{
+					term: {
+						name: 'Section2',
+						taxonomy: 'section'
+					}
+				}
+			]
 		}
-	],
-	sections: [
-		{
-			name: 'Section1',
-			taxonomy: 'section'
-		},
-		{
-			name: 'Section2',
-			taxonomy: 'section'
-		}
-	]
+	}
 };
 
 const defaultTagListCollectionMeta = 'section.Section1,section.Section2,author.Author1,author.Author2,brand.Brand1';

@@ -15,7 +15,7 @@
     "crypto": "0.0.3",
     "debug": "~2.2.0",
     "express": "~4.13.1",
-    "ft-api-client": "^4.2.0",
+    "ft-api-client": "git+https://github.com/Financial-Times/ft-api-client.git#b0d06cc43d1c8b718fcb080a17964cb67375b9fd",
     "hjs": "~0.0.6",
     "livefyre": "^2.0.2",
     "lodash": "^3.10.1",

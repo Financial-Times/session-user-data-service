@@ -177,16 +177,16 @@ var ArticleDataStore = function (articleId) {
 			}
 
 			var tags = [];
-			if (articleData.sections) {
-				tags = tags.concat(articleData.sections.map(function (val) {return val.taxonomy + '.' + val.name}));
+			if (articleData.item.metadata.sections && articleData.item.metadata.sections.length) {
+				tags = tags.concat(articleData.item.metadata.sections.map(function (val) {return val.term.taxonomy + '.' + val.term.name}));
 			}
 
-			if (articleData.authors) {
-				tags = tags.concat(articleData.authors.map(function (val) {return val.taxonomy + '.' + val.name}));
+			if (articleData.item.metadata.authors && articleData.item.metadata.authors.length) {
+				tags = tags.concat(articleData.item.metadata.authors.map(function (val) {return val.term.taxonomy + '.' + val.term.name}));
 			}
 
-			if (articleData.brand) {
-				tags.push(articleData.brand.taxonomy + '.' + articleData.brand.name);
+			if (articleData.item.metadata.brand && articleData.item.metadata.brand.length) {
+				tags = tags.concat(articleData.item.metadata.brand.map(function (val) {return val.term.taxonomy + '.' + val.term.name}));
 			}
 
 			callback(null, tags);

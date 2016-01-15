@@ -26,11 +26,13 @@ var getArticleData = function (uuid, callback) {
 	let timer = new Timer();
 
 	var url = capiUrl.replace(/\{uuid\}/g, uuid);
-	request.get(url, function (err, response) {
+	request.get(url, {
+		timeout: 10000
+	}, function (err, response) {
 		endTimer(timer, uuid);
 
 		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-			if (response.statusCode !== 404) {
+			if (err || response.statusCode !== 404) {
 				consoleLogger.warn('CAPI error', err || new Error(response.statusCode));
 			}
 

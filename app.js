@@ -9,10 +9,10 @@ var cors = require('cors');
 var consoleLogger = require('./app/utils/consoleLogger');
 var env = require('./env');
 var urlParser = require('url');
-var needle = require('needle');
+var request = require('request');
 
 
-needle.defaults({
+request.defaults({
 	open_timeout: 25000
 });
 

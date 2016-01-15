@@ -41,7 +41,7 @@ exports.getHealth = function (callback) {
 		request.get(url, function (err, response) {
 			if (err || !response || response.statusCode >= 500 || !response.body) {
 				currentHealth.ok = false;
-				currentHealth.checkOutput = 'statusCode: ' + err.statusCode;
+				currentHealth.checkOutput = err ? err : response && response.statusCode ? 'statusCode: ' + response.statusCode : 'no response';
 				callCallback(null, currentHealth);
 				return;
 			}

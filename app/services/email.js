@@ -1,6 +1,6 @@
 "use strict";
 
-const needle = require('needle');
+const request = require('request');
 const _ = require('lodash');
 const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');
@@ -22,25 +22,32 @@ exports.getUserData = function (userId, callback) {
 
 	let timer = new Timer();
 
-	needle.get(url, {
+	request.get(url, {
 		username: env.emailService.auth.user,
 		password: env.emailService.auth.pass
 	}, function (err, response) {
 		endTimer(timer, userId);
 
-		if (err || response.statusCode !== 200 || !response.body) {
-			if (err) {
-				consoleLogger.warn(userId, 'email service error', err);
+		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (response.statusCode !== 404) {
+				consoleLogger.warn(userId, 'email service error', err || new Error(response.statusCode));
 			}
 
-			callback(err || new Error("User not found."));
+			callback({
+				error: err,
+				statusCode: response.statusCode
+			});
 			return;
 		}
 
-		if (response.body) {
-			callback(null, _.pick(response.body, ['email', 'firstName', 'lastName']));
+		var data = JSON.parse(response.body);
+		if (data) {
+			callback(null, _.pick(data, ['email', 'firstName', 'lastName']));
 		} else {
-			callback(new Error("User not found."));
+			callback({
+				error: new Error("User not found."),
+				statusCode: 404
+			});
 		}
 	});
 };

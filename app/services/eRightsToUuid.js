@@ -1,6 +1,6 @@
 "use strict";
 
-const needle = require('needle');
+const request = require('request');
 const isUuid = require('../utils/isUuid');
 const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');
@@ -30,23 +30,30 @@ exports.getUuid = function (userId, callback) {
 
 	let timer = new Timer();
 
-	needle.get(byErightsUrl, function (err, response) {
+	request.get(byErightsUrl, function (err, response) {
 		endTimer(timer, 'getUuid', userId);
 
-		if (err) {
-			consoleLogger.warn(userId, 'eRightsToUuid service error', err);
+		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (response.statusCode !== 404) {
+				consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response.statusCode));
+			}
 
-			callback(err);
-			return;
-		} else if (response.statusCode !== 200 || !response.body) {
-			callback();
+			callback({
+				err: err,
+				statusCode: response.statusCode
+			});
 			return;
 		}
 
-		if (response.body.user && response.body.user.id) {
-			callback(null, response.body.user.id);
+		var data = JSON.parse(response.body);
+
+		if (data && data.user && data.user.id) {
+			callback(null, data.user.id);
 		} else {
-			callback({statusCode: 404, message: "User not found."});
+			callback({
+				statusCode: 503,
+				error: new Error("Unexpected response.")
+			});
 		}
 	});
 };
@@ -64,23 +71,30 @@ exports.getERightsId = function (userId, callback) {
 
 		timer = new Timer();
 
-		needle.get(byUuidUrl, function (err, response) {
+		request.get(byUuidUrl, function (err, response) {
 			endTimer(timer, 'getERightsId', userId);
 
-			if (err) {
-				consoleLogger.warn(userId, 'eRightsToUuid service error', err);
+			if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+				if (response.statusCode !== 404) {
+					consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response.statusCode));
+				}
 
-				callback(err);
-				return;
-			} else if (response.statusCode !== 200 || !response.body) {
-				callback();
+				callback({
+					err: err,
+					statusCode: response.statusCode
+				});
 				return;
 			}
 
-			if (response.body.user && response.body.user.deprecatedIds && response.body.user.deprecatedIds.erightsId) {
-				callback(null, response.body.user.deprecatedIds.erightsId);
+			var data = JSON.parse(response.body);
+
+			if (data && data.user && data.user.deprecatedIds && data.user.deprecatedIds.erightsId) {
+				callback(null, data.user.deprecatedIds.erightsId);
 			} else {
-				callback();
+				callback({
+					statusCode: 503,
+					error: new Error("Unexpected response.")
+				});
 			}
 		});
 	} else {
@@ -89,23 +103,30 @@ exports.getERightsId = function (userId, callback) {
 
 		timer = new Timer();
 
-		needle.get(byErightsUrl, function (err, response) {
+		request.get(byErightsUrl, function (err, response) {
 			endTimer(timer, 'getERightsId', userId);
 
-			if (err) {
-				consoleLogger.warn(userId, 'eRightsToUuid service error', err);
+			if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+				if (response.statusCode !== 404) {
+					consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response.statusCode));
+				}
 
-				callback(err);
-				return;
-			} else if (response.statusCode !== 200) {
-				callback();
+				callback({
+					err: err,
+					statusCode: response.statusCode
+				});
 				return;
 			}
 
-			if (response.body.user && response.body.user.deprecatedIds && response.body.user.deprecatedIds.erightsId) {
-				callback(null, response.body.user.deprecatedIds.erightsId);
+			var data = JSON.parse(response.body);
+
+			if (data && data.user && data.user.deprecatedIds && data.user.deprecatedIds.erightsId) {
+				callback(null, data.user.deprecatedIds.erightsId);
 			} else {
-				callback();
+				callback({
+					statusCode: 503,
+					error: new Error("Unexpected response.")
+				});
 			}
 		});
 	}

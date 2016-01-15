@@ -2,7 +2,7 @@
 
 var livefyre = require('livefyre');
 var legacySiteMapping = require('./legacySiteMapping');
-var needle = require('needle');
+var request = require('request');
 var consoleLogger = require('../utils/consoleLogger');
 var env = require('../../env');
 var urlParser = require('url');
@@ -129,12 +129,12 @@ exports.collectionExists = function (articleId, callback) {
 
 		let timer = new Timer();
 
-		needle.get(url, function (err, response) {
+		request.get(url, function (err, response) {
 			endTimer(timer, 'collectionExists', url);
 
-			if (err || response.statusCode !== 200) {
-				if (err) {
-					consoleLogger.warn(articleId, 'livefyre.collectionExists error', err);
+			if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+				if (response.statusCode !== 404) {
+					consoleLogger.warn(articleId, 'livefyre.collectionExists error', err || new Error(response.statusCode));
 				}
 
 				callback(null, false);
@@ -195,23 +195,22 @@ exports.callPingToPull = function (userId, callback) {
 
 	let timer = new Timer();
 
-	needle.post(url, function (err, response) {
+	request.post(url, function (err, response) {
 		endTimer(timer, 'callPingToPull', url);
 
-		if (err) {
-			consoleLogger.warn(userId, 'livefyre.pingToPull error', err);
+		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (response.statusCode !== 404) {
+				consoleLogger.warn(userId, 'livefyre.pingToPull error', err || new Error(response.statusCode));
+			}
 
-			callback(err);
+			callback({
+				err: err,
+				statusCode: response.statusCode
+			});
 			return;
 		}
 
-		if (response.statusCode !== 200) {
-			callback({
-				statusCode: response.statusCode
-			});
-		} else {
-			callback();
-		}
+		callback();
 	});
 };
 
@@ -233,29 +232,29 @@ exports.getModerationRights = function (token, callback) {
 
 	let timer = new Timer();
 
-	needle.get(url + '?lftoken=' + token, (err, response) => {
+	request.get(url + '?lftoken=' + token, (err, response) => {
 		endTimer(timer, 'getModerationRights', url + '?lftoken=' + token);
 
-		if (err || !response || (response.statusCode < 200 || response.statusCode >= 300)) {
-			callback({
-				error: err,
-				responseBody: response ? response.body : null,
-				statusCode: response ? response.statusCode : 503
-			});
-
-			if (err) {
-				consoleLogger.warn('livefyre.getUserDetails error', err);
+		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (response.statusCode !== 404) {
+				consoleLogger.warn('livefyre.getUserDetails error', err || new Error(response.statusCode));
 			}
+
+			callback({
+				err: err,
+				statusCode: response.statusCode
+			});
 			return;
 		}
 
-		if (response.body && response.body.data && response.body.data.modScopes) {
-			callback(null, response.body.data.modScopes);
+		var data = JSON.parse(response.body);
+
+		if (data && data.data && data.data.modScopes) {
+			callback(null, data.data.modScopes);
 		} else {
 			callback({
 				statusCode: 503,
-				error: new Error("Invalid response received from Livefyre."),
-				responseBody: response ? response.body : null
+				error: new Error("Unexpected response.")
 			});
 		}
 	});

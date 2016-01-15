@@ -19,6 +19,7 @@ var config = {
 		uri: process.env.MONGOLAB_URI
 	},
 	capi: {
+		url: process.env.CAPI_URL,
 		key: process.env.CAPI_KEY
 	},
 	sessionApi: {

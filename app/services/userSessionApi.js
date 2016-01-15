@@ -1,6 +1,6 @@
 "use strict";
 
-const needle = require('needle');
+const request = require('request');
 const _ = require('lodash');
 const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');
@@ -32,23 +32,31 @@ exports.getSessionData = function (sessionId, callback) {
 
 	let timer = new Timer();
 
-	needle.get(url, options, function (err, response) {
+	request.get(url, options, function (err, response) {
 		endTimer(timer);
 
-		if (err) {
-			consoleLogger.warn(sessionId, 'sessionAPI error', err);
+		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (response.statusCode !== 404) {
+				consoleLogger.warn(sessionId, 'sessionAPI error', err || new Error(response.statusCode));
+			}
 
-			callback(err);
+			callback({
+				err: err,
+				statusCode: response.statusCode
+			});
 			return;
 		}
 
-		if (response.statusCode !== 200) {
-			callback(null, null);
-			return;
+		var data = JSON.parse(response.body);
+
+		if (data) {
+			var responseBody = _.pick(data, ['uuid', 'creationTime', 'rememberMe']);
+			callback(null, responseBody);
+		} else {
+			callback({
+				statusCode: 503,
+				error: new Error("Unexpected response.")
+			});
 		}
-
-		var responseBody = _.pick(response.body, ['uuid', 'creationTime', 'rememberMe']);
-
-		callback(null, responseBody);
 	});
 };

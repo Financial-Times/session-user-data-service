@@ -2,15 +2,10 @@
 
 const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');
+const request = require('request');
 const Timer = require('../utils/Timer');
 
-
-var FtApi = require('ft-api-client');
-var ftApiClient  = new FtApi({
-	apiKey: env.capi.key,
-	featureFlags: ['blogposts'],
-	logLevel: FtApi.LOG_LEVEL_NONE
-});
+var capiUrl = env.capi.url.replace(/\{apiKey\}/g, env.capi.key);
 
 
 const endTimer = function (timer, uuid) {
@@ -30,16 +25,23 @@ var getArticleData = function (uuid, callback) {
 
 	let timer = new Timer();
 
-	ftApiClient.getItem(uuid, function (err, article) {
+	var url = capiUrl.replace(/\{uuid\}/g, uuid);
+	request.get(url, function (err, response) {
 		endTimer(timer, uuid);
 
-		if (err && (!err.statusCode || err.statusCode < 200 || err.statusCode >= 400) || !article) {
-			consoleLogger.warn('CAPI error', err || new Error("Response null."));
-			callback(err);
+		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (response.statusCode !== 404) {
+				consoleLogger.warn('CAPI error', err || new Error(response.statusCode));
+			}
+
+			callback({
+				error: err,
+				statusCode: response.statusCode
+			});
 			return;
 		}
 
-		callback(null, article);
+		callback(null, JSON.parse(response.body));
 	});
 };
 

@@ -230,8 +230,12 @@ var SessionDataStore = function (sessionId) {
 		consoleLogger.log(sessionId, 'fetch session data');
 		userSessionApi.getSessionData(sessionId, function (err, data) {
 			if (err) {
-				callback(err);
-				return;
+				if ((err && err.statusCode && err.statusCode >= 500) || err.error) {
+					callback(err);
+					return;
+				} else {
+					data = null;
+				}
 			}
 
 			consoleLogger.log(sessionId, 'session data fetched successfully');

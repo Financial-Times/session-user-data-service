@@ -39,7 +39,7 @@ exports.getHealth = function (callback) {
 		url = url.replace(/\{siteId\}/g, env.livefyre.defaultSiteId);
 
 		request.get(url, function (err, response) {
-			if (err || response.statusCode >= 500 || !response.body) {
+			if (err || !response || response.statusCode >= 500 || !response.body) {
 				currentHealth.ok = false;
 				currentHealth.checkOutput = 'statusCode: ' + err.statusCode;
 				callCallback(null, currentHealth);

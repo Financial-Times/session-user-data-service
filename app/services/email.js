@@ -28,9 +28,9 @@ exports.getUserData = function (userId, callback) {
 	}, function (err, response) {
 		endTimer(timer, userId);
 
-		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-			if (response.statusCode !== 404) {
-				consoleLogger.warn(userId, 'email service error', err || new Error(response.statusCode));
+		if (err || !response|| response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (err || !response || response.statusCode !== 404) {
+				consoleLogger.warn(userId, 'email service error', new Error(response ? response.statusCode : 'No response'));
 			}
 
 			callback({

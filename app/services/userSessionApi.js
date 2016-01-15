@@ -35,9 +35,9 @@ exports.getSessionData = function (sessionId, callback) {
 	request.get(url, options, function (err, response) {
 		endTimer(timer);
 
-		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-			if (response.statusCode !== 404) {
-				consoleLogger.warn(sessionId, 'sessionAPI error', err || new Error(response.statusCode));
+		if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (err || !response || response.statusCode !== 404) {
+				consoleLogger.warn(sessionId, 'sessionAPI error', err || new Error(response ? response.statusCode : 'No response'));
 			}
 
 			callback({

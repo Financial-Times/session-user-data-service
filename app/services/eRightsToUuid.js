@@ -33,9 +33,9 @@ exports.getUuid = function (userId, callback) {
 	request.get(byErightsUrl, function (err, response) {
 		endTimer(timer, 'getUuid', userId);
 
-		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-			if (response.statusCode !== 404) {
-				consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response.statusCode));
+		if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (err || !response || response.statusCode !== 404) {
+				consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response ? response.statusCode : 'No response'));
 			}
 
 			callback({
@@ -74,9 +74,9 @@ exports.getERightsId = function (userId, callback) {
 		request.get(byUuidUrl, function (err, response) {
 			endTimer(timer, 'getERightsId', userId);
 
-			if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-				if (response.statusCode !== 404) {
-					consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response.statusCode));
+			if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+				if (err || !response || response.statusCode !== 404) {
+					consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response ? response.statusCode : 'No response'));
 				}
 
 				callback({
@@ -106,9 +106,9 @@ exports.getERightsId = function (userId, callback) {
 		request.get(byErightsUrl, function (err, response) {
 			endTimer(timer, 'getERightsId', userId);
 
-			if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-				if (response.statusCode !== 404) {
-					consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response.statusCode));
+			if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+				if (err || !response || response.statusCode !== 404) {
+					consoleLogger.warn(userId, 'eRightsToUuid service error', err || new Error(response ? response.statusCode : 'No response'));
 				}
 
 				callback({

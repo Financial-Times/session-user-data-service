@@ -132,9 +132,9 @@ exports.collectionExists = function (articleId, callback) {
 		request.get(url, function (err, response) {
 			endTimer(timer, 'collectionExists', url);
 
-			if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-				if (response.statusCode !== 404) {
-					consoleLogger.warn(articleId, 'livefyre.collectionExists error', err || new Error(response.statusCode));
+			if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+				if (err || !response || response.statusCode !== 404) {
+					consoleLogger.warn(articleId, 'livefyre.collectionExists error', err || new Error(response ? response.statusCode : 'No response'));
 				}
 
 				callback(null, false);
@@ -198,9 +198,9 @@ exports.callPingToPull = function (userId, callback) {
 	request.post(url, function (err, response) {
 		endTimer(timer, 'callPingToPull', url);
 
-		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-			if (response.statusCode !== 404) {
-				consoleLogger.warn(userId, 'livefyre.pingToPull error', err || new Error(response.statusCode));
+		if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (err || !response || response.statusCode !== 404) {
+				consoleLogger.warn(userId, 'livefyre.pingToPull error', err || new Error(response ? response.statusCode : 'No response'));
 			}
 
 			callback({
@@ -235,9 +235,9 @@ exports.getModerationRights = function (token, callback) {
 	request.get(url + '?lftoken=' + token, (err, response) => {
 		endTimer(timer, 'getModerationRights', url + '?lftoken=' + token);
 
-		if (err || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
-			if (response.statusCode !== 404) {
-				consoleLogger.warn('livefyre.getUserDetails error', err || new Error(response.statusCode));
+		if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (err || !response || response.statusCode !== 404) {
+				consoleLogger.warn('livefyre.getUserDetails error', err || new Error(response ? response.statusCode : 'No response'));
 			}
 
 			callback({

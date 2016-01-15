@@ -1,7 +1,7 @@
 "use strict";
 
 const _ = require('lodash');
-const needle = require('needle');
+const request = require('request');
 const env = require('../../../env');
 const consoleLogger = require('../../utils/consoleLogger');
 
@@ -38,8 +38,8 @@ exports.getHealth = function (callback) {
 		url = url.replace(/\{articleIdBase64\}/g, new Buffer('e78d07ca-680f-11e5-a57f-21b88f7d973f').toString('base64'));
 		url = url.replace(/\{siteId\}/g, env.livefyre.defaultSiteId);
 
-		needle.get(url, function (err, data) {
-			if (err) {
+		request.get(url, function (err, response) {
+			if (err || response.statusCode >= 500 || !response.body) {
 				currentHealth.ok = false;
 				currentHealth.checkOutput = 'statusCode: ' + err.statusCode;
 				callCallback(null, currentHealth);

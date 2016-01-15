@@ -32,8 +32,8 @@ exports.getHealth = function (callback) {
 	var currentHealth = _.clone(healthCheckModel);
 
 	try {
-		email.getUserData('3f330864-1c0f-443e-a6b3-cf8a3b536a52', function (err, data) {
-			if (err) {
+		email.getUserData('3f330864-1c0f-443e-a6b3-cf8a3b536a52', function (err, response) {
+			if (err && (err.error || err.statusCode >= 500)) {
 				currentHealth.ok = false;
 				currentHealth.checkOutput = 'statusCode: ' + err.statusCode;
 				callCallback(null, currentHealth);

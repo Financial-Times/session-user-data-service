@@ -319,7 +319,7 @@ var SessionDataStore = function (sessionId) {
 
 								var configForToken = {
 									userId: lfUserId,
-									displayName: pseudonymSanitized,
+									displayName: pseudonym,
 									expiresAt: getExpirationDate(sessionData.creationTime, sessionData.rememberMe)
 								};
 
@@ -340,7 +340,7 @@ var SessionDataStore = function (sessionId) {
 												callbackAsync(null, {
 													token: authToken.token,
 													expires: authToken.expires,
-													pseudonym: pseudonym,
+													pseudonym: pseudonymSanitized,
 													moderationRights: modRights
 												});
 											});

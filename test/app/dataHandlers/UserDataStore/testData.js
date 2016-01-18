@@ -588,7 +588,7 @@ const requestMock = new RequestMock({
 		{
 			url: env.emailService.url,
 			handler: function (config) {
-				if (!config.params || config.params.username !== env.emailService.auth.user || config.params.password !== env.emailService.auth.pass) {
+				if (!config.options || !config.options.auth || config.options.auth.username !== env.emailService.auth.user || config.options.auth.password !== env.emailService.auth.pass) {
 					config.callback(null, {
 						statusCode: 401
 					});

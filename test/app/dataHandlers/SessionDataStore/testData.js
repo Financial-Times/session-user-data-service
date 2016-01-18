@@ -237,7 +237,7 @@ const requestMock = new RequestMock({
 		{
 			url: env.sessionApi.url,
 			handler: function (config) {
-				if (!config.params || config.params.headers.FT_Api_Key !== env.sessionApi.key) {
+				if (!config.options || config.options.headers.FT_Api_Key !== env.sessionApi.key) {
 					config.callback(null, {
 						statusCode: 401
 					});

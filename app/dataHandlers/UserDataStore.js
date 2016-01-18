@@ -10,6 +10,7 @@ const crypto = require('../utils/crypto');
 const env = require('../../env');
 const Timer = require('../utils/Timer');
 const async = require('async');
+const striptags = require('striptags');
 
 var UserDataStore = function (userId) {
 	var storedData = null;
@@ -384,7 +385,7 @@ var UserDataStore = function (userId) {
 			}
 
 			if (storedData && storedData.pseudonym) {
-				var pseudonym = crypto.decrypt(storedData.pseudonym);
+				var pseudonym = striptags(crypto.decrypt(storedData.pseudonym));
 
 				consoleLogger.log(userId, 'getPseudonym', 'data loaded from the cache');
 				callback(null, pseudonym);

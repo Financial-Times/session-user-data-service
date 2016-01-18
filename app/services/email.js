@@ -23,8 +23,10 @@ exports.getUserData = function (userId, callback) {
 	let timer = new Timer();
 
 	request.get(url, {
-		username: env.emailService.auth.user,
-		password: env.emailService.auth.pass
+		auth: {
+			username: env.emailService.auth.user,
+			password: env.emailService.auth.pass
+		}
 	}, function (err, response) {
 		endTimer(timer, userId);
 

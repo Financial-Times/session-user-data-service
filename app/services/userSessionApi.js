@@ -41,8 +41,8 @@ exports.getSessionData = function (sessionId, callback) {
 			}
 
 			callback({
-				err: err,
-				statusCode: response.statusCode
+				error: err,
+				statusCode: response ? response.statusCode : null
 			});
 			return;
 		}

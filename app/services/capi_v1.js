@@ -38,7 +38,7 @@ var getArticleData = function (uuid, callback) {
 
 			callback({
 				error: err,
-				statusCode: response.statusCode
+				statusCode: response ? response.statusCode : null
 			});
 			return;
 		}

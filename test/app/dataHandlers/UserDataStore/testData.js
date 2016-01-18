@@ -2,7 +2,7 @@
 
 const proxyquire =  require('proxyquire');
 const MongodbMock = require('../../../../mocks/mongodb');
-const NeedleMock = require('../../../../mocks/needle');
+const RequestMock = require('../../../../mocks/request');
 const _ = require('lodash');
 
 
@@ -522,8 +522,8 @@ const users = {
 	},
 };
 
-
-let usersErightsMapping = [];
+let usersByErights = {};
+let usersByUuid = {};
 for (let key in users) {
 	if (users.hasOwnProperty(key)) {
 		let data = {};
@@ -533,9 +533,11 @@ for (let key in users) {
 			data.deprecatedIds = {
 				erightsId: users[key].eRightsId
 			};
+
+			usersByErights[users[key].eRightsId] = data;
 		}
 
-		usersErightsMapping.push(data);
+		usersByUuid[users[key].uuid] = data;
 	}
 }
 
@@ -581,23 +583,90 @@ const mongodbMock = new MongodbMock({
 });
 
 
-const needleMock = new NeedleMock({
-	env: env,
-	usersEmailService: usersEmailServiceData,
-	usersErightsMapping: usersErightsMapping,
+const requestMock = new RequestMock({
+	items: [
+		{
+			url: env.emailService.url,
+			handler: function (config) {
+				if (!config.params || config.params.username !== env.emailService.auth.user || config.params.password !== env.emailService.auth.pass) {
+					config.callback(null, {
+						statusCode: 401
+					});
+					return;
+				}
+
+				if (usersEmailServiceData[config.matches.queryParams.userId] !== -1) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(usersEmailServiceData[config.matches.queryParams.userId])
+					});
+				} else if (typeof config.matches.queryParams.userId === 'string' && config.matches.queryParams.userId.indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+				}
+			}
+		},
+		{
+			url: env.erightsToUuidService.urls.byUuid,
+			handler: function (config) {
+				if (usersByUuid[config.matches.queryParams.userId]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify({
+							user: usersByUuid[config.matches.queryParams.userId]
+						})
+					});
+				} else if (typeof usersByUuid[config.matches.queryParams.userId] === 'string' && usersByUuid[config.matches.queryParams.userId].indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+				}
+			}
+		},
+		{
+			url: env.erightsToUuidService.urls.byErights,
+			handler: function (config) {
+				if (usersByErights[config.matches.queryParams.eRightsId]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify({
+							user: usersByErights[config.matches.queryParams.eRightsId]
+						})
+					});
+				} else if (typeof usersByErights[config.matches.queryParams.eRightsId] === 'string' && usersByErights[config.matches.queryParams.eRightsId].indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+				}
+			}
+		}
+	],
 	global: true
 });
 
 
 exports.mockInstances = {
 	mongodb: mongodbMock,
-	needle: needleMock
+	request: requestMock
 };
 
 
 exports.mocks = {
 	mongodb: mongodbMock.mock,
-	needle: needleMock.mock,
+	request: requestMock.mock,
 	env: env
 };
 

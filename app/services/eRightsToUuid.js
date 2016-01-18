@@ -39,8 +39,8 @@ exports.getUuid = function (userId, callback) {
 			}
 
 			callback({
-				err: err,
-				statusCode: response.statusCode
+				error: err,
+				statusCode: response ? response.statusCode : null
 			});
 			return;
 		}
@@ -80,8 +80,8 @@ exports.getERightsId = function (userId, callback) {
 				}
 
 				callback({
-					err: err,
-					statusCode: response.statusCode
+					error: err,
+					statusCode: response ? response.statusCode : null
 				});
 				return;
 			}
@@ -91,10 +91,7 @@ exports.getERightsId = function (userId, callback) {
 			if (data && data.user && data.user.deprecatedIds && data.user.deprecatedIds.erightsId) {
 				callback(null, data.user.deprecatedIds.erightsId);
 			} else {
-				callback({
-					statusCode: 503,
-					error: new Error("Unexpected response.")
-				});
+				callback();
 			}
 		});
 	} else {
@@ -112,8 +109,8 @@ exports.getERightsId = function (userId, callback) {
 				}
 
 				callback({
-					err: err,
-					statusCode: response.statusCode
+					error: err,
+					statusCode: response ? response.statusCode : null
 				});
 				return;
 			}
@@ -123,10 +120,7 @@ exports.getERightsId = function (userId, callback) {
 			if (data && data.user && data.user.deprecatedIds && data.user.deprecatedIds.erightsId) {
 				callback(null, data.user.deprecatedIds.erightsId);
 			} else {
-				callback({
-					statusCode: 503,
-					error: new Error("Unexpected response.")
-				});
+				callback();
 			}
 		});
 	}

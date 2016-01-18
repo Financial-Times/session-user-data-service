@@ -16,7 +16,7 @@ consoleLogger.disable();
 
 const SessionDataStore = proxyquire('../../../../app/dataHandlers/SessionDataStore.js', {
 	mongodb: testData.mocks.mongodb,
-	needle: testData.mocks.needle,
+	request: testData.mocks.request,
 	livefyre: testData.mocks.livefyre,
 	'../../env': testData.mocks.env
 });

@@ -5,7 +5,7 @@ const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
 const _ = require('lodash');
 
-const NeedleMock = require('../../../mocks/needle');
+const RequestMock = require('../../../mocks/request');
 
 
 consoleLogger.disable();
@@ -29,14 +29,40 @@ const env = {
 	}
 };
 
-const needleMock = new NeedleMock({
-	env: env,
-	usersEmailService: userData,
+const requestMock = new RequestMock({
+	items: [
+		{
+			url: env.emailService.url,
+			handler: function (config) {
+				if (!config.params || config.params.username !== env.emailService.auth.user || config.params.password !== env.emailService.auth.pass) {
+					config.callback(null, {
+						statusCode: 401
+					});
+					return;
+				}
+
+				if (userData[config.matches.queryParams.userId] !== -1) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(userData[config.matches.queryParams.userId])
+					});
+				} else if (typeof config.matches.queryParams.userId === 'string' && config.matches.queryParams.userId.indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+				}
+			}
+		}
+	],
 	global: true
 });
 
 const email = proxyquire('../../../app/services/email.js', {
-	needle: needleMock.mock,
+	request: requestMock.mock,
 	'../../env': env
 });
 

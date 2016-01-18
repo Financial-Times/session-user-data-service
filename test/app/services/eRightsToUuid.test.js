@@ -4,7 +4,7 @@ const assert = require('assert');
 const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
 
-const NeedleMock = require('../../../mocks/needle');
+const RequestMock = require('../../../mocks/request');
 
 consoleLogger.disable();
 
@@ -35,15 +35,63 @@ var users = [
 		id: uuidWithoutErights
 	}
 ];
+var usersByUuid = {};
+usersByUuid[userUuid] = users[0];
+usersByUuid[uuidWithoutErights] = users[1];
 
-const needleMock = new NeedleMock({
-	env: env,
-	usersErightsMapping: users,
+var usersByErights = {};
+usersByErights[eRightsId] = users[0];
+
+const requestMock = new RequestMock({
+	items: [
+		{
+			url: env.erightsToUuidService.urls.byUuid,
+			handler: function (config) {
+				if (usersByUuid[config.matches.queryParams.userId]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify({
+							user: usersByUuid[config.matches.queryParams.userId]
+						})
+					});
+				} else if (typeof usersByUuid[config.matches.queryParams.userId] === 'string' && usersByUuid[config.matches.queryParams.userId].indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+				}
+			}
+		},
+		{
+			url: env.erightsToUuidService.urls.byErights,
+			handler: function (config) {
+				if (usersByErights[config.matches.queryParams.eRightsId]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify({
+							user: usersByErights[config.matches.queryParams.eRightsId]
+						})
+					});
+				} else if (typeof usersByErights[config.matches.queryParams.eRightsId] === 'string' && usersByErights[config.matches.queryParams.eRightsId].indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+				}
+			}
+		}
+	],
 	global: true
 });
 
 const eRightsToUuid = proxyquire('../../../app/services/eRightsToUuid.js', {
-	needle: needleMock.mock,
+	request: requestMock.mock,
 	'../../env': env
 });
 
@@ -87,7 +135,8 @@ describe('eRightsToUuid', function() {
 
 		it('should return null if the user does not exist', function (done) {
 			eRightsToUuid.getUuid('not-found', function (err, data) {
-				assert.ok(!err, "Error is not set.");
+				assert.ok(err, "Error is set.");
+				assert.equal(err.statusCode, 404, "404 status code");
 				assert.ok(data === undefined || data === null, "Data is null.");
 
 				done();

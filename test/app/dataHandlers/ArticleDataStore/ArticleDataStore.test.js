@@ -12,7 +12,7 @@ consoleLogger.disable();
 const ArticleDataStore = proxyquire('../../../../app/dataHandlers/ArticleDataStore.js', {
 	'ft-api-client': testData.mocks['ft-api-client'],
 	mongodb: testData.mocks.mongodb,
-	needle: testData.mocks.needle,
+	request: testData.mocks.request,
 	livefyre: testData.mocks.livefyre,
 	'../../env': testData.mocks.env
 });

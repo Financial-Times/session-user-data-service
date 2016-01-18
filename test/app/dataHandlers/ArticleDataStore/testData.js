@@ -3,7 +3,7 @@
 const FtApiClientMock = require('../../../../mocks/ft-api-client');
 const MongodbMock = require('../../../../mocks/mongodb');
 const LivefyreMock = require('../../../../mocks/livefyre');
-const NeedleMock = require('../../../../mocks/needle');
+const RequestMock = require('../../../../mocks/request');
 
 
 const articles = {
@@ -231,12 +231,15 @@ const env = {
 		},
 		api: {
 			collectionExistsUrl: 'http://{networkName}.collection-exists.livefyre.com/{articleIdBase64}',
-			pingToPullUrl: 'http://{networkName}.ping-to-pull.livefyre.com/{userId}?token={token}',
 			bootstrapUrl: 'http://bootstrap.{networkName}.fyre.co/bs3/{networkName}.fyre.co/{siteId}/{articleIdBase64}/bootstrap.html'
 		}
 	},
 	mongo: {
 		uri: 'mongo-uri'
+	},
+	capi: {
+		key: 't23r',
+		url: 'http://api.ft.com/{uuid}?key={apiKey}'
 	},
 	cacheExpiryHours: {
 		articles: 1
@@ -267,9 +270,63 @@ const mongodbMock = new MongodbMock({
 	global: true
 });
 
-const needleMock = new NeedleMock({
-	env: env,
-	articlesCollectionExists: articleCollectionExists,
+const requestMock = new RequestMock({
+	items: [
+		{
+			url: env.capi.url,
+			handler: function (config) {
+				if (config.matches.urlParams.uuid && config.matches.urlParams.uuid.indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+					return;
+				}
+
+				if (config.matches.queryParams.key !== env.capi.key) {
+					config.callback(null, {
+						statusCode: 403
+					});
+					return;
+				}
+
+				if (articleData[config.matches.urlParams.uuid]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(articleData[config.matches.urlParams.uuid])
+					});
+
+					return;
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+					return;
+				}
+			}
+		},
+		{
+			url: env.livefyre.api.collectionExistsUrl,
+			handler: function (config) {
+				let articleId = new Buffer(config.matches.urlParams.articleIdBase64, 'base64').toString();
+
+				if (config.matches.urlParams.networkName !== env.livefyre.network.name) {
+					config.callback(new Error("Network not found"));
+					return;
+				}
+
+				if (articleCollectionExists.indexOf(articleId) !== -1) {
+					config.callback(null, {
+						statusCode: 200
+					});
+					return;
+				}
+
+				config.callback(null, {
+					statusCode: 404
+				});
+			}
+		}
+	],
 	global: true
 });
 
@@ -284,7 +341,7 @@ exports.mockInstances = {
 	'ft-api-client': ftApiClientMock,
 	mongodb: mongodbMock,
 	livefyre: livefyreMock,
-	needle: needleMock
+	request: requestMock
 };
 
 exports.articles = articles;
@@ -293,6 +350,6 @@ exports.mocks = {
 	'ft-api-client': ftApiClientMock.mock,
 	mongodb: mongodbMock.mock,
 	livefyre: livefyreMock.mock,
-	needle: needleMock.mock,
+	request: requestMock.mock,
 	env: env
 };

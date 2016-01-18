@@ -5,7 +5,7 @@ const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
 const MongodbMock = require('../../../mocks/mongodb');
 const LivefyreMock = require('../../../mocks/livefyre');
-const NeedleMock = require('../../../mocks/needle');
+const RequestMock = require('../../../mocks/request');
 const _ = require('lodash');
 
 consoleLogger.disable();
@@ -38,7 +38,7 @@ const articles = {
 	}
 };
 
-let articleCollectionExists = [articles.normal.id, articles.normal.siteIdNotSetUp];
+let articleCollectionExists = [articles.normal.id, articles.siteIdNotSetUp.id];
 
 
 let legacySiteMapping = [];
@@ -103,12 +103,98 @@ const livefyreUserProfiles = {};
 livefyreUserProfiles[validToken] = lfUserProfile;
 
 
-const needleMock = new NeedleMock({
-	env: env,
-	articlesCollectionExists: articleCollectionExists,
-	systemToken: systemToken,
-	userIdsPingToPull: [userId],
-	livefyreUserProfiles: livefyreUserProfiles,
+const requestMock = new RequestMock({
+	items: [
+		{
+			url: env.livefyre.api.collectionExistsUrl,
+			handler: function (config) {
+				let articleId = new Buffer(config.matches.urlParams.articleIdBase64, 'base64').toString();
+
+				if (config.matches.urlParams.networkName !== env.livefyre.network.name) {
+					config.callback(new Error("Network not found"));
+					return;
+				}
+
+				if (articleCollectionExists.indexOf(articleId) !== -1) {
+					config.callback(null, {
+						statusCode: 200
+					});
+					return;
+				}
+
+				config.callback(null, {
+					statusCode: 404
+				});
+			}
+		},
+		{
+			url: env.livefyre.api.pingToPullUrl,
+			handler: function (config) {
+				if (config.matches.urlParams.networkName !== env.livefyre.network.name) {
+					config.callback(new Error("Network not found"));
+					return;
+				}
+
+				if (config.matches.queryParams.token !== systemToken) {
+					config.callback(new Error("System token invalid"));
+					return;
+				}
+
+				if (config.matches.urlParams.userId === userId) {
+					config.callback(null, {
+						statusCode: 200
+					});
+					return;
+				}
+
+				config.callback(new Error("Ping to pull error."));
+			}
+		},
+		{
+			url: env.livefyre.api.userProfileUrl,
+			handler: function (config) {
+				if (config.matches.urlParams.networkName !== env.livefyre.network.name) {
+					config.callback(new Error("Network is not correct."));
+					return;
+				}
+
+				if (config.matches.queryParams.lftoken && config.matches.queryParams.lftoken.indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+					return;
+				}
+
+				let userProfile = livefyreUserProfiles[config.matches.queryParams.lftoken];
+				if (userProfile) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(userProfile)
+					});
+					return;
+				}
+
+				try {
+					let lfTokenJson = JSON.parse(config.matches.queryParams.lftoken);
+					if (lfTokenJson && lfTokenJson.userId) {
+						userProfile = livefyreUserProfiles[lfTokenJson.userId];
+						if (userProfile) {
+							config.callback(null, {
+								statusCode: 200,
+								body: JSON.stringify(userProfile)
+							});
+							return;
+						}
+					}
+				} catch (e) {
+				}
+
+				config.callback(null, {
+					statusCode: 404
+				});
+			}
+		}
+	],
 	global: true
 });
 
@@ -127,7 +213,7 @@ const livefyreMock = new LivefyreMock({
 const livefyreService = proxyquire('../../../app/services/livefyre.js', {
 	'livefyre': livefyreMock.mock,
 	'../../env': env,
-	'needle': needleMock.mock,
+	'request': requestMock.mock,
 	'mongodb': mongodbMock.mock
 });
 

@@ -3,7 +3,7 @@
 const proxyquire =  require('proxyquire');
 const MongodbMock = require('../../../../mocks/mongodb');
 const LivefyreMock = require('../../../../mocks/livefyre');
-const NeedleMock = require('../../../../mocks/needle');
+const RequestMock = require('../../../../mocks/request');
 const _ = require('lodash');
 
 
@@ -177,10 +177,16 @@ users[sessions.withoutERightsId.uuid] = {
 	}
 };
 
-let usersList = [];
+let usersByUuid = {};
+let usersByErights = {};
 for (let key in users) {
 	if (users.hasOwnProperty(key)) {
-		usersList.push(_.pick(users[key], ['id', 'deprecatedIds']));
+		var data = _.pick(users[key], ['id', 'deprecatedIds']);
+		if (data.deprecatedIds && data.deprecatedIds.erightsId) {
+			usersByErights[data.deprecatedIds.erightsId] = data;
+		}
+
+		usersByUuid[data.id] = data;
 	}
 }
 
@@ -226,11 +232,121 @@ Object.keys(sessions).forEach(function (key, index) {
 	sessionsById[sessions[key].id] = sessions[key];
 });
 
-const needleMock = new NeedleMock({
-	env: env,
-	sessions: sessionsById,
-	usersErightsMapping: usersList,
-	livefyreUserProfiles: livefyreUserProfiles,
+const requestMock = new RequestMock({
+	items: [
+		{
+			url: env.sessionApi.url,
+			handler: function (config) {
+				if (!config.params || config.params.headers.FT_Api_Key !== env.sessionApi.key) {
+					config.callback(null, {
+						statusCode: 401
+					});
+					return;
+				}
+
+				if (sessionsById[config.matches.queryParams.sessionId]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(sessionsById[config.matches.queryParams.sessionId])
+					});
+				} else if (config.matches.queryParams.sessionId.indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 401
+					});
+				}
+			}
+		},
+		{
+			url: env.livefyre.api.userProfileUrl,
+			handler: function (config) {
+				if (config.matches.urlParams.networkName !== env.livefyre.network.name) {
+					config.callback(new Error("Network is not correct."));
+					return;
+				}
+
+				if (config.matches.queryParams.lftoken && config.matches.queryParams.lftoken.indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+					return;
+				}
+
+				let userProfile = livefyreUserProfiles[config.matches.queryParams.lftoken];
+				if (userProfile) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(userProfile)
+					});
+					return;
+				}
+
+				try {
+					let lfTokenJson = JSON.parse(config.matches.queryParams.lftoken);
+					if (lfTokenJson && lfTokenJson.userId) {
+						userProfile = livefyreUserProfiles[lfTokenJson.userId];
+						if (userProfile) {
+							config.callback(null, {
+								statusCode: 200,
+								body: JSON.stringify(userProfile)
+							});
+							return;
+						}
+					}
+				} catch (e) {
+				}
+
+				config.callback(null, {
+					statusCode: 404
+				});
+			}
+		},
+		{
+			url: env.erightsToUuidService.urls.byUuid,
+			handler: function (config) {
+				if (usersByUuid[config.matches.queryParams.userId]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify({
+							user: usersByUuid[config.matches.queryParams.userId]
+						})
+					});
+				} else if (typeof usersByUuid[config.matches.queryParams.userId] === 'string' && usersByUuid[config.matches.queryParams.userId].indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+				}
+			}
+		},
+		{
+			url: env.erightsToUuidService.urls.byErights,
+			handler: function (config) {
+				if (usersByErights[config.matches.queryParams.eRightsId]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify({
+							user: usersByErights[config.matches.queryParams.eRightsId]
+						})
+					});
+				} else if (typeof usersByErights[config.matches.queryParams.eRightsId] === 'string' && usersByErights[config.matches.queryParams.eRightsId].indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+				}
+			}
+		}
+	],
 	global: true
 });
 
@@ -264,14 +380,14 @@ const livefyreMock = new LivefyreMock({
 exports.mockInstances = {
 	mongodb: mongodbMock,
 	livefyre: livefyreMock,
-	needle: needleMock
+	request: requestMock
 };
 
 
 exports.mocks = {
 	mongodb: mongodbMock.mock,
 	livefyre: livefyreMock.mock,
-	needle: needleMock.mock,
+	request: requestMock.mock,
 	env: env
 };
 exports.sessions = sessions;

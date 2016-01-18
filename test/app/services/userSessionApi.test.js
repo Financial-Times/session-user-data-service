@@ -4,7 +4,7 @@ const assert = require('assert');
 const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
 
-const NeedleMock = require('../../../mocks/needle');
+const RequestMock = require('../../../mocks/request');
 
 
 consoleLogger.disable();
@@ -29,14 +29,40 @@ const env = {
 	}
 };
 
-const needleMock = new NeedleMock({
-	env: env,
-	sessions: sessionsBySessId,
+const requestMock = new RequestMock({
+	items: [
+		{
+			url: env.sessionApi.url,
+			handler: function (config) {
+				if (!config.params || config.params.headers.FT_Api_Key !== env.sessionApi.key) {
+					config.callback(null, {
+						statusCode: 401
+					});
+					return;
+				}
+
+				if (sessionsBySessId[config.matches.queryParams.sessionId]) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(sessionsBySessId[config.matches.queryParams.sessionId])
+					});
+				} else if (config.matches.queryParams.sessionId.indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+				} else {
+					config.callback(null, {
+						statusCode: 401
+					});
+				}
+			}
+		}
+	],
 	global: true
 });
 
 const userSessionApi = proxyquire('../../../app/services/userSessionApi.js', {
-	needle: needleMock.mock,
+	request: requestMock.mock,
 	'../../env': env
 });
 
@@ -53,7 +79,8 @@ describe('userSessionApi', function() {
 
 		it('should not return user details if the session is expired', function (done) {
 			userSessionApi.getSessionData('invalid', function (err, data) {
-				assert.ok(!err, "Error is not set.");
+				assert.ok(err, "Error is set.");
+				assert.equal(err.statusCode, 401, "401 status code.");
 				assert.equal(data, null, "Null is returned which shows that the session is not valid.");
 
 				done();

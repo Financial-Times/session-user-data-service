@@ -3,7 +3,7 @@
 const assert = require('assert');
 const proxyquire =  require('proxyquire');
 const consoleLogger = require('../../../app/utils/consoleLogger');
-const FtApiClientMock = require('../../../mocks/ft-api-client');
+const RequestMock = require('../../../mocks/request');
 
 consoleLogger.disable();
 
@@ -11,12 +11,55 @@ var articleId = '109842b8-71f4-11e5-9b9e-690fdae72044';
 var articleData = {};
 articleData[articleId] = {};
 
-var ftApiClientMock = new FtApiClientMock({
-	articleData: articleData
+const env = {
+	capi: {
+		key: '324ef',
+		url: 'http://api.ft.com/{uuid}?key={apiKey}'
+	},
+	'@global': true
+};
+
+var requestMock = new RequestMock({
+	items: [
+		{
+			url: env.capi.url,
+			handler: function (config) {
+				if (config.matches.urlParams.uuid && config.matches.urlParams.uuid.indexOf('down') !== -1) {
+					config.callback(null, {
+						statusCode: 503
+					});
+					return;
+				}
+
+				if (config.matches.queryParams.key !== env.capi.key) {
+					config.callback(null, {
+						statusCode: 403
+					});
+					return;
+				}
+
+				if (config.matches.urlParams.uuid === articleId) {
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(articleData[config.matches.urlParams.uuid])
+					});
+
+					return;
+				} else {
+					config.callback(null, {
+						statusCode: 404
+					});
+					return;
+				}
+			}
+		},
+	],
+	global: true
 });
 
 const capi_v1 = proxyquire('../../../app/services/capi_v1.js', {
-	'ft-api-client': ftApiClientMock.mock
+	'request': requestMock.mock,
+	'../../env': env
 });
 
 describe('capi_v1', function() {

@@ -25,9 +25,14 @@ var UserDataStore = function (userId) {
 
 
 
-	let uuidCache = null;
+	let uuidCache;
 	const fetchUuidOfUserId = function (callback) {
-		if (uuidCache) {
+		if (typeof uuidCache !== 'undefined') {
+			if (uuidCache === null) {
+				callback(new Error("User not found"));
+				return;
+			}
+
 			callback(null, uuidCache);
 			return;
 		}
@@ -42,14 +47,15 @@ var UserDataStore = function (userId) {
 				uuidCache = userUuid;
 				callback(null, userUuid);
 			} else {
+				uuidCache = null;
 				callback(new Error("User not found"));
 			}
 		});
 	};
 
-	let eRightsIdCache = null;
+	let eRightsIdCache;
 	const fetchERightsIdOfUserId = function (callback) {
-		if (eRightsIdCache) {
+		if (typeof eRightsIdCache !== 'undefined') {
 			callback(null, eRightsIdCache);
 			return;
 		}
@@ -64,6 +70,7 @@ var UserDataStore = function (userId) {
 				eRightsIdCache = userERightsId;
 				callback(null, userERightsId);
 			} else {
+				eRightsIdCache = null;
 				callback();
 			}
 		});

@@ -132,7 +132,7 @@ exports.collectionExists = function (articleId, callback) {
 		request.get(url, function (err, response) {
 			endTimer(timer, 'collectionExists', url);
 
-			if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+			if (err || !response || response.statusCode < 200 || response.statusCode >= 400) {
 				if (err || !response || response.statusCode !== 404) {
 					consoleLogger.warn(articleId, 'livefyre.collectionExists error', err || new Error(response ? response.statusCode : 'No response'));
 				}
@@ -198,14 +198,14 @@ exports.callPingToPull = function (userId, callback) {
 	request.post(url, function (err, response) {
 		endTimer(timer, 'callPingToPull', url);
 
-		if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
+		if (err || !response || response.statusCode < 200 || response.statusCode >= 400) {
 			if (err || !response || response.statusCode !== 404) {
 				consoleLogger.warn(userId, 'livefyre.pingToPull error', err || new Error(response ? response.statusCode : 'No response'));
 			}
 
 			callback({
-				err: err,
-				statusCode: response.statusCode
+				error: err,
+				statusCode: response ? response.statusCode : null
 			});
 			return;
 		}
@@ -241,8 +241,8 @@ exports.getModerationRights = function (token, callback) {
 			}
 
 			callback({
-				err: err,
-				statusCode: response.statusCode
+				error: err,
+				statusCode: response ? response.statusCode : null
 			});
 			return;
 		}

@@ -35,7 +35,7 @@ exports.getUserData = function (userId, callback) {
 
 			callback({
 				error: err,
-				statusCode: response.statusCode
+				statusCode: response ? response.statusCode : null
 			});
 			return;
 		}

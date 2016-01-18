@@ -16,7 +16,7 @@ consoleLogger.disable();
 
 const UserDataStore = proxyquire('../../../../app/dataHandlers/UserDataStore.js', {
 	mongodb: testData.mocks.mongodb,
-	needle: testData.mocks.needle,
+	request: testData.mocks.request,
 	'../../env': testData.mocks.env
 });
 

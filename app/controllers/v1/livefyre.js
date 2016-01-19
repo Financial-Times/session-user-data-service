@@ -264,10 +264,11 @@ exports.getLfBootstrap = function (req, res, next) {
 			consoleLogger.warn('/v1/livefyre/get_lf_bootstrap', '\nArticleId', req.query.uuid, '\nError', err);
 
 			res.sendStatus(503);
+			return;
 		}
 
 		if (req.query.datatype === 'html') {
-			res.sendStatus(url);
+			res.send(url);
 		} else {
 			res.jsonp({
 				url: url

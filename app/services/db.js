@@ -44,7 +44,11 @@ function getConnection (uri, callback) {
 	if (!connInProgress) {
 		let timer = new Timer();
 
-		MongoClient.connect(uri, function(err, dbConn) {
+		MongoClient.connect(uri, {
+			db: {
+				bufferMaxEntries: 0
+			}
+		}, function(err, dbConn) {
 			endTimer(timer);
 
 			if (err) {
@@ -53,20 +57,6 @@ function getConnection (uri, callback) {
 				evts.emit('complete', err);
 				return;
 			}
-
-			dbConn.on('close', function() {
-				consoleLogger.warn('Mongo connection lost', err);
-
-				connections[uri] = null;
-
-				if (this._callBackStore) {
-					for(var key in this._callBackStore._notReplied) {
-						if (this._callBackStore._notReplied.hasOwnProperty(key)) {
-							this._callHandler(key, null, 'Connection Closed!');
-						}
-					}
-				}
-			});
 
 			connections[uri] = dbConn;
 			evts.emit('complete', null, dbConn);

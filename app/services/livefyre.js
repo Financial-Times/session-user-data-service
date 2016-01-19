@@ -2,7 +2,7 @@
 
 var livefyre = require('livefyre');
 var legacySiteMapping = require('./legacySiteMapping');
-var request = require('request');
+const request = require('../utils/request_with_defaults.js');
 var consoleLogger = require('../utils/consoleLogger');
 var env = require('../../env');
 var urlParser = require('url');

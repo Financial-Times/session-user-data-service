@@ -1,6 +1,6 @@
 "use strict";
 
-const request = require('request');
+const request = require('../utils/request_with_defaults.js');
 const isUuid = require('../utils/isUuid');
 const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');

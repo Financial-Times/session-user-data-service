@@ -1,6 +1,6 @@
 "use strict";
 
-const request = require('request');
+const request = require('../utils/request_with_defaults.js');
 const _ = require('lodash');
 const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');

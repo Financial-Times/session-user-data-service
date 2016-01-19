@@ -9,12 +9,6 @@ var cors = require('cors');
 var consoleLogger = require('./app/utils/consoleLogger');
 var env = require('./env');
 var urlParser = require('url');
-var request = require('request');
-
-
-request.defaults({
-	open_timeout: 25000
-});
 
 var routes = {
 	index: require('./app/routes/index'),

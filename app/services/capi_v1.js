@@ -2,7 +2,7 @@
 
 const env = require('../../env');
 const consoleLogger = require('../utils/consoleLogger');
-const request = require('request');
+const request = require('../utils/request_with_defaults.js');
 const Timer = require('../utils/Timer');
 
 var capiUrl = env.capi.url.replace(/\{apiKey\}/g, env.capi.key);

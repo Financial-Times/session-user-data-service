@@ -65,7 +65,7 @@ var ArticleDataStore = function (articleId) {
 
 				connection.collection('articles').find({
 					_id: mongoSanitize(articleId)
-				}).toArray(function (errDb, data) {
+				}).maxTimeMS(env.timeouts.queries).toArray(function (errDb, data) {
 					if (errDb) {
 						consoleLogger.warn(articleId, 'cache retrieval failed', errDb);
 
@@ -116,7 +116,7 @@ var ArticleDataStore = function (articleId) {
 
 				// reset storage cache
 				toBeRefreshed = true;
-			});
+			}).maxTimeMS(env.timeouts.queries);
 		});
 	}
 

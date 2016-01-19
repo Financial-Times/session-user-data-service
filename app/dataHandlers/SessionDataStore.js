@@ -67,7 +67,7 @@ var SessionDataStore = function (sessionId) {
 
 				connection.collection('sessions').find({
 					_id: mongoSanitize(sessionId)
-				}).toArray(function (errDb, data) {
+				}).maxTimeMS(env.timeouts.queries).toArray(function (errDb, data) {
 					if (errDb) {
 						consoleLogger.warn(sessionId, 'cache retrieval failed', errDb);
 
@@ -136,9 +136,9 @@ var SessionDataStore = function (sessionId) {
 						$set: {
 							'expireAt': new Date(expireAt)
 						}
-					});
+					}).maxTimeMS(env.timeouts.queries);
 				}
-			});
+			}).maxTimeMS(env.timeouts.queries);
 		});
 	}
 
@@ -164,7 +164,7 @@ var SessionDataStore = function (sessionId) {
 
 				storedData = null;
 				callback();
-			});
+			}).maxTimeMS(env.timeouts.queries);
 		});
 	}
 

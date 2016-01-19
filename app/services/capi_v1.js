@@ -26,9 +26,7 @@ var getArticleData = function (uuid, callback) {
 	let timer = new Timer();
 
 	var url = capiUrl.replace(/\{uuid\}/g, uuid);
-	request.get(url, {
-		timeout: 10000
-	}, function (err, response) {
+	request.get(url, function (err, response) {
 		endTimer(timer, uuid);
 
 		if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {

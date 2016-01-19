@@ -110,7 +110,7 @@ var UserDataStore = function (userId) {
 					}
 
 					callback(null, userData);
-				});
+				}).maxTimeMS(env.timeouts.queries);
 			});
 		});
 	};
@@ -167,7 +167,7 @@ var UserDataStore = function (userId) {
 							lfUserId: mongoSanitize(userId)
 						}
 					]
-				}).toArray(function (errDb, data) {
+				}).maxTimeMS(env.timeouts.queries).toArray(function (errDb, data) {
 					if (errDb) {
 						consoleLogger.warn(userId, 'cache retrieval failed', errDb);
 
@@ -280,7 +280,7 @@ var UserDataStore = function (userId) {
 						// reset storage cache
 						toBeRefreshed = true;
 						callback();
-					});
+					}).maxTimeMS(env.timeouts.queries);
 				} else {
 					callback(new Error("User not found"));
 					return;

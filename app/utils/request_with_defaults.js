@@ -1,7 +1,8 @@
 "use strict";
 
+const env = require('../../env');
 const request = require('request');
 
 module.exports = request.defaults({
-	timeout: 15000
+	timeout: env.timeouts.services
 });

@@ -110,7 +110,7 @@ var UserDataStore = function (userId) {
 					}
 
 					callback(null, userData);
-				}).maxTimeMS(env.timeouts.queries);
+				});
 			});
 		});
 	};
@@ -280,7 +280,7 @@ var UserDataStore = function (userId) {
 						// reset storage cache
 						toBeRefreshed = true;
 						callback();
-					}).maxTimeMS(env.timeouts.queries);
+					});
 				} else {
 					callback(new Error("User not found"));
 					return;

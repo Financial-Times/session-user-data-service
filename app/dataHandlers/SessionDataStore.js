@@ -136,9 +136,9 @@ var SessionDataStore = function (sessionId) {
 						$set: {
 							'expireAt': new Date(expireAt)
 						}
-					}).maxTimeMS(env.timeouts.queries);
+					});
 				}
-			}).maxTimeMS(env.timeouts.queries);
+			});
 		});
 	}
 
@@ -164,7 +164,7 @@ var SessionDataStore = function (sessionId) {
 
 				storedData = null;
 				callback();
-			}).maxTimeMS(env.timeouts.queries);
+			});
 		});
 	}
 

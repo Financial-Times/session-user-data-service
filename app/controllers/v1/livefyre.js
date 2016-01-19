@@ -394,10 +394,13 @@ function getLivefyreCollectionDetailsAuthRestricted (articleDataStore, sessionDa
 		throw new Error("v1/livefyre.getLivefyreCollectionDetailsAuthRestricted: callback not provided");
 	}
 
-
+	var callbackCalled = false;
 	var callCallback = function () {
-		articleDataStore.destroy();
-		callback.apply(this, arguments);
+		if (!callbackCalled) {
+			callbackCalled = true;
+
+			callback.apply(this, arguments);
+		}
 	};
 
 

@@ -116,7 +116,7 @@ var ArticleDataStore = function (articleId) {
 
 				// reset storage cache
 				toBeRefreshed = true;
-			}).maxTimeMS(env.timeouts.queries);
+			});
 		});
 	}
 

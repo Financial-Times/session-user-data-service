@@ -54,8 +54,8 @@ var config = {
 		filter: process.env.LOGGER_FILTER
 	},
 	timeouts: {
-		services: process.env.SERVICES_TIMEOUT && parseInt(process.env.SERVICES_TIMEOUT, 10) ? parseInt(process.env.SERVICES_TIMEOUT, 10) : 10000,
-		queries: process.env.DB_QUERIES_TIMEOUT && parseInt(process.env.DB_QUERIES_TIMEOUT, 10) ? parseInt(process.env.DB_QUERIES_TIMEOUT, 10) : 5000,
+		services: process.env.SERVICES_TIMEOUT && parseInt(process.env.SERVICES_TIMEOUT, 10) ? parseInt(process.env.SERVICES_TIMEOUT, 10) : 15000,
+		queries: process.env.DB_QUERIES_TIMEOUT && parseInt(process.env.DB_QUERIES_TIMEOUT, 10) ? parseInt(process.env.DB_QUERIES_TIMEOUT, 10) : 10000,
 	},
 	host: process.env.HOST || 'session-user-data-service.herokuapp.com',
 	maintenanceModeOn: ['true', true].indexOf(process.env.MAINTENANCE_ON) !== -1 ? true : false,

@@ -38,6 +38,11 @@ const env = {
 			byErights: 'http://erights-to-uuid/get?eRightsId={userId}'
 		}
 	},
+	validation: {
+		pseudonym: {
+			allowedCharacters: " !#$%'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+		}
+	},
 	'@global': true
 };
 const crypto = proxyquire('../../../../app/utils/crypto', {
@@ -125,6 +130,12 @@ const sessions = {
 		creationTime: startDate.getTime(),
 		rememberMe: true
 	},
+	withPseudonymNotAllowedCharacters: {
+		id: '234532',
+		uuid: 'fefe1bfb-e311-4dcb-af3f-cf0e60e53477',
+		creationTime: startDate.getTime(),
+		rememberMe: true
+	},
 	withCompleteUserInfo: {
 		id: '5f24f4fr',
 		uuid: 'c5d80bda-d3cd-41bd-bb5a-e88a72287f07',
@@ -153,6 +164,15 @@ users[sessions.withPseudonymNoEmailPreference.uuid] = {
 	},
 	userData: {
 		pseudonym: 'testPseudonym' + sessions.withPseudonymNoEmailPreference.uuid
+	}
+};
+users[sessions.withPseudonymNotAllowedCharacters.uuid] = {
+	id: sessions.withPseudonymNotAllowedCharacters.uuid,
+	deprecatedIds: {
+		erightsId: 62342
+	},
+	userData: {
+		pseudonym: 'testPseudonym&\\'
 	}
 };
 users[sessions.withCompleteUserInfo.uuid] = {
@@ -299,6 +319,7 @@ const requestMock = new RequestMock({
 				} catch (e) {
 				}
 
+				console.log('404 1');
 				config.callback(null, {
 					statusCode: 404
 				});
@@ -319,6 +340,7 @@ const requestMock = new RequestMock({
 						statusCode: 503
 					});
 				} else {
+					console.log('404 2');
 					config.callback(null, {
 						statusCode: 404
 					});
@@ -340,6 +362,7 @@ const requestMock = new RequestMock({
 						statusCode: 503
 					});
 				} else {
+					console.log('404 3');
 					config.callback(null, {
 						statusCode: 404
 					});

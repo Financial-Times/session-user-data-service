@@ -5,7 +5,8 @@ const UserDataStore = require('../../dataHandlers/UserDataStore');
 const async = require('async');
 const livefyreService = require('../../services/livefyre');
 const consoleLogger = require('../../utils/consoleLogger');
-const env = require('../../../env');
+const pseudonymSanitizer = require('../../utils/pseudonymSanitizer');
+const sanitizer = require('sanitizer');
 
 
 function sendResponse(req, res, status, json) {
@@ -117,6 +118,17 @@ exports.setPseudonym = function (req, res, next) {
 		return;
 	}
 
+	let notAllowedCharacters = pseudonymSanitizer.getNotAllowedCharacters(pseudonym);
+	if (notAllowedCharacters.length) {
+		sendResponse(req, res, 400, {
+			status: 'error',
+			error: 'The pseudonym cannot contain the following characters: ' + notAllowedCharacters.map(function (item) {
+				return sanitizer.escape(item);
+			}).join('')
+		});
+		return;
+	}
+
 
 	var userSession;
 	if (req.cookies && req.cookies['FTSession']) {
@@ -221,6 +233,17 @@ exports.updateUser = function (req, res, next) {
 			sendResponse(req, res, 400, {
 				status: 'error',
 				error: 'The pseudonym should not be longer than 50 characters.'
+			});
+			return;
+		}
+
+		let notAllowedCharacters = pseudonymSanitizer.getNotAllowedCharacters(pseudonym);
+		if (notAllowedCharacters.length) {
+			sendResponse(req, res, 400, {
+				status: 'error',
+				error: 'The pseudonym cannot contain the following characters: ' + notAllowedCharacters.map(function (item) {
+					return sanitizer.escape(item);
+				}).join('')
 			});
 			return;
 		}

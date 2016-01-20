@@ -8,6 +8,7 @@ const _ = require('lodash');
 const async = require('async');
 const consoleLogger = require('../../utils/consoleLogger');
 const urlParser = require('url');
+const pseudonymSanitizer = require('../../utils/pseudonymSanitizer');
 
 
 
@@ -317,7 +318,7 @@ exports.profile = function (req, res, next) {
 		}
 
 		if (data.pseudonym) {
-			returnData.display_name = data.pseudonym;
+			returnData.display_name = pseudonymSanitizer.sanitize(data.pseudonym);
 		}
 
 		if (data.emailPreferences) {

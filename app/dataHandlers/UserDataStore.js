@@ -179,7 +179,21 @@ var UserDataStore = function (userId) {
 						toBeRefreshed = false;
 						storedData = data[0];
 
-						done(null, storedData);
+						if (!storedData.uuid || !storedData.lfUserId) {
+							initStorage(function (errInit, userIds) {
+								if (errInit) {
+									done(errInit);
+									return;
+								}
+
+								storedData.uuid = userIds.uuid;
+								storedData.lfUserId = userIds.lfUserId;
+
+								done(null, storedData);
+							});
+						} else {
+							done(null, storedData);
+						}
 
 						consoleLogger.log(userId, 'cached data retrieved');
 						consoleLogger.debug(userId, storedData);

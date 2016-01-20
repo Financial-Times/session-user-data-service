@@ -59,7 +59,12 @@ var config = {
 	},
 	host: process.env.HOST || 'session-user-data-service.herokuapp.com',
 	maintenanceModeOn: ['true', true].indexOf(process.env.MAINTENANCE_ON) !== -1 ? true : false,
-	apiKeyForRestrictedEndpoints: process.env.API_KEY_FOR_RESTRICTED_ENDPOINTS
+	apiKeyForRestrictedEndpoints: process.env.API_KEY_FOR_RESTRICTED_ENDPOINTS,
+	validation: {
+		pseudonym: {
+			allowedCharacters: new Buffer(process.env.PSEUDONYM_ALLOWED_CHARACTERS_BASE64 || "", 'base64').toString()
+		}
+	}
 };
 
 for (let key in process.env) {

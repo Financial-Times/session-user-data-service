@@ -65,7 +65,11 @@ module.exports = function (config) {
 		}
 	}
 
+	var self = this;
 	this.mock = {
+		defaults: function () {
+			return self.mock;
+		},
 		get: function (url, options, callback) {
 			if (typeof options === 'function' && !callback) {
 				callback = options;

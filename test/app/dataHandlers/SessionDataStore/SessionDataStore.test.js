@@ -271,6 +271,21 @@ describe('SessionDataStore', function() {
 			});
 		});
 
+		it('should return the pseudonym sanitized', function (done) {
+			let sessionDataStore = new SessionDataStore(testData.sessions.withPseudonymNotAllowedCharacters.id);
+
+			sessionDataStore.getAuthMetadata(function (err, data) {
+				assert.ok(!err, "Error is not returned.");
+
+				data.token = JSON.parse(data.token);
+
+				assert.equal(data.pseudonym, 'testPseudonym', 'Display name in a decrypyted form, sanitized');
+				assert.equal(data.token.displayName, 'testPseudonym', "Display name put into the token in a decrypyted form, sanitized.");
+
+				done();
+			});
+		});
+
 		it('should return authMetadata correctly if the user has a pseudonym and email preferences, and caches it', function (done) {
 			let sessionDataStore = new SessionDataStore(testData.sessions.withCompleteUserInfo.id);
 

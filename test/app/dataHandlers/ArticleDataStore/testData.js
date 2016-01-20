@@ -244,6 +244,11 @@ const env = {
 	cacheExpiryHours: {
 		articles: 1
 	},
+	validation: {
+		pseudonym: {
+			allowedCharacters: " !#$%'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+		}
+	},
 	'@global': true
 };
 

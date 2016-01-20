@@ -7,12 +7,12 @@ const consoleLogger = require('../utils/consoleLogger');
 const mongoSanitize = require('mongo-sanitize');
 const UserDataStore = require('./UserDataStore');
 const crypto = require('../utils/crypto');
-const sanitizer = require('sanitizer');
 const async = require('async');
 const EventEmitter = require('events');
 const env = require('../../env');
 const _ = require('lodash');
 const Timer = require('../utils/Timer');
+const pseudonymSanitizer = require('../utils/pseudonymSanitizer');
 
 var SessionDataStore = function (sessionId) {
 	var storedData = null;
@@ -315,11 +315,11 @@ var SessionDataStore = function (sessionId) {
 							}
 
 							if (pseudonym) {
-								let pseudonymSanitized = sanitizer.escape(pseudonym);
+								let pseudonymSanitized = pseudonymSanitizer.sanitize(pseudonym);
 
 								var configForToken = {
 									userId: lfUserId,
-									displayName: pseudonym,
+									displayName: pseudonymSanitized,
 									expiresAt: getExpirationDate(sessionData.creationTime, sessionData.rememberMe)
 								};
 

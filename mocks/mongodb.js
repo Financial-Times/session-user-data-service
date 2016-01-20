@@ -74,7 +74,7 @@ module.exports = function (config) {
 
 	this.mock = {
 		MongoClient: {
-			connect: function (connectionString, callback) {
+			connect: function (connectionString, options, callback) {
 				if (connectionString === 'invalid') {
 					callback(new Error("Connection string not valid."));
 				} else {
@@ -84,15 +84,21 @@ module.exports = function (config) {
 							if (dbMock[collectionName]) {
 								return {
 									find: function (query) {
-										return {
-											toArray(callbackFind) {
-												if (query) {
-													callbackFind(null, _.cloneDeep(findInDb(collectionName, query)));
-												} else {
-													callbackFind(new Error("Invalid query."));
-													return;
-												}
+										var toArray = function (callbackFind) {
+											if (query) {
+												callbackFind(null, _.cloneDeep(findInDb(collectionName, query)));
+											} else {
+												callbackFind(new Error("Invalid query."));
+												return;
 											}
+										};
+										return {
+											maxTimeMS: function () {
+												return {
+													toArray: toArray
+												};
+											},
+											toArray: toArray
 										};
 									},
 									update: function (query, data, flags, callback) {

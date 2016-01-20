@@ -152,18 +152,37 @@ var SessionDataStore = function (sessionId) {
 
 			consoleLogger.log(sessionId, 'delete cache');
 
-			connection.collection('sessions').remove({
-				_id: mongoSanitize(sessionId)
-			}, function (errDelete) {
-				if (errDelete) {
-					consoleLogger.warn(sessionId, 'delete failed', errDelete);
 
-					callback(errDelete);
-					return;
+			getStoredData(function (errStore, storedData) {
+				if (!errStore && storedData && storedData.sessionData && storedData.sessionData.uuid) {
+					connection.collection('sessions').remove({
+						"sessionData.uuid": storedData.sessionData.uuid
+					}, function (errDelete) {
+						if (errDelete) {
+							consoleLogger.warn(sessionId, 'delete failed', errDelete);
+
+							callback(errDelete);
+							return;
+						}
+
+						storedData = null;
+						callback();
+					});
+				} else {
+					connection.collection('sessions').remove({
+						_id: mongoSanitize(sessionId)
+					}, function (errDelete) {
+						if (errDelete) {
+							consoleLogger.warn(sessionId, 'delete failed', errDelete);
+
+							callback(errDelete);
+							return;
+						}
+
+						storedData = null;
+						callback();
+					});
 				}
-
-				storedData = null;
-				callback();
 			});
 		});
 	}

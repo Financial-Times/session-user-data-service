@@ -61,10 +61,6 @@ function getConnection (uri, callback) {
 			connections[uri] = dbConn;
 			evts.emit('complete', null, dbConn);
 		});
-
-		setTimeout(function () {
-			evts.emit('complete', {message: "Connection timeout"});
-		}, 10000);
 	}
 }
 

@@ -92,6 +92,7 @@ if (env.maintenanceModeOn) {
 	app.use('/', routes.__gtg);
 	app.use('/', routes.__health);
 	app.use('/', routes.__about);
+	app.use('/', routes.troubleshooting);
 	app.get('/', function(req, res) {
 		res.redirect('/apidoc');
 	});

@@ -11,7 +11,6 @@ var env = require('./env');
 var urlParser = require('url');
 
 var routes = {
-	index: require('./app/routes/index'),
 	__health: require('./app/routes/__health'),
 	__about: require('./app/routes/__about'),
 	__gtg: require('./app/routes/__gtg'),

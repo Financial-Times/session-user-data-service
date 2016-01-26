@@ -18,7 +18,8 @@ var routes = {
 	v1: {
 		livefyre: require('./app/routes/v1/livefyre'),
 		user: require('./app/routes/v1/user')
-	}
+	},
+	troubleshooting: require('./app/routes/troubleshooting')
 };
 
 

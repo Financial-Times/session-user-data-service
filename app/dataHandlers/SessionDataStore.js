@@ -321,6 +321,11 @@ var SessionDataStore = function (sessionId) {
 						return;
 					}
 
+					if (!userDataStore) {
+						callback(null, null);
+						return;
+					}
+
 					userDataStore.getLivefyrePreferredUserId(function (errLfUserId, lfUserId) {
 						if (errLfUserId) {
 							callback(errLfUserId);

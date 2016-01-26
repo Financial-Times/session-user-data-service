@@ -17,7 +17,7 @@ const endTimer = function (timer) {
 
 const connections = {};
 const evts = new EventEmitter();
-let connInProgress = false;
+let connectionInProgress = {};
 
 
 function getConnection (uri, callback) {
@@ -35,13 +35,16 @@ function getConnection (uri, callback) {
 	evts.once('complete', function (err, conn) {
 		if (!eventHandled) {
 			eventHandled = true;
+			connectionInProgress[uri] = false;
 
 			callback(err, conn);
 		}
 	});
 
 
-	if (!connInProgress) {
+	if (!connectionInProgress[uri]) {
+		connectionInProgress[uri] = true;
+
 		let timer = new Timer();
 
 		MongoClient.connect(uri, {
@@ -55,6 +58,7 @@ function getConnection (uri, callback) {
 				consoleLogger.warn('Mongo connection failed', err);
 
 				evts.emit('complete', err);
+
 				return;
 			}
 

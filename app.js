@@ -18,7 +18,7 @@ var routes = {
 		livefyre: require('./app/routes/v1/livefyre'),
 		user: require('./app/routes/v1/user')
 	},
-	troubleshooting: require('./app/routes/troubleshooting')
+	troubleshoot: require('./app/routes/troubleshoot')
 };
 
 
@@ -92,7 +92,7 @@ if (env.maintenanceModeOn) {
 	app.use('/', routes.__gtg);
 	app.use('/', routes.__health);
 	app.use('/', routes.__about);
-	app.use('/', routes.troubleshooting);
+	app.use('/', routes.troubleshoot);
 	app.get('/', function(req, res) {
 		res.redirect('/apidoc');
 	});

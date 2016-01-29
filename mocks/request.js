@@ -70,10 +70,17 @@ module.exports = function (config) {
 		defaults: function () {
 			return self.mock;
 		},
-		get: function (url, options, callback) {
+		get: function (urlOrOptions, options, callback) {
 			if (typeof options === 'function' && !callback) {
 				callback = options;
 				options = null;
+			}
+
+			let url;
+			if (typeof urlOrOptions === 'object') {
+				url = urlOrOptions.url;
+			} else {
+				url = urlOrOptions;
 			}
 
 
@@ -92,15 +99,20 @@ module.exports = function (config) {
 				throw new Error("URL not covered");
 			}
 		},
-		post: function (url, postData, options, callback) {
+		post: function (urlOrOptions, options, callback) {
 			if (typeof options === 'function' && !callback) {
 				callback = options;
 				options = null;
 			}
 
-			if (typeof postData === 'function' && !options && !callback) {
-				callback = postData;
-				postData = null;
+			let postData;
+			let url;
+			if (typeof urlOrOptions === 'object') {
+				url = urlOrOptions.url;
+				postData = urlOrOptions.form || urlOrOptions.json;
+			} else {
+				url = urlOrOptions;
+				postData = options ? options.form || options.json : null;
 			}
 
 

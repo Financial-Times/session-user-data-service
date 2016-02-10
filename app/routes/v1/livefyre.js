@@ -188,6 +188,25 @@ router.get('/init', livefyreControllerV1.init);
 router.get('/get_lf_bootstrap', livefyreControllerV1.getLfBootstrap);
 
 /**
+ * @api {get} v1/livefyre/commentcount Get comment count of an article
+ * @apiVersion 1.1.0
+ * @apiGroup v1/livefyre
+ * @apiName commentcount
+ * @apiDescription See [Livefyre API documentation](http://answers.livefyre.com/developers/api-reference/#link-content-count)
+ *
+ * @apiParam {String} articleId 		Required. ID of the article.
+ *
+ * @apiSuccess (success) {String} count 	The number of comments
+ *
+ * @apiSuccessExample Success
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "count": 4
+ *   }
+ */
+router.get('/commentcount', livefyreControllerV1.getCommentCount);
+
+/**
  * @api {get} v1/livefyre/profile User profile for Livefyre
  * @apiVersion 1.1.0
  * @apiGroup v1/livefyre

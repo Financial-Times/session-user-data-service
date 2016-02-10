@@ -16,19 +16,22 @@ const articles = {
 		id: 'a86755e4-46a5-11e1-bc5f-00144feabdc0',
 		title: 'Test article',
 		url: 'http://www.ft.com/cms/a86755e4-46a5-11e1-bc5f-00144feabdc0.html',
-		siteId: 415343
+		siteId: 415343,
+		commentCount: 3
 	},
 	siteIdNotSetUp: {
 		id: '3f330864-1c0f-443e-a6b3-cf8a3b536a52',
 		title: 'Test article 2',
 		url: 'http://www.ft.com/cms/3f330864-1c0f-443e-a6b3-cf8a3b536a52.html',
-		siteId: 252346
+		siteId: 252346,
+		commentCount: 5
 	},
 	noCollection: {
 		id: 'e78d07ca-680f-11e5-a57f-21b88f7d973f',
 		title: 'Test article 3',
 		url: 'http://www.ft.com/cms/e78d07ca-680f-11e5-a57f-21b88f7d973f.html',
-		siteId: 523435
+		siteId: 523435,
+		commentCount: 10
 	},
 	unclassified: {
 		id: '24b7158f-a017-43d2-a288-6d3aead3ad27',
@@ -47,6 +50,11 @@ Object.keys(articles).forEach(function (key, index) {
 		_id: articles[key].id,
 		siteId: articles[key].siteId
 	});
+});
+
+let articlesById = {};
+Object.keys(articles).forEach(function (key, index) {
+	articlesById[articles[key].id] = articles[key];
 });
 
 
@@ -90,7 +98,8 @@ const env = {
 			collectionExistsUrl: 'http://{networkName}.collection-exists.livefyre.com/{articleIdBase64}',
 			pingToPullUrl: 'http://{networkName}.ping-to-pull.livefyre.com/{userId}?token={token}',
 			bootstrapUrl: 'http://bootstrap.{networkName}.fyre.co/bs3/{networkName}.fyre.co/{siteId}/{articleIdBase64}/bootstrap.html',
-			userProfileUrl: 'http://{networkName}.fyre.co/userProfileUrl'
+			userProfileUrl: 'http://{networkName}.fyre.co/userProfileUrl',
+			commentCountUrl: 'http://{networkName}.fyre.co/commentCount/{siteIdArticleIdBase64}.json'
 		}
 	},
 	mongo: {
@@ -191,6 +200,52 @@ const requestMock = new RequestMock({
 
 				config.callback(null, {
 					statusCode: 404
+				});
+			}
+		},
+		{
+			url: env.livefyre.api.commentCountUrl,
+			handler: function (config) {
+				let siteIdArticleId = new Buffer(config.matches.urlParams.siteIdArticleIdBase64, 'base64').toString().split(':');
+
+				let siteId = parseInt(siteIdArticleId[0], 10);
+				let articleId = siteIdArticleId[1];
+
+				if (config.matches.urlParams.networkName !== env.livefyre.network.name) {
+					config.callback(new Error("Network not found"));
+					return;
+				}
+
+				if (articlesById[articleId]) {
+					let article = articlesById[articleId];
+
+					if (article.siteId !== siteId) {
+						config.callback({
+							error: new Error("Mismatch"),
+							statusCode: 400
+						});
+						return;
+					}
+
+					let response = {
+						data: {}
+					};
+					response.data[siteId] = {};
+					response.data[siteId][articleId] = {
+						total: article.commentCount
+					};
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(response)
+					});
+					return;
+				}
+
+				config.callback(null, {
+					statusCode: 200,
+					body: JSON.stringify({
+						data: {}
+					})
 				});
 			}
 		}
@@ -642,6 +697,71 @@ describe('livefyreService', function() {
 			livefyreService.getModerationRights(validToken, function (err, data) {
 				assert.ok(!err, "Error is not returned.");
 				assert.deepEqual(data, lfUserProfile.data.modScopes, "Collection exists.");
+
+				done();
+			});
+		});
+	});
+
+
+
+	describe('getCommentCount', function () {
+		it('should return error if legacySiteMapping returns error', function (done) {
+			var mongoUri = env.mongo.uri;
+			env.mongo.uri = 'invalid';
+
+			livefyreService.getCommentCount(articles.normal.id, function (err, data) {
+				assert.ok(err, "Error is returned.");
+				assert.ok(data === undefined || data === null, "Data is not set.");
+
+				env.mongo.uri = mongoUri;
+				done();
+			});
+		});
+
+		it('should return error if articleId is omitted', function (done) {
+			livefyreService.getCommentCount(null, function (err, data) {
+				assert.ok(err, "Error is returned.");
+				assert.ok(data === undefined || data === null, "Data is not set.");
+
+				done();
+			});
+		});
+
+		it('should return error if the UUID is unclassified', function (done) {
+			livefyreService.getCommentCount(articles.unclassified.id, function (err, data) {
+				assert.deepEqual(err, {
+					unclassified: true
+				}, "Error is returned.");
+				assert.ok(data === undefined || data === null, "Data is not set.");
+
+				done();
+			});
+		});
+
+		it('should return 404 if the article does not exist', function (done) {
+			livefyreService.getCommentCount('notexists', function (err, data) {
+				assert.ok(err, "Error is returned.");
+				assert.deepEqual(err.statusCode, 404, "Status code is 404.");
+				assert.ok(data === undefined || data === null, "Data is not set.");
+
+				done();
+			});
+		});
+
+		it('should return the count', function (done) {
+			livefyreService.getCommentCount(articles.normal.id, function (err, data) {
+				assert.ok(!err, "Error is not returned.");
+
+				var expected = {
+					data: {}
+				};
+				expected.data[articles.normal.siteId] = {};
+				expected.data[articles.normal.siteId][articles.normal.id] = {
+					total: articles.normal.commentCount
+				};
+
+				assert.deepEqual(data, expected, "Collection details is correctly returned.");
 
 				done();
 			});

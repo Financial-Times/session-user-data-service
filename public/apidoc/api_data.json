@@ -1,6 +1,50 @@
 [
   {
     "type": "get",
+    "url": "v1/livefyre/commentcount",
+    "title": "Get comment count of an article",
+    "version": "1.1.0",
+    "group": "v1_livefyre",
+    "name": "commentcount",
+    "description": "<p>See <a href=\"http://answers.livefyre.com/developers/api-reference/#link-content-count\">Livefyre API documentation</a></p> ",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "articleId",
+            "description": "<p>Required. ID of the article.</p> "
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "success": [
+          {
+            "group": "success",
+            "type": "<p>String</p> ",
+            "optional": false,
+            "field": "count",
+            "description": "<p>The number of comments</p> "
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n {\n     \"count\": 4\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/routes/v1/livefyre.js",
+    "groupTitle": "v1_livefyre"
+  },
+  {
+    "type": "get",
     "url": "v1/livefyre/get_lf_bootstrap",
     "title": "Get livefyre bootstrap URL",
     "version": "1.1.0",
@@ -50,6 +94,7 @@
     "version": "1.1.0",
     "group": "v1_livefyre",
     "name": "getcollectiondetails",
+    "description": "<p>Generates information needed by Livefyre about the article.</p> ",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -175,6 +220,7 @@
     "version": "1.1.0",
     "group": "v1_livefyre",
     "name": "init",
+    "description": "<p>Endpoint to init the comments application. It returns both article and user informations.</p> ",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -372,6 +418,7 @@
     "version": "1.1.0",
     "group": "v1_livefyre",
     "name": "metadata",
+    "description": "<p>Returns the list of tags of an article based on CAPI and the URL structure.</p> ",
     "parameter": {
       "fields": {
         "Parameter": [

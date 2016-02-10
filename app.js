@@ -26,14 +26,6 @@ if (env.logger.level) {
 	consoleLogger.setLevel(env.logger.level);
 }
 
-if (env.logger.filter) {
-	var filters = env.logger.filter.split(',').map(function(item) {
-		return item.trim();
-	});
-
-	consoleLogger.addFilter(filters);
-}
-
 consoleLogger.enable();
 
 

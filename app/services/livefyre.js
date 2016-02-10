@@ -259,3 +259,63 @@ exports.getModerationRights = function (token, callback) {
 		}
 	});
 };
+
+exports.getCommentCount = function (articleId, callback) {
+	if (typeof callback !== 'function') {
+		throw new Error("livefyre.getCommentCount: callback not provided");
+	}
+
+	if (!articleId) {
+		callback(new Error("articleId should be provided."));
+		return;
+	}
+
+	legacySiteMapping.getSiteId(articleId, function (err, siteId) {
+		if (err) {
+			callback(err);
+			return;
+		}
+
+		let url = env.livefyre.api.commentCountUrl;
+		url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
+		url = url.replace(/\{siteIdArticleIdBase64\}/g, new Buffer(siteId + ":" + articleId).toString('base64'));
+
+		let timer = new Timer();
+
+		request.get(url, function (err, response) {
+			endTimer(timer, 'commentCount', url);
+
+			let body;
+			if (response && response.body) {
+				try {
+					body = JSON.parse(response.body);
+				} catch (e) {
+					body = null;
+				}
+			} else {
+				body = null;
+			}
+
+			if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !body) {
+				if (err || !response || response.statusCode !== 404) {
+					consoleLogger.warn(articleId, 'livefyre.commentCount error', err || new Error(response ? response.statusCode : 'No response'));
+				}
+
+				callback({
+					error: err,
+					statusCode: response ? response.statusCode : null
+				});
+				return;
+			}
+
+			if (body && body.data && Object.keys(body.data).length) {
+				callback(null, body);
+			} else {
+				callback({
+					error: new Error("Article not found"),
+					statusCode: 404
+				});
+			}
+		});
+	});
+};

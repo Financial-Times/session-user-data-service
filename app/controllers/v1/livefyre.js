@@ -284,23 +284,13 @@ exports.getCommentCount = function (req, res, next) {
 		return;
 	}
 
-	livefyreService.getCommentCount(req.query.articleId, function (err, data) {
-		if (err) {
-			if (err.unclassified === true || err.statusCode === 404) {
-				res.jsonp({
-					count: 0
-				});
-				return;
-			}
+	let articleDataStore = new ArticleDataStore(req.query.articleId);
 
+	articleDataStore.getCommentCount(function (err, count) {
+		if (err) {
 			res.sendStatus(err.statusCode || 503);
 			return;
 		}
-
-
-		let obj1 = data.data[Object.keys(data.data)[0]];
-		let obj2 = obj1[Object.keys(obj1)[0]];
-		let count = obj2.total;
 
 		res.jsonp({
 			count: count

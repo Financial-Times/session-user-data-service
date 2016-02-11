@@ -11,7 +11,8 @@ const articles = {
 		id: 'a86755e4-46a5-11e1-bc5f-00144feabdc0',
 		title: 'Test article',
 		url: 'http://www.ft.com/cms/a86755e4-46a5-11e1-bc5f-00144feabdc0.html',
-		siteId: 415343
+		siteId: 415343,
+		commentCount: 3
 	},
 	noCollection: {
 		id: '9fb85758-267d-4994-a9e5-dbfac8106170',
@@ -29,6 +30,12 @@ const articles = {
 		id: 'e78d07ca-680f-11e5-a57f-21b88f7d973f',
 		title: 'Test article 3',
 		url: 'http://www.ft.com/cms/e78d07ca-680f-11e5-a57f-21b88f7d973f.html',
+		siteId: 'unclassified'
+	},
+	unclassified2: {
+		id: 'e78d07ca-680f-11e5-a57f-21b88f7d343f',
+		title: 'Test article 4',
+		url: 'http://www.ft.com/cms/e78d07ca-680f-11e5-a57f-21b88f7d343f.html',
 		siteId: 'unclassified'
 	},
 	blogs: {
@@ -66,6 +73,7 @@ const articles = {
 		title: 'Cached article',
 		url: 'http://www.ft.com/cms/d00e1a10-3309-471f-9e4c-f564d3ae0b91.html',
 		siteId: 415343,
+		commentCount: 4,
 		initialCache: {
 			_id: 'd00e1a10-3309-471f-9e4c-f564d3ae0b91',
 			tags: {
@@ -86,6 +94,10 @@ const articles = {
 					},
 					expires: new Date(new Date().getTime() + 60 * 60 * 1000) // not expired
 				}
+			},
+			commentCount: {
+				count: 5,
+				expires: new Date(new Date().getTime() + 5 * 60 * 1000) // not expired
 			}
 		}
 	},
@@ -93,13 +105,15 @@ const articles = {
 		id: '2149f8ac-f9c0-47e0-a053-b8d9099acb85',
 		title: 'To be cached',
 		url: 'http://www.ft.com/cms/2149f8ac-f9c0-47e0-a053-b8d9099acb85.html',
-		siteId: 415343
+		siteId: 415343,
+		commentCount: 6
 	},
 	toBeUpdated: {
 		id: '7c700a86-d7a8-46e7-b0bd-2d79f1ca3b52',
 		title: 'To be updated',
 		url: 'http://www.ft.com/cms/7c700a86-d7a8-46e7-b0bd-2d79f1ca3b52.html',
 		siteId: 415343,
+		commentCount: 7,
 		initialCache: {
 			_id: '7c700a86-d7a8-46e7-b0bd-2d79f1ca3b52',
 			tags: {
@@ -119,6 +133,10 @@ const articles = {
 					},
 					expires: new Date(new Date().getTime() - 60 * 1000) // expired
 				}
+			},
+			commentCount: {
+				count: 8,
+				expires: new Date(new Date().getTime() - 60 * 1000) // expired
 			}
 		}
 	},
@@ -158,6 +176,11 @@ for (let key in articles) {
 		}
 	}
 }
+
+let articlesById = {};
+Object.keys(articles).forEach(function (key, index) {
+	articlesById[articles[key].id] = articles[key];
+});
 
 
 const capiData = {
@@ -231,7 +254,8 @@ const env = {
 		},
 		api: {
 			collectionExistsUrl: 'http://{networkName}.collection-exists.livefyre.com/{articleIdBase64}',
-			bootstrapUrl: 'http://bootstrap.{networkName}.fyre.co/bs3/{networkName}.fyre.co/{siteId}/{articleIdBase64}/bootstrap.html'
+			bootstrapUrl: 'http://bootstrap.{networkName}.fyre.co/bs3/{networkName}.fyre.co/{siteId}/{articleIdBase64}/bootstrap.html',
+			commentCountUrl: 'http://{networkName}.fyre.co/commentCount/{siteIdArticleIdBase64}.json'
 		}
 	},
 	mongo: {
@@ -328,6 +352,52 @@ const requestMock = new RequestMock({
 
 				config.callback(null, {
 					statusCode: 404
+				});
+			}
+		},
+		{
+			url: env.livefyre.api.commentCountUrl,
+			handler: function (config) {
+				let siteIdArticleId = new Buffer(config.matches.urlParams.siteIdArticleIdBase64, 'base64').toString().split(':');
+
+				let siteId = parseInt(siteIdArticleId[0], 10);
+				let articleId = siteIdArticleId[1];
+
+				if (config.matches.urlParams.networkName !== env.livefyre.network.name) {
+					config.callback(new Error("Network not found"));
+					return;
+				}
+
+				if (articlesById[articleId]) {
+					let article = articlesById[articleId];
+
+					if (article.siteId !== siteId) {
+						config.callback({
+							error: new Error("Mismatch"),
+							statusCode: 400
+						});
+						return;
+					}
+
+					let response = {
+						data: {}
+					};
+					response.data[siteId] = {};
+					response.data[siteId][articleId] = {
+						total: article.commentCount
+					};
+					config.callback(null, {
+						statusCode: 200,
+						body: JSON.stringify(response)
+					});
+					return;
+				}
+
+				config.callback(null, {
+					statusCode: 200,
+					body: JSON.stringify({
+						data: {}
+					})
 				});
 			}
 		}

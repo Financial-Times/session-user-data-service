@@ -6,6 +6,7 @@ const env = require('../../../env');
 const consoleLogger = require('../../utils/consoleLogger');
 
 const healthCheckModel = {
+	id: 'erights-mapping',
 	name: 'eRights to UUID mapping service',
 	ok: false,
 	technicalSummary: "Maps eRights IDs (used by Livefyre) to UUIDs, and the other way around.",
@@ -41,7 +42,7 @@ exports.getHealth = function (callback) {
 			}
 
 			currentHealth.ok = true;
-			callCallback(null, _.pick(currentHealth, ['name', 'ok', 'lastUpdated']));
+			callCallback(null, _.omit(currentHealth, ['checkOutput']));
 		});
 
 		// timeout after 15 seconds
@@ -50,7 +51,7 @@ exports.getHealth = function (callback) {
 			currentHealth.checkOutput = 'timeout';
 			callCallback(null, currentHealth);
 			return;
-		}, 15000);
+		}, 10000);
 	} catch (e) {
 		consoleLogger.error('health', 'erightsMappingService', 'Exception', e);
 		currentHealth.ok = false;

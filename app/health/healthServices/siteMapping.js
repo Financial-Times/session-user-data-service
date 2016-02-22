@@ -6,6 +6,7 @@ const env = require('../../../env');
 const consoleLogger = require('../../utils/consoleLogger');
 
 const healthCheckModel = {
+	id: 'legacy-site-mapping',
 	name: 'Legacy livefyre site mapping',
 	ok: false,
 	technicalSummary: "Articles published before 24th Sept 2015 are mapped to Livefyre sites based on a mapping file. This is stored in MongoDB.",
@@ -41,7 +42,7 @@ exports.getHealth = function (callback) {
 			}
 
 			currentHealth.ok = true;
-			callCallback(null, _.pick(currentHealth, ['name', 'ok', 'lastUpdated']));
+			callCallback(null, _.omit(currentHealth, ['checkOutput']));
 		});
 
 		// timeout after 15 seconds
@@ -50,7 +51,7 @@ exports.getHealth = function (callback) {
 			currentHealth.checkOutput = 'timeout';
 			callCallback(null, currentHealth);
 			return;
-		}, 15000);
+		}, 10000);
 	} catch (e) {
 		consoleLogger.error('health', 'siteMapping', 'Exception', e);
 		currentHealth.ok = false;

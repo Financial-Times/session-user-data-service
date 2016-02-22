@@ -1,5 +1,6 @@
 {
 	"schemaVersion": 1,
+	"systemCode": "ft-suds",
 	"name": "session-user-data-service",
 	"description": "session-user-data-service",
 	"checks": [

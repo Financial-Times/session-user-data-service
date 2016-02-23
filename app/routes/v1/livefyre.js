@@ -130,6 +130,7 @@ router.get('/getcollectiondetails', livefyreControllerV1.getCollectionDetails);
  *           "el": "dom-element-id"
  *       },
  *       "auth": {
+ *           "userId": "01c1b5ef-9401-4337-b6c3-c308ca50c69b",
  *           "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJmdC0xHRV4567GGRVJDSoiOTAyNjUwMiIsImRpc3BsYXlfbmFtZSGS45681265dsSDGbjMiLCJleHBpcmVmdIDGKSDOaswLjQxNSwiaWF0IjoxNDQ3MDgzNTAxfQ.vDVUaBrd-qGFQFKvAEQMGSD45239SHDuCh_tXZR1WwRg",
  *           "expires": 1462635461193,
  *           "displayName": "the avenger",

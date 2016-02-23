@@ -362,7 +362,6 @@ var SessionDataStore = function (sessionId) {
 												}
 
 												callbackAsync(null, {
-													userId: lfUserId,
 													token: authToken.token,
 													expires: authToken.expires,
 													pseudonym: pseudonymSanitized,

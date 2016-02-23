@@ -46,7 +46,6 @@ exports.getAuth = function (req, res, next) {
 
 			if (data) {
 				var returnData = {
-					userId: data.userId,
 					token: data.token,
 					expires: data.expires,
 					displayName: data.pseudonym,

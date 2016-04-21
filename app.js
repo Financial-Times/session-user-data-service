@@ -72,6 +72,10 @@ app.use(function(req, res, next) {
 	}
 	next();
 });
+app.use(function (req, res, next) {
+    res.set('Cache-Control', 'no-cache');
+    next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 if (env.maintenanceModeOn) {

@@ -729,7 +729,7 @@
       "examples": [
         {
           "title": "No API key / no userId",
-          "content": "HTTP/1.1 401 Unauthorized\n {\n     \"error\": \"API key is missing.\"\n }",
+          "content": "HTTP/1.1 400 Bad request\n {\n     \"error\": \"API key is missing.\"\n }",
           "type": "400"
         },
         {

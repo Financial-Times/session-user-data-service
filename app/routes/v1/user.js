@@ -121,7 +121,7 @@ router.post('/setPseudonym', userController.setPseudonym);
  *   }
  *
  * @apiErrorExample {400} No API key / no userId
- *  HTTP/1.1 401 Unauthorized
+ *  HTTP/1.1 400 Bad request
  *   {
  *       "error": "API key is missing."
  *   }

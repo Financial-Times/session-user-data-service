@@ -2,12 +2,12 @@
 
 const SessionDataStore = require('../../dataHandlers/SessionDataStore');
 const UserDataStore = require('../../dataHandlers/UserDataStore');
+const apiKeys = require('../../dataHandlers/apiKeys');
 const async = require('async');
 const livefyreService = require('../../services/livefyre');
 const consoleLogger = require('../../utils/consoleLogger');
 const pseudonymSanitizer = require('../../utils/pseudonymSanitizer');
 const sanitizer = require('sanitizer');
-
 
 function sendResponse(req, res, status, json) {
 	var isJsonP = req.query.callback ? true : false;
@@ -16,6 +16,35 @@ function sendResponse(req, res, status, json) {
 
 	res.status(isJsonP ? 200 : status).jsonp(json);
 }
+
+function validateApiKey(req, res, callback) {
+	if (req.headers['x-api-key']) {
+		apiKeys.validate(req.headers['x-api-key'], (errKeyValidate, validated) => {
+			if (errKeyValidate) {
+				sendResponse(req, res, 503, {
+					error: 'The system cannot handle requests at the moment.'
+				});
+				return;
+			}
+
+			if (!validated) {
+				sendResponse(req, res, 401, {
+					error: 'The API key is invalid.'
+				});
+				return;
+			} else {
+				callback();
+			}
+		});
+	} else {
+		sendResponse(req, res, 400, {
+			error: 'The API key is missing.'
+		});
+	}
+}
+
+
+
 
 exports.getAuth = function (req, res, next) {
 	/*res.jsonp({
@@ -86,6 +115,56 @@ exports.getAuth = function (req, res, next) {
 	} else {
 		res.sendStatus(401);
 	}
+};
+
+
+exports.getPseudonym = function (req, res, next) {
+	validateApiKey(req, res, function () {
+		// successfully validated
+
+		if (req.query.userIds) {
+			const userIds = req.query.userIds.split(',');
+			const fetchFunctions = {};
+
+			userIds.forEach((userId, index) => {
+				userIds[index] = userId.trim();
+				userId = userIds[index];
+
+				fetchFunctions[userId] = function (done) {
+					const userDataStore = new UserDataStore(userId);
+					userDataStore.getPseudonym((err, pseudonym) => {
+						if (err) {
+							done(err);
+							return;
+						}
+
+						done(null, pseudonym);
+					});
+				};
+			});
+
+			async.parallel(fetchFunctions, (err, results) => {
+				if (err) {
+					sendResponse(req, res, 400, {
+						error: 'An error occurred while fetching the user information.'
+					});
+					return;
+				}
+
+				const responseObj = {};
+				const keys = Object.keys(results);
+				keys.forEach((key) => {
+					responseObj[key] = results[key];
+				});
+
+				sendResponse(req, res, 200, responseObj);
+			});
+		} else {
+			sendResponse(req, res, 400, {
+				error: 'userIds parameter is not specified.'
+			});
+		}
+	});
 };
 
 

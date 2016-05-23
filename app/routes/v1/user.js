@@ -90,6 +90,55 @@ router.get('/setPseudonym', userController.setPseudonym);
 router.post('/setPseudonym', userController.setPseudonym);
 
 
+/**
+ * @api {get} v1/user/getPseudonym Get pseudonym
+ * @apiVersion 1.1.0
+ * @apiGroup v1/user
+ * @apiName getPseudonym
+ * @apiDescription Reads the user's pseudonym.
+ *
+ * @apiParam {String} userIds List of user IDs for which to fetch the pseudonyms, comma separated.
+ *
+ * @apiHeader {String} X-Api-Key Access API key.
+ *
+ * @apiSuccess {Object} [userId] The user's pseudonym.
+ *
+ * @apiError {String} status Status of the update.
+ * @apiError {String} error Error message.
+ *
+ * @apiSuccessExample Full response
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "3f330864-1c0f-443e-a6b3-cf8a3b536a52": "pseu132"
+ *   }
+ *
+ * @apiSuccessExample No pseudonym
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "3f330864-1c0f-443e-a6b3-cf8a3b536a52": false
+ *   }
+ *
+ * @apiSuccessExample User not found
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "3f330864-1c0f-443e-a6b3-cf8a3b536a52": false
+ *   }
+ *
+ * @apiErrorExample {400} No API key / no userId
+ *  HTTP/1.1 401 Unauthorized
+ *   {
+ *       "error": "API key is missing."
+ *   }
+ *
+ * @apiErrorExample {401} API key invalid
+ *  HTTP/1.1 401 Unauthorized
+ *   {
+ *       "error": "API key is invalid."
+ *   }
+ */
+router.get('/getPseudonym', userController.getPseudonym);
+
+
 
 /**
  * @api {get / post} v1/user/updateuser Update user

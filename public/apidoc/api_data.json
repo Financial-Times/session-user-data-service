@@ -707,17 +707,6 @@
       }
     },
     "success": {
-      "fields": {
-        "Success 200": [
-          {
-            "group": "Success 200",
-            "type": "Object",
-            "optional": true,
-            "field": "userId",
-            "description": "<p>The user's pseudonym.</p>"
-          }
-        ]
-      },
       "examples": [
         {
           "title": "Full response",
@@ -737,24 +726,6 @@
       ]
     },
     "error": {
-      "fields": {
-        "Error 4xx": [
-          {
-            "group": "Error 4xx",
-            "type": "String",
-            "optional": false,
-            "field": "status",
-            "description": "<p>Status of the update.</p>"
-          },
-          {
-            "group": "Error 4xx",
-            "type": "String",
-            "optional": false,
-            "field": "error",
-            "description": "<p>Error message.</p>"
-          }
-        ]
-      },
       "examples": [
         {
           "title": "No API key / no userId",

@@ -101,10 +101,6 @@ router.post('/setPseudonym', userController.setPseudonym);
  *
  * @apiHeader {String} X-Api-Key Access API key.
  *
- * @apiSuccess {Object} [userId] The user's pseudonym.
- *
- * @apiError {String} status Status of the update.
- * @apiError {String} error Error message.
  *
  * @apiSuccessExample Full response
  *  HTTP/1.1 200 OK

@@ -134,11 +134,11 @@ exports.getPseudonym = function (req, res, next) {
 					const userDataStore = new UserDataStore(userId);
 					userDataStore.getPseudonym((err, pseudonym) => {
 						if (err) {
-							done(err);
+							done(null, null);
 							return;
 						}
 
-						done(null, pseudonym);
+						done(null, pseudonym || null);
 					});
 				};
 			});

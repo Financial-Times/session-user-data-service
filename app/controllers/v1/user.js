@@ -124,6 +124,13 @@ exports.getPseudonym = function (req, res, next) {
 
 		if (req.query.userIds) {
 			const userIds = req.query.userIds.split(',');
+			for (let i = 0; i < userIds.length; i++) {
+				if (!userIds[i] || (typeof userIds[i] === "string" && userIds[i].trim() === "")) {
+					userIds.splice(i, 1);
+					i--;
+				}
+			}
+
 			const fetchFunctions = {};
 
 			userIds.forEach((userId, index) => {

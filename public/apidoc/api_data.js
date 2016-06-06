@@ -45,6 +45,53 @@ define({ "api": [
   },
   {
     "type": "get",
+    "url": "v1/livefyre/getSiteId",
+    "title": "Get site ID",
+    "version": "1.1.0",
+    "group": "v1_livefyre",
+    "name": "getSiteId",
+    "description": "<p>Determines the site ID of the article</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "articleId",
+            "description": "<p>ID of the article</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "examples": [
+        {
+          "title": "Full response",
+          "content": "HTTP/1.1 200 OK\n {\n     \"siteId\": \"123432\"\n }",
+          "type": "json"
+        },
+        {
+          "title": "Unclassified article",
+          "content": "HTTP/1.1 200 OK\n {\n     \"unclassifiedArticle\": true\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "No article ID",
+          "content": "HTTP/1.1 400 Bad request\n \"articleId\" should be provided.",
+          "type": "400"
+        }
+      ]
+    },
+    "filename": "app/routes/v1/livefyre.js",
+    "groupTitle": "v1_livefyre"
+  },
+  {
+    "type": "get",
     "url": "v1/livefyre/get_lf_bootstrap",
     "title": "Get livefyre bootstrap URL",
     "version": "1.1.0",

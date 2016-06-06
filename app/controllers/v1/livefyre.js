@@ -9,7 +9,7 @@ const async = require('async');
 const consoleLogger = require('../../utils/consoleLogger');
 const urlParser = require('url');
 const pseudonymSanitizer = require('../../utils/pseudonymSanitizer');
-
+const legacySiteMapping = require('../../services/legacySiteMapping');
 
 
 exports.metadata = function(req, res, next) {
@@ -36,6 +36,34 @@ exports.metadata = function(req, res, next) {
 
 		articleDataStore.destroy();
 		res.jsonp(tags);
+	});
+};
+
+exports.getSiteId = function (req, res) {
+	if (!req.query.articleId) {
+		res.status(400).send('"articleId" should be provided.');
+		return;
+	}
+
+	legacySiteMapping.getSiteId(req.query.articleId, function (err, siteId) {
+		if (err) {
+			if (typeof err === 'object') {
+				if (err['unclassified'] === true) {
+					res.jsonp({
+						unclassified: true
+					});
+				} else {
+					res.sendStatus(err.statusCode || 503);
+				}
+			} else {
+				res.sendStatus(503);
+			}
+			return;
+		}
+
+		res.jsonp({
+			siteId: siteId
+		});
 	});
 };
 

@@ -86,6 +86,37 @@ router.get('/getcollectiondetails', livefyreControllerV1.getCollectionDetails);
 
 
 /**
+ * @api {get} v1/livefyre/getSiteId Get site ID
+ * @apiVersion 1.1.0
+ * @apiGroup v1/livefyre
+ * @apiName getSiteId
+ * @apiDescription Determines the site ID of the article
+ *
+ * @apiParam {String} articleId ID of the article
+ *
+ *
+ * @apiSuccessExample Full response
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "siteId": "123432"
+ *   }
+ *
+ * @apiSuccessExample Unclassified article
+ *  HTTP/1.1 200 OK
+ *   {
+ *       "unclassifiedArticle": true
+ *   }
+ *
+ *
+ * @apiErrorExample {400} No article ID
+ *  HTTP/1.1 400 Bad request
+ *   "articleId" should be provided.
+ *
+ */
+router.get('/getSiteId', livefyreControllerV1.getSiteId);
+
+
+/**
  * @api {get} v1/livefyre/init Init
  * @apiVersion 1.1.0
  * @apiGroup v1/livefyre

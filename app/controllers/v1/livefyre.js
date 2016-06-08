@@ -50,7 +50,7 @@ exports.getSiteId = function (req, res) {
 			if (typeof err === 'object') {
 				if (err['unclassified'] === true) {
 					res.jsonp({
-						unclassified: true
+						unclassifiedArticle: true
 					});
 				} else {
 					res.sendStatus(err.statusCode || 503);

@@ -454,8 +454,6 @@ exports.updateUser = function (req, res, next) {
 						return;
 					}
 
-					console.log('update successful');
-
 					sessionDataStore.invalidate(function (errInv) {
 						if (errInv) {
 							sendResponse(req, res, 503, {
@@ -464,8 +462,6 @@ exports.updateUser = function (req, res, next) {
 							});
 							return;
 						}
-
-						console.log('session invalidated');
 
 						userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
 							if (errLfId) {
@@ -478,8 +474,6 @@ exports.updateUser = function (req, res, next) {
 							sendResponse(req, res, 200, {
 								status: 'ok'
 							});
-
-							console.log('call ping to pull');
 
 							livefyreService.callPingToPull(lfUserId, function (errPing) {
 								if (errPing) {

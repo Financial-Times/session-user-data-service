@@ -195,8 +195,6 @@ exports.callPingToPull = function (userId, callback) {
 
 	let timer = new Timer();
 
-	console.log('ping to pull URL: ', url);
-
 	request.post(url, function (err, response) {
 		endTimer(timer, 'callPingToPull', url);
 
@@ -209,12 +207,8 @@ exports.callPingToPull = function (userId, callback) {
 				error: err,
 				statusCode: response ? response.statusCode : null
 			});
-
-			console.log('livefyre.pingToPull failed for user', userId, response && response.body ? response.body : err);
 			return;
 		}
-
-		console.log('livefyre.pingToPull successfully called for user', userId, response && response.body ? response.body : err);
 
 		callback();
 	});

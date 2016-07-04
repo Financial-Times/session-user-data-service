@@ -208,11 +208,11 @@ exports.callPingToPull = function (userId, callback) {
 				statusCode: response ? response.statusCode : null
 			});
 
-			console.log('livefyre.pingToPull failed for user', userId, response.body);
+			console.log('livefyre.pingToPull failed for user', userId, response && response.body ? response.body : err);
 			return;
 		}
 
-		console.log('livefyre.pingToPull successfully called for user', userId, response.body);
+		console.log('livefyre.pingToPull successfully called for user', userId, response && response.body ? response.body : err);
 
 		callback();
 	});

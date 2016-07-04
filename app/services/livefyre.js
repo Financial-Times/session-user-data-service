@@ -207,10 +207,12 @@ exports.callPingToPull = function (userId, callback) {
 				error: err,
 				statusCode: response ? response.statusCode : null
 			});
+
+			console.log('livefyre.pingToPull failed for user', userId, response.body);
 			return;
 		}
 
-		console.log('livefyre.pingToPull successfully called for user', userId);
+		console.log('livefyre.pingToPull successfully called for user', userId, response.body);
 
 		callback();
 	});

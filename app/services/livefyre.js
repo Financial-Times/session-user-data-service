@@ -195,6 +195,8 @@ exports.callPingToPull = function (userId, callback) {
 
 	let timer = new Timer();
 
+	console.log('ping to pull URL: ', url);
+
 	request.post(url, function (err, response) {
 		endTimer(timer, 'callPingToPull', url);
 
@@ -220,7 +222,7 @@ exports.callPingToPull = function (userId, callback) {
 
 exports.getModerationRights = function (token, callback) {
 	if (typeof callback !== 'function') {
-		throw new Error("livefyre.callPingToPull: callback not provided");
+		throw new Error("livefyre.getModerationRights: callback not provided");
 	}
 
 	if (!token) {

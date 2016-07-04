@@ -210,6 +210,8 @@ exports.callPingToPull = function (userId, callback) {
 			return;
 		}
 
+		console.log('livefyre.pingToPull successfully called for user', userId);
+
 		callback();
 	});
 };

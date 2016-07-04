@@ -256,14 +256,17 @@ exports.setPseudonym = function (req, res, next) {
 							return;
 						}
 
-						sendResponse(req, res, 200, {
-							status: 'ok'
-						});
-
 						userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
 							if (errLfId) {
-								return;
+								sendResponse(req, res, 503, {
+									status: 'error',
+									error: 'Server currently unavailable, please try again later.'
+								});
 							}
+
+							sendResponse(req, res, 200, {
+								status: 'ok'
+							});
 
 							livefyreService.callPingToPull(lfUserId, function (errPing) {
 								if (errPing) {
@@ -451,8 +454,8 @@ exports.updateUser = function (req, res, next) {
 						return;
 					}
 
-					userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
-						if (errLfId) {
+					sessionDataStore.invalidate(function (errInv) {
+						if (errInv) {
 							sendResponse(req, res, 503, {
 								status: 'error',
 								error: 'Server currently unavailable, please try again later.'
@@ -460,16 +463,23 @@ exports.updateUser = function (req, res, next) {
 							return;
 						}
 
-						livefyreService.callPingToPull(lfUserId, function (errPing) {
-							if (errPing) {
-								consoleLogger.warn('pingToPull error', errPing);
+						userDataStore.getLivefyrePreferredUserId(function (errLfId, lfUserId) {
+							if (errLfId) {
+								sendResponse(req, res, 503, {
+									status: 'error',
+									error: 'Server currently unavailable, please try again later.'
+								});
 							}
-						});
-					});
 
-					sessionDataStore.invalidate(function () {
-						sendResponse(req, res, 200, {
-							status: 'ok'
+							sendResponse(req, res, 200, {
+								status: 'ok'
+							});
+
+							livefyreService.callPingToPull(lfUserId, function (errPing) {
+								if (errPing) {
+									consoleLogger.warn('pingToPull error', errPing);
+								}
+							});
 						});
 					});
 				});

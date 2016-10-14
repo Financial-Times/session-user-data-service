@@ -246,12 +246,15 @@ router.get('/commentcount', livefyreControllerV1.getCommentCount);
  *
  * @apiParam {String} articleIds 		Required. Comma separated list of article IDs.
  *
- * @apiSuccess (success) {String} count 	The number of comments
+ * @apiSuccess (success) {Object} articleId:count	Key-value pair of articleId : count
  *
  * @apiSuccessExample Success
  *  HTTP/1.1 200 OK
  *   {
- *       "count": 4
+ *       "2e94652d-d98c-385d-8257-7e4312b91ac9": 2,
+ *       "edeb0cb5-d98c-314c-99f7-808b14a1ab4a": 3,
+ *       "be21a923-ee80-364b-a3b7-ef986ee50dd7": 4,
+ *       "fa192e30-a67f-39fd-af31-585de10a5559": 53
  *   }
  */
 router.get('/commentcounts', livefyreControllerV1.getCommentCounts);

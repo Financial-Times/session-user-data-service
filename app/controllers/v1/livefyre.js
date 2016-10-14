@@ -362,6 +362,12 @@ exports.getCommentCounts = function (req, res, next) {
 			});
 		});
 
+		articleIds.forEach(articleId => {
+			if (!results[articleId]) {
+				results[articleId] = 0;
+			}
+		});
+
 		res.jsonp(results);
 	});
 };

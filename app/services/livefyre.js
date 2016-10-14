@@ -7,6 +7,7 @@ var consoleLogger = require('../utils/consoleLogger');
 var env = require('../../env');
 var urlParser = require('url');
 const Timer = require('../utils/Timer');
+const async = require('async');
 
 const endTimer = function (timer, serviceName, url) {
 	let elapsedTime = timer.getElapsedTime();
@@ -299,6 +300,102 @@ exports.getCommentCount = function (articleId, callback) {
 			if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !body) {
 				if (err || !response || response.statusCode !== 404) {
 					consoleLogger.warn(articleId, 'livefyre.commentCount error', err || new Error(response ? response.statusCode : 'No response'));
+				}
+
+				callback({
+					error: err,
+					statusCode: response ? response.statusCode : null
+				});
+				return;
+			}
+
+			if (body && body.data && Object.keys(body.data).length) {
+				callback(null, body);
+			} else {
+				callback({
+					error: new Error("Article not found"),
+					statusCode: 404
+				});
+			}
+		});
+	});
+};
+
+
+exports.getCommentCounts = function (articleIds, callback) {
+	if (typeof callback !== 'function') {
+		throw new Error("livefyre.getCommentCounts: callback not provided");
+	}
+
+	if (!articleIds) {
+		callback(new Error("articleIds should be provided."));
+		return;
+	}
+
+	if (!articleIds.length) {
+		callback();
+	}
+
+	const articleSiteIds = {};
+
+	const siteIdFetchFunctions = [];
+	articleIds.forEach(articleId => {
+		siteIdFetchFunctions.push((done) => {
+			legacySiteMapping.getSiteId(articleId, done);
+		});
+	});
+	async.parallel(siteIdFetchFunctions, (err, siteIds) => {
+		if (err) {
+			callback(err);
+			return;
+		}
+
+		siteIds.forEach((siteId, index) => {
+			if (!articleSiteIds[siteId]) {
+				articleSiteIds[siteId] = [];
+			}
+
+			articleSiteIds[siteId].push(articleIds[index]);
+		});
+
+		let siteIdArticleIdString = "";
+		Object.keys(articleSiteIds).forEach(siteId => {
+			if (siteIdArticleIdString) {
+				siteIdArticleIdString += '|';
+			}
+			siteIdArticleIdString += siteId + ':';
+
+			articleSiteIds[siteId].forEach((articleId, index) => {
+				if (index !== 0) {
+					siteIdArticleIdString += ',';
+				}
+				siteIdArticleIdString += articleId;
+			});
+		});
+
+		let url = env.livefyre.api.commentCountUrl;
+		url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
+		url = url.replace(/\{siteIdArticleIdBase64\}/g, new Buffer(siteIdArticleIdString).toString('base64'));
+
+		let timer = new Timer();
+
+		request.get(url, function (err, response) {
+			endTimer(timer, 'commentCounts', url);
+
+			let body;
+			if (response && response.body) {
+				try {
+					body = JSON.parse(response.body);
+				} catch (e) {
+					body = null;
+				}
+			} else {
+				body = null;
+			}
+
+			if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !body) {
+				if (err || !response || response.statusCode !== 404) {
+					consoleLogger.warn(articleId, 'livefyre.commentCounts error', err || new Error(response ? response.statusCode : 'No response'));
 				}
 
 				callback({

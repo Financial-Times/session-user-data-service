@@ -45,6 +45,50 @@ define({ "api": [
   },
   {
     "type": "get",
+    "url": "v1/livefyre/commentcounts",
+    "title": "Get comment count of multiple articles",
+    "version": "1.1.0",
+    "group": "v1_livefyre",
+    "name": "commentcounts",
+    "description": "<p>See <a href=\"http://answers.livefyre.com/developers/api-reference/#link-content-count\">Livefyre API documentation</a></p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "articleIds",
+            "description": "<p>Required. Comma separated list of article IDs.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "success": [
+          {
+            "group": "success",
+            "type": "String",
+            "optional": false,
+            "field": "count",
+            "description": "<p>The number of comments</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n {\n     \"count\": 4\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/routes/v1/livefyre.js",
+    "groupTitle": "v1_livefyre"
+  },
+  {
+    "type": "get",
     "url": "v1/livefyre/getSiteId",
     "title": "Get site ID",
     "version": "1.1.0",

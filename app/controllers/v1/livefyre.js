@@ -335,6 +335,37 @@ exports.getCommentCount = function (req, res, next) {
 	});
 };
 
+exports.getCommentCounts = function (req, res, next) {
+	if (!req.query.articleIds) {
+		res.status(400).send('"articleIds" should be provided.');
+		return;
+	}
+
+	const articleIds = req.query.articleIds.split(',');
+
+	livefyreService.getCommentCounts(articleIds, function (err, countData) {
+		if (err) {
+			res.sendStatus(err.statusCode || 503);
+			return;
+		}
+
+		if (!countData) {
+			res.jsonp({});
+			return;
+		}
+
+		const results = {};
+
+		Object.keys(countData.data).forEach(siteId => {
+			Object.keys(countData.data[siteId]).forEach(articleId => {
+				results[articleId] = countData.data[siteId][articleId].total;
+			});
+		});
+
+		res.jsonp(results);
+	});
+};
+
 exports.profile = function (req, res, next) {
 	if (!req.query.id || !req.query.lftoken) {
 		res.status(400).send('"id" (user ID) and "lftoken" (Livefyre system token) should be provided.');

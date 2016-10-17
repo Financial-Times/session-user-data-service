@@ -345,22 +345,18 @@ exports.getCommentCounts = function (req, res, next) {
 
 	livefyreService.getCommentCounts(articleIds, function (err, countData) {
 		if (err) {
-			res.sendStatus(err.statusCode || 503);
-			return;
-		}
-
-		if (!countData) {
-			res.jsonp({});
-			return;
+			countData = {};
 		}
 
 		const results = {};
 
-		Object.keys(countData.data).forEach(siteId => {
-			Object.keys(countData.data[siteId]).forEach(articleId => {
-				results[articleId] = countData.data[siteId][articleId].total;
+		if (countData && countData.data) {
+			Object.keys(countData.data).forEach(siteId => {
+				Object.keys(countData.data[siteId]).forEach(articleId => {
+					results[articleId] = countData.data[siteId][articleId].total;
+				});
 			});
-		});
+		}
 
 		articleIds.forEach(articleId => {
 			if (!results[articleId]) {

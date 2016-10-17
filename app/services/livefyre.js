@@ -341,7 +341,14 @@ exports.getCommentCounts = function (articleIds, callback) {
 	const siteIdFetchFunctions = [];
 	articleIds.forEach(articleId => {
 		siteIdFetchFunctions.push((done) => {
-			legacySiteMapping.getSiteId(articleId, done);
+			legacySiteMapping.getSiteId(articleId, (err, siteId) => {
+				if (err) {
+					done(null, null);
+					return;
+				}
+
+				done(null, siteId);
+			});
 		});
 	});
 	async.parallel(siteIdFetchFunctions, (err, siteIds) => {
@@ -351,11 +358,13 @@ exports.getCommentCounts = function (articleIds, callback) {
 		}
 
 		siteIds.forEach((siteId, index) => {
-			if (!articleSiteIds[siteId]) {
-				articleSiteIds[siteId] = [];
-			}
+			if (siteId) {
+				if (!articleSiteIds[siteId]) {
+					articleSiteIds[siteId] = [];
+				}
 
-			articleSiteIds[siteId].push(articleIds[index]);
+				articleSiteIds[siteId].push(articleIds[index]);
+			}
 		});
 
 		let siteIdArticleIdString = "";
@@ -405,14 +414,7 @@ exports.getCommentCounts = function (articleIds, callback) {
 				return;
 			}
 
-			if (body && body.data && Object.keys(body.data).length) {
-				callback(null, body);
-			} else {
-				callback({
-					error: new Error("Article not found"),
-					statusCode: 404
-				});
-			}
+			callback(null, body);
 		});
 	});
 };

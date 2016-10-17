@@ -341,7 +341,13 @@ exports.getCommentCounts = function (req, res, next) {
 		return;
 	}
 
-	const articleIds = req.query.articleIds.split(',');
+	let articleIds = req.query.articleIds.split(',');
+	articleIds.forEach((articleId, index) => {
+		articleIds[index] = articleId.trim();
+	});
+	if (articleIds && articleIds.length) {
+		articleIds = articleIds.filter(id => id !== '');
+	}
 
 	livefyreService.getCommentCounts(articleIds, function (err, countData) {
 		if (err) {

@@ -652,131 +652,37 @@ var UserDataStore = function (userId) {
 						return;
 					}
 
-
-					if (storedData) {
-						if (storedData.pseudonym) {
-							returnData.pseudonym = crypto.decrypt(storedData.pseudonym);
-						}
-
-						if (storedData.emailPreferences) {
-							returnData.emailPreferences = storedData.emailPreferences;
-						}
-
-						if (storedData.hasOwnProperty('email')) {
-							if (storedData.email) {
-								returnData.email = crypto.decrypt(storedData.email);
-							}
-							if (storedData.firstName) {
-								returnData.firstName = crypto.decrypt(storedData.firstName);
-							}
-							if (storedData.lastName) {
-								returnData.lastName = crypto.decrypt(storedData.lastName);
-							}
-
-							callback(null, returnData);
+					fetchBasicUserInfo(function (errFetch, basicUserInfo) {
+						if (errFetch) {
+							callback(errFetch);
 							return;
-						} else {
-							fetchBasicUserInfo(function (errFetch, basicUserInfo) {
-								if (errFetch) {
-									callback(errFetch);
-									return;
-								}
-
-								if (basicUserInfo) {
-									if (basicUserInfo.hasOwnProperty('email')) {
-										returnData.email = basicUserInfo.email;
-									}
-									if (basicUserInfo.hasOwnProperty('firstName')) {
-										returnData.firstName = basicUserInfo.firstName;
-									}
-									if (basicUserInfo.hasOwnProperty('lastName')) {
-										returnData.lastName = basicUserInfo.lastName;
-									}
-
-									self.updateBasicUserData(basicUserInfo, function () {});
-								}
-
-								callback(null, returnData);
-							});
 						}
-					} else {
-						fetchBasicUserInfo(function (errFetch, basicUserInfo) {
-							if (errFetch) {
-								callback(errFetch);
-								return;
+
+						if (basicUserInfo) {
+							if (basicUserInfo.hasOwnProperty('email')) {
+								returnData.email = basicUserInfo.email;
+							}
+							if (basicUserInfo.hasOwnProperty('firstName')) {
+								returnData.firstName = basicUserInfo.firstName;
+							}
+							if (basicUserInfo.hasOwnProperty('lastName')) {
+								returnData.lastName = basicUserInfo.lastName;
+							}
+						}
+
+						if (storedData) {
+							if (storedData.pseudonym) {
+								returnData.pseudonym = crypto.decrypt(storedData.pseudonym);
 							}
 
-							if (basicUserInfo) {
-								if (basicUserInfo.hasOwnProperty('email')) {
-									returnData.email = basicUserInfo.email;
-								}
-								if (basicUserInfo.hasOwnProperty('firstName')) {
-									returnData.firstName = basicUserInfo.firstName;
-								}
-								if (basicUserInfo.hasOwnProperty('lastName')) {
-									returnData.lastName = basicUserInfo.lastName;
-								}
-
-								self.updateBasicUserData(basicUserInfo, function () {});
+							if (storedData.emailPreferences) {
+								returnData.emailPreferences = storedData.emailPreferences;
 							}
+						}
 
-							callback(null, returnData);
-						});
-					}
+						callback(null, returnData);
+					});
 				});
-			});
-		});
-	};
-
-
-	this.updateBasicUserData = function (userData, callback) {
-		if (typeof callback !== 'function') {
-			throw new Error("UserDataStore.updateBasicUserData: callback not provided");
-		}
-
-		if (!userId) {
-			callback(new Error("User ID is not provided."));
-			return;
-		}
-
-		getStoredData(function (errCache, storedData) {
-			if (errCache) {
-				// fetch
-				consoleLogger.log(userId, 'getEmailPreferences', 'error retrieving email preferences');
-
-				callback(errCache);
-				return;
-			}
-
-			let upsertData = {};
-			if (userData.email) {
-				upsertData.email = crypto.encrypt(userData.email);
-			} else if (!storedData || !storedData.hasOwnProperty('email')) {
-				upsertData.email = null;
-			}
-
-			if (userData.firstName) {
-				upsertData.firstName = crypto.encrypt(userData.firstName);
-			} else if (!storedData || !storedData.hasOwnProperty('firstName')) {
-				upsertData.firstName = null;
-			}
-
-			if (userData.lastName) {
-				upsertData.lastName = crypto.encrypt(userData.lastName);
-			} else if (!storedData || !storedData.hasOwnProperty('lastName')) {
-				upsertData.lastName = null;
-			}
-
-			upsertStoredData(upsertData, function (err) {
-				if (err) {
-					consoleLogger.log(userId, 'failed to update basic info');
-					consoleLogger.debug(userId, 'upsert data', upsertData);
-
-					callback(err);
-					return;
-				}
-
-				callback();
 			});
 		});
 	};

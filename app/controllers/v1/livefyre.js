@@ -458,6 +458,34 @@ exports.profile = function (req, res, next) {
 	});
 };
 
+exports.hottest = function (req, res, next) {
+	livefyreService.getHottestArticle(req.query, (err, data) => {
+		if (err) {
+			if (typeof err === 'object') {
+				if (err.statusCode) {
+					res.sendStatus(err.statusCode);
+					return;
+				}
+			}
+
+			consoleLogger.warn('/v1/livefyre/hottest', '\nParams', JSON.stringify(req.query || {}), '\nError', err);
+
+			res.sendStatus(503);
+			return;
+		}
+
+		const results = [];
+
+		if (data && data.data && data.data.length) {
+			data.data.forEach((article) => {
+				results.unshift(_.pick(article, ['url', 'title', 'articleId', 'heat']));
+			});
+		}
+
+		res.json(results);
+	});
+};
+
 
 
 

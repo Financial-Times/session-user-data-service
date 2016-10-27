@@ -223,7 +223,7 @@ router.get('/get_lf_bootstrap', livefyreControllerV1.getLfBootstrap);
  * @apiVersion 1.1.0
  * @apiGroup v1/livefyre
  * @apiName commentcount
- * @apiDescription See [Livefyre API documentation](http://answers.livefyre.com/developers/api-reference/#link-content-count)
+ * @apiDescription See [Livefyre API documentation](https://api.livefyre.com/docs/apis/by-category/integration#operation=urn:livefyre:apis:bootstrap:operations:api:v1.1:public:comments:ncomments.json:method=get)
  *
  * @apiParam {String} articleId 		Required. ID of the article.
  *
@@ -242,7 +242,7 @@ router.get('/commentcount', livefyreControllerV1.getCommentCount);
  * @apiVersion 1.1.0
  * @apiGroup v1/livefyre
  * @apiName commentcounts
- * @apiDescription See [Livefyre API documentation](http://answers.livefyre.com/developers/api-reference/#link-content-count)
+ * @apiDescription See [Livefyre API documentation](https://api.livefyre.com/docs/apis/by-category/integration#operation=urn:livefyre:apis:bootstrap:operations:api:v1.1:public:comments:ncomments.json:method=get)
  *
  * @apiParam {String} articleIds 		Required. Comma separated list of article IDs.
  *
@@ -299,6 +299,37 @@ router.get('/commentcounts', livefyreControllerV1.getCommentCounts);
  *   }
  */
 router.get('/profile', livefyreControllerV1.profile);
+
+/**
+ * @api {get} v1/livefyre/hottest Get hottest articles
+ * @apiVersion 1.1.0
+ * @apiGroup v1/livefyre
+ * @apiName hottest
+ * @apiDescription See [Livefyre API documentation](http://api.livefyre.com/docs/apis/by-category/collections#operation=urn:livefyre:apis:bootstrap:operations:api:v3.0:hottest:method=get)
+ *
+ * @apiParam {Number} number=10 	Optional. The number of results you'd like. The default is 10 and the maximum is 100.
+ * @apiParam {String} tag			Optional. Filter results to include only Collections with a certain tag. Note: Boolean operators AND, OR, and NOT rules with multiple tags are supported. Only one operator per query. Strings must be entered as params titled 'tag' in a URL-safe format. 10 tags max. For example: https://{networkName}.bootstrap.fyre.co/api/v3.0/hottest/?tag=unga&tag=bunga&op=and To return only Collections with both tags 'a' and 'b', use ?tag=a&tag=b&op=and To exclude Collections with tags 'private', use ?tag=private&op=not To return only Collections with either tag 'a' or tag 'b', use ?tag=a&tag=b&op=or
+ *
+ * @apiSuccess (success) {Array} Array of object with the following fields: url, title, articleId, heat.
+ *
+ * @apiSuccessExample Success
+ *  HTTP/1.1 200 OK
+ *   [
+ *   	{
+ *   		"url": "http://ftalphaville.ft.com/2016/10/26/2178098/bitcoin-as-a-chinese-capital-outflow-proxy/",
+ *   		"title": "Bitcoin as a Chinese capital outflow proxy | FT Alphaville",
+ *   		"articleId": "45ef577b-23f8-3912-9fae-2a157252fe70",
+ *   		"heat": 4.286890264538921
+ *     	},
+ *     	{
+ *   		"url": "http://ftalphaville.ft.com/2016/10/26/2178004/the-autoignition-temperature-of-manual-cars-is-much-higher-than-fahrenheit-451/",
+ *   		"title": "The autoignition temperature of manual cars is much higher than Fahrenheit 451 | FT Alphaville",
+ *   		"articleId": "d2b380dd-5002-39f5-a6f8-9dcbfd99d3e5",
+ *   		"heat": 3.1300482263374416
+ *     	}
+ *   ]
+ */
+router.get('/hottest', livefyreControllerV1.hottest);
 
 
 module.exports = router;

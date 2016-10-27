@@ -6,7 +6,7 @@
     "version": "1.1.0",
     "group": "v1_livefyre",
     "name": "commentcount",
-    "description": "<p>See <a href=\"http://answers.livefyre.com/developers/api-reference/#link-content-count\">Livefyre API documentation</a></p>",
+    "description": "<p>See <a href=\"https://api.livefyre.com/docs/apis/by-category/integration#operation=urn:livefyre:apis:bootstrap:operations:api:v1.1:public:comments:ncomments.json:method=get\">Livefyre API documentation</a></p>",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -50,7 +50,7 @@
     "version": "1.1.0",
     "group": "v1_livefyre",
     "name": "commentcounts",
-    "description": "<p>See <a href=\"http://answers.livefyre.com/developers/api-reference/#link-content-count\">Livefyre API documentation</a></p>",
+    "description": "<p>See <a href=\"https://api.livefyre.com/docs/apis/by-category/integration#operation=urn:livefyre:apis:bootstrap:operations:api:v1.1:public:comments:ncomments.json:method=get\">Livefyre API documentation</a></p>",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -297,6 +297,58 @@
         {
           "title": "Unclassified article",
           "content": "HTTP/1.1 200 OK\n {\n    \"unclassifiedArticle\": true\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "app/routes/v1/livefyre.js",
+    "groupTitle": "v1_livefyre"
+  },
+  {
+    "type": "get",
+    "url": "v1/livefyre/hottest",
+    "title": "Get hottest articles",
+    "version": "1.1.0",
+    "group": "v1_livefyre",
+    "name": "hottest",
+    "description": "<p>See <a href=\"http://api.livefyre.com/docs/apis/by-category/collections#operation=urn:livefyre:apis:bootstrap:operations:api:v3.0:hottest:method=get\">Livefyre API documentation</a></p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": false,
+            "field": "number",
+            "defaultValue": "10",
+            "description": "<p>Optional. The number of results you'd like. The default is 10 and the maximum is 100.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "tag",
+            "description": "<p>Optional. Filter results to include only Collections with a certain tag. Note: Boolean operators AND, OR, and NOT rules with multiple tags are supported. Only one operator per query. Strings must be entered as params titled 'tag' in a URL-safe format. 10 tags max. For example: https://{networkName}.bootstrap.fyre.co/api/v3.0/hottest/?tag=unga&amp;tag=bunga&amp;op=and To return only Collections with both tags 'a' and 'b', use ?tag=a&amp;tag=b&amp;op=and To exclude Collections with tags 'private', use ?tag=private&amp;op=not To return only Collections with either tag 'a' or tag 'b', use ?tag=a&amp;tag=b&amp;op=or</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "success": [
+          {
+            "group": "success",
+            "type": "Array",
+            "optional": false,
+            "field": "Array",
+            "description": "<p>of object with the following fields: url, title, articleId, heat.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success",
+          "content": "HTTP/1.1 200 OK\n [\n \t{\n \t\t\"url\": \"http://ftalphaville.ft.com/2016/10/26/2178098/bitcoin-as-a-chinese-capital-outflow-proxy/\",\n \t\t\"title\": \"Bitcoin as a Chinese capital outflow proxy | FT Alphaville\",\n \t\t\"articleId\": \"45ef577b-23f8-3912-9fae-2a157252fe70\",\n \t\t\"heat\": 4.286890264538921\n   \t},\n   \t{\n \t\t\"url\": \"http://ftalphaville.ft.com/2016/10/26/2178004/the-autoignition-temperature-of-manual-cars-is-much-higher-than-fahrenheit-451/\",\n \t\t\"title\": \"The autoignition temperature of manual cars is much higher than Fahrenheit 451 | FT Alphaville\",\n \t\t\"articleId\": \"d2b380dd-5002-39f5-a6f8-9dcbfd99d3e5\",\n \t\t\"heat\": 3.1300482263374416\n   \t}\n ]",
           "type": "json"
         }
       ]

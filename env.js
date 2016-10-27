@@ -13,7 +13,8 @@ var config = {
 			collectionExistsUrl: process.env.LIVEFYRE_API_COLLECTION_EXISTS,
 			bootstrapUrl: process.env.LIVEFYRE_BOOTSTRAP_URL,
 			userProfileUrl: process.env.LIVEFYRE_USER_PROFILE_URL,
-			commentCountUrl: process.env.LIVEFYRE_COMMENT_COUNT_URL
+			commentCountUrl: process.env.LIVEFYRE_COMMENT_COUNT_URL,
+			heatIndexUrl: process.env.LIVEFYRE_HEAT_INDEX_URL
 		}
 	},
 	mongo: {

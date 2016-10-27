@@ -418,3 +418,50 @@ exports.getCommentCounts = function (articleIds, callback) {
 		});
 	});
 };
+
+
+exports.getHottestArticle = function (query, callback) {
+	if (typeof query === 'function') {
+		callback = query;
+		query = null;
+	}
+
+	if (typeof callback !== 'function') {
+		throw new Error("livefyre.getHottestArticle: callback not provided");
+	}
+
+	let url = env.livefyre.api.heatIndexUrl;
+	url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
+
+	let timer = new Timer();
+	request.get(url, {
+		qs: query || {}
+	}, function (err, response) {
+		endTimer(timer, 'hottestArticle', url);
+
+		let body;
+		if (response && response.body) {
+			try {
+				body = JSON.parse(response.body);
+			} catch (e) {
+				body = null;
+			}
+		} else {
+			body = null;
+		}
+
+		if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !body) {
+			if (err || !response || response.statusCode !== 404) {
+				consoleLogger.warn('livefyre.getHottestArticle error', err || new Error(response ? response.statusCode : 'No response'));
+			}
+
+			callback({
+				error: err,
+				statusCode: response ? response.statusCode : null
+			});
+			return;
+		}
+
+		callback(null, body);
+	});
+};

@@ -341,14 +341,14 @@ define({ "api": [
             "type": "Array",
             "optional": false,
             "field": "Array",
-            "description": "<p>of object with the following fields: url, title, articleId, heat.</p>"
+            "description": "<p>of object with the following fields: url, title, articleId, heat, tags.</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success",
-          "content": "HTTP/1.1 200 OK\n [\n \t{\n \t\t\"url\": \"http://ftalphaville.ft.com/2016/10/26/2178098/bitcoin-as-a-chinese-capital-outflow-proxy/\",\n \t\t\"title\": \"Bitcoin as a Chinese capital outflow proxy | FT Alphaville\",\n \t\t\"articleId\": \"45ef577b-23f8-3912-9fae-2a157252fe70\",\n \t\t\"heat\": 4.286890264538921\n   \t},\n   \t{\n \t\t\"url\": \"http://ftalphaville.ft.com/2016/10/26/2178004/the-autoignition-temperature-of-manual-cars-is-much-higher-than-fahrenheit-451/\",\n \t\t\"title\": \"The autoignition temperature of manual cars is much higher than Fahrenheit 451 | FT Alphaville\",\n \t\t\"articleId\": \"d2b380dd-5002-39f5-a6f8-9dcbfd99d3e5\",\n \t\t\"heat\": 3.1300482263374416\n   \t}\n ]",
+          "content": "HTTP/1.1 200 OK\n [\n \t{\n \t\t\"url\": \"http://ftalphaville.ft.com/2016/10/26/2178098/bitcoin-as-a-chinese-capital-outflow-proxy/\",\n \t\t\"title\": \"Bitcoin as a Chinese capital outflow proxy | FT Alphaville\",\n \t\t\"articleId\": \"45ef577b-23f8-3912-9fae-2a157252fe70\",\n \t\t\"heat\": 4.286890264538921,\n \t\t\"tags\": [\n \t\t\t\"sections.Brussels\",\n \t\t\t\"sections.Comment\",\n \t\t\t\"sections.Opinion\",\n \t\t\t\"sections.UK\",\n \t\t\t\"sections.UK_Politics_&_Policy\",\n \t\t\t\"sections.Europe\"\n \t\t]\n   \t},\n   \t{\n \t\t\"url\": \"http://ftalphaville.ft.com/2016/10/26/2178004/the-autoignition-temperature-of-manual-cars-is-much-higher-than-fahrenheit-451/\",\n \t\t\"title\": \"The autoignition temperature of manual cars is much higher than Fahrenheit 451 | FT Alphaville\",\n \t\t\"articleId\": \"d2b380dd-5002-39f5-a6f8-9dcbfd99d3e5\",\n \t\t\"heat\": 3.1300482263374416,\n \t\t\"tags\": [\n \t\t\t\"sections.Brussels\",\n \t\t\t\"sections.Comment\",\n \t\t\t\"sections.Opinion\",\n \t\t\t\"sections.UK\",\n \t\t\t\"sections.UK_Politics_&_Policy\",\n \t\t\t\"sections.Europe\"\n \t\t]\n   \t}\n ]",
           "type": "json"
         }
       ]

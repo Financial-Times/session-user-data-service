@@ -459,7 +459,18 @@ exports.profile = function (req, res, next) {
 };
 
 exports.hottest = function (req, res, next) {
-	livefyreService.getHottestArticle(req.query, (err, data) => {
+	let query = {};
+	if (req.query) {
+		Object.keys(req.query).forEach((key) => {
+			let value = req.query[key];
+			if (decodeURIComponent(value) === value) {
+				value = encodeURIComponent(req.query[key]);
+			}
+			query[key] = value;
+		});
+	}
+
+	livefyreService.getHottestArticle(query, (err, data) => {
 		if (err) {
 			if (typeof err === 'object') {
 				if (err.statusCode) {
@@ -478,7 +489,7 @@ exports.hottest = function (req, res, next) {
 
 		if (data && data.data && data.data.length) {
 			data.data.forEach((article) => {
-				results.unshift(_.pick(article, ['url', 'title', 'articleId', 'heat']));
+				results.unshift(_.pick(article, ['url', 'title', 'articleId', 'heat', 'tags']));
 			});
 		}
 

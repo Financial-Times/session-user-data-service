@@ -310,7 +310,7 @@ router.get('/profile', livefyreControllerV1.profile);
  * @apiParam {Number} number=10 	Optional. The number of results you'd like. The default is 10 and the maximum is 100.
  * @apiParam {String} tag			Optional. Filter results to include only Collections with a certain tag. Note: Boolean operators AND, OR, and NOT rules with multiple tags are supported. Only one operator per query. Strings must be entered as params titled 'tag' in a URL-safe format. 10 tags max. For example: https://{networkName}.bootstrap.fyre.co/api/v3.0/hottest/?tag=unga&tag=bunga&op=and To return only Collections with both tags 'a' and 'b', use ?tag=a&tag=b&op=and To exclude Collections with tags 'private', use ?tag=private&op=not To return only Collections with either tag 'a' or tag 'b', use ?tag=a&tag=b&op=or
  *
- * @apiSuccess (success) {Array} Array of object with the following fields: url, title, articleId, heat.
+ * @apiSuccess (success) {Array} Array of object with the following fields: url, title, articleId, heat, tags.
  *
  * @apiSuccessExample Success
  *  HTTP/1.1 200 OK
@@ -319,13 +319,29 @@ router.get('/profile', livefyreControllerV1.profile);
  *   		"url": "http://ftalphaville.ft.com/2016/10/26/2178098/bitcoin-as-a-chinese-capital-outflow-proxy/",
  *   		"title": "Bitcoin as a Chinese capital outflow proxy | FT Alphaville",
  *   		"articleId": "45ef577b-23f8-3912-9fae-2a157252fe70",
- *   		"heat": 4.286890264538921
+ *   		"heat": 4.286890264538921,
+ *   		"tags": [
+ *   			"sections.Brussels",
+ *   			"sections.Comment",
+ *   			"sections.Opinion",
+ *   			"sections.UK",
+ *   			"sections.UK_Politics_&_Policy",
+ *   			"sections.Europe"
+ *   		]
  *     	},
  *     	{
  *   		"url": "http://ftalphaville.ft.com/2016/10/26/2178004/the-autoignition-temperature-of-manual-cars-is-much-higher-than-fahrenheit-451/",
  *   		"title": "The autoignition temperature of manual cars is much higher than Fahrenheit 451 | FT Alphaville",
  *   		"articleId": "d2b380dd-5002-39f5-a6f8-9dcbfd99d3e5",
- *   		"heat": 3.1300482263374416
+ *   		"heat": 3.1300482263374416,
+ *   		"tags": [
+ *   			"sections.Brussels",
+ *   			"sections.Comment",
+ *   			"sections.Opinion",
+ *   			"sections.UK",
+ *   			"sections.UK_Politics_&_Policy",
+ *   			"sections.Europe"
+ *   		]
  *     	}
  *   ]
  */

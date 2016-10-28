@@ -433,10 +433,25 @@ exports.getHottestArticle = function (query, callback) {
 	let url = env.livefyre.api.heatIndexUrl;
 	url = url.replace(/\{networkName\}/g, env.livefyre.network.name);
 
+	let queryString = "";
+	if (query) {
+		Object.keys(query).forEach((key) => {
+			if (typeof query[key] === 'string') {
+				queryString += `&${key}=${query[key]}`;
+			} else if (query[key] instanceof Array) {
+				query[key].forEach((value) => {
+					queryString += `&${key}=${value}`;
+				});
+			}
+		});
+	}
+
+	if (queryString) {
+		queryString = queryString.substr(1);
+	}
+
 	let timer = new Timer();
-	request.get(url, {
-		qs: query || {}
-	}, function (err, response) {
+	request.get(`${url}?${queryString}`, function (err, response) {
 		endTimer(timer, 'hottestArticle', url);
 
 		let body;

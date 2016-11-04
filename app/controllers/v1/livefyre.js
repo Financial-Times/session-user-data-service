@@ -489,7 +489,7 @@ exports.hottest = function (req, res, next) {
 
 		if (data && data.data && data.data.length) {
 			data.data.forEach((article) => {
-				results.unshift(_.pick(article, ['url', 'title', 'articleId', 'heat', 'tags']));
+				results.push(_.pick(article, ['url', 'title', 'articleId', 'heat', 'tags']));
 			});
 		}
 

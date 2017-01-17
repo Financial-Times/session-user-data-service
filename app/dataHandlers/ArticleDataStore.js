@@ -134,9 +134,6 @@ var ArticleDataStore = function (articleId) {
 						case 'blogs':
 							tags.push('blog');
 							break;
-						case 'discussions':
-							tags.push('discussion');
-							break;
 						case 'ftalphaville':
 							tags.push('alphaville');
 							tags.push('blog');
@@ -149,11 +146,15 @@ var ArticleDataStore = function (articleId) {
 					}
 				}
 
-				if (parsedUrl.hostname.endsWith('blogs.ft.com') || parsedUrl.hostname.endsWith('discussions.ft.com')) {
+				if (parsedUrl.hostname.endsWith('blogs.ft.com')) {
 					matches = parsedUrl.pathname.match(/\/([^\/]+)/);
 					if (matches && matches.length) {
 						tags.push(matches[1]);
 					}
+				}
+
+				if (parsedUrl.hostname.endsWith('ftalphaville.ft.com') && parsedUrl.pathname.indexOf('longroom') !== -1) {
+					tags.push('longroom');
 				}
 			}
 

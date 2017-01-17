@@ -98,7 +98,7 @@ describe('ArticleDataStore', function() {
 
 			articleDataStore.getArticleTags(testData.articles.longroom.url, function (err, data) {
 				assert.ok(!err, "Error is not set.");
-				assert.deepEqual(data, ['discussion', 'longroom'], "Correct tags returned.");
+				assert.deepEqual(data, ['alphaville', 'blog', 'longroom'], "Correct tags returned.");
 
 				done();
 			});

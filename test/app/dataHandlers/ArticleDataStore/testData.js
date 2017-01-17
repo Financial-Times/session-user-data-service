@@ -56,9 +56,9 @@ const articles = {
 		siteId: 415343
 	},
 	longroom: {
-		id: 'e4dc6574-c219-4986-b867-89dd7fa16004',
+		id: 'longroom123',
 		title: 'Longroom',
-		url: 'http://discussions.ft.com/longroom/tables/equity-strategy/about-those-rose-coloured-glasses',
+		url: 'https://ftalphaville.ft.com/longroom/content/23432',
 		siteId: 415343
 	},
 	lexicon: {

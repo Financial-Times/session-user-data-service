@@ -334,6 +334,7 @@ exports.getCommentCounts = function (articleIds, callback) {
 
 	if (!articleIds.length) {
 		callback();
+		return;
 	}
 
 	const articleSiteIds = {};
@@ -404,7 +405,7 @@ exports.getCommentCounts = function (articleIds, callback) {
 
 			if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !body) {
 				if (err || !response || response.statusCode !== 404) {
-					consoleLogger.warn(articleId, 'livefyre.commentCounts error', err || new Error(response ? response.statusCode : 'No response'));
+					consoleLogger.warn(articleIds, 'livefyre.commentCounts error', err || new Error(response ? response.statusCode : 'No response'));
 				}
 
 				callback({

@@ -1,6 +1,6 @@
 "use strict";
 
-const FtApiClientMock = require('../../../../mocks/ft-api-client');
+const NEsClientMock = require('../../../../mocks/n-es-client');
 const MongodbMock = require('../../../../mocks/mongodb');
 const LivefyreMock = require('../../../../mocks/livefyre');
 const RequestMock = require('../../../../mocks/request');
@@ -172,49 +172,47 @@ Object.keys(articles).forEach(function (key, index) {
 
 
 const capiData = {
-	item: {
-		metadata: {
-			brand: [
-				{
-					term: {
-						name: 'Brand1',
-						taxonomy: 'brand'
-					}
-				}
-			],
-			authors: [
-				{
-					term: {
-						name: 'Author1',
-						taxonomy: 'author'
-					}
-				},
-				{
-					term: {
-						name: 'Author2',
-						taxonomy: 'author'
-					}
-				}
-			],
-			sections: [
-				{
-					term: {
-						name: 'Section1',
-						taxonomy: 'section'
-					}
-				},
-				{
-					term: {
-						name: 'Section2',
-						taxonomy: 'section'
-					}
-				}
-			]
+	annotations: [
+		{
+			"predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
+			"prefLabel": "Brand1",
+			"type": "BRAND",
+			"directType": "http://www.ft.com/ontology/product/Brand"
+		},
+		{
+			"predicate": "http://www.ft.com/ontology/annotation/hasAuthor",
+			"prefLabel": "Author1",
+			"type": "PERSON",
+			"directType": "http://www.ft.com/ontology/person/Person"
+		},
+		{
+			"predicate": "http://www.ft.com/ontology/annotation/hasAuthor",
+			"prefLabel": "Author2",
+			"type": "PERSON",
+			"directType": "http://www.ft.com/ontology/person/Person"
+		},
+		{
+			"predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
+			"prefLabel": "Section1",
+			"type": "SECTION",
+			"directType": "http://www.ft.com/ontology/Section"
+		},
+		{
+			"predicate": "http://www.ft.com/ontology/classification/isClassifiedBy",
+			"prefLabel": "Section2",
+			"type": "SECTION",
+			"directType": "http://www.ft.com/ontology/Section"
+		},
+		{
+			"predicate": "http://www.ft.com/ontology/annotation/mentions",
+			"prefLabel": "Organisation1",
+			"type": "ORGANISATION",
+			"directType": "http://www.ft.com/ontology/organisation/Organisation"
 		}
-	}
+	]
 };
 
-const defaultTagListCollectionMeta = 'section.Section1,section.Section2,author.Author1,author.Author2,brand.Brand1';
+const defaultTagListCollectionMeta = 'brand.Brand1,person.Author1,author.Author1,person.Author2,author.Author2,section.Section1,section.Section2,organisation.Organisation1';
 
 
 var articleData = {};
@@ -266,7 +264,7 @@ const env = {
 
 
 
-const ftApiClientMock = new FtApiClientMock({
+const nEsClientMock = new NEsClientMock({
 	articleData: articleData,
 	global: true
 });
@@ -288,38 +286,6 @@ const mongodbMock = new MongodbMock({
 
 const requestMock = new RequestMock({
 	items: [
-		{
-			url: env.capi.url,
-			handler: function (config) {
-				if (config.matches.urlParams.uuid && config.matches.urlParams.uuid.indexOf('down') !== -1) {
-					config.callback(null, {
-						statusCode: 503
-					});
-					return;
-				}
-
-				if (config.matches.queryParams.key !== env.capi.key) {
-					config.callback(null, {
-						statusCode: 403
-					});
-					return;
-				}
-
-				if (articleData[config.matches.urlParams.uuid]) {
-					config.callback(null, {
-						statusCode: 200,
-						body: JSON.stringify(articleData[config.matches.urlParams.uuid])
-					});
-
-					return;
-				} else {
-					config.callback(null, {
-						statusCode: 404
-					});
-					return;
-				}
-			}
-		},
 		{
 			url: env.livefyre.api.collectionExistsUrl,
 			handler: function (config) {
@@ -354,7 +320,7 @@ const livefyreMock = new LivefyreMock({
 
 
 exports.mockInstances = {
-	'ft-api-client': ftApiClientMock,
+	'n-es-client': nEsClientMock,
 	mongodb: mongodbMock,
 	livefyre: livefyreMock,
 	request: requestMock
@@ -363,7 +329,7 @@ exports.mockInstances = {
 exports.articles = articles;
 exports.defaultTagListCollectionMeta = defaultTagListCollectionMeta;
 exports.mocks = {
-	'ft-api-client': ftApiClientMock.mock,
+	'n-es-client': nEsClientMock.mock,
 	mongodb: mongodbMock.mock,
 	livefyre: livefyreMock.mock,
 	request: requestMock.mock,

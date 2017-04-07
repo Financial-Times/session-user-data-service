@@ -1,6 +1,6 @@
 "use strict";
 
-const capi_v1 = require('../services/capi_v1');
+const nEsClient = require('@financial-times/n-es-client');
 const db = require('../services/db');
 const livefyreService = require('../services/livefyre');
 const consoleLogger = require('../utils/consoleLogger');
@@ -170,28 +170,29 @@ var ArticleDataStore = function (articleId) {
 
 		consoleLogger.log(articleId, 'fetch article tags');
 
-		capi_v1.getArticleData(articleId, function (errCapi, articleData) {
-			if (errCapi) {
-				callback(errCapi);
+		nEsClient.get(articleId)
+			.then(article => {
+				var tags = [];
 
-				return;
-			}
+				if (article && article.annotations) {
+					article.annotations.forEach(annotation => {
+						const tag = `${annotation.type.toLowerCase()}.${annotation.prefLabel}`;
+						if (!tags.includes(tag)) {
+							tags.push(tag);
+						}
 
-			var tags = [];
-			if (articleData.item.metadata.sections && articleData.item.metadata.sections.length) {
-				tags = tags.concat(articleData.item.metadata.sections.map(function (val) {return val.term.taxonomy + '.' + val.term.name}));
-			}
+						if (annotation.type === 'PERSON' && annotation.predicate === 'http://www.ft.com/ontology/annotation/hasAuthor') {
+							const tag = `author.${annotation.prefLabel}`;
+							if (!tags.includes(tag)) {
+								tags.push(tag);
+							}
+						}
+					})
+				}
 
-			if (articleData.item.metadata.authors && articleData.item.metadata.authors.length) {
-				tags = tags.concat(articleData.item.metadata.authors.map(function (val) {return val.term.taxonomy + '.' + val.term.name}));
-			}
-
-			if (articleData.item.metadata.brand && articleData.item.metadata.brand.length) {
-				tags = tags.concat(articleData.item.metadata.brand.map(function (val) {return val.term.taxonomy + '.' + val.term.name}));
-			}
-
-			callback(null, tags);
-		});
+				callback(null, tags);
+			})
+			.catch(callback);
 	};
 	var upsertArticleTags = function (tags, shortTTL) {
 		consoleLogger.log(articleId, 'upsert tags');

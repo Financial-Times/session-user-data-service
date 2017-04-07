@@ -4,7 +4,7 @@
 	"name": "session-user-data-service",
 	"description": "session-user-data-service",
 	"checks": [
-		"capi_v1",
+		"elasticsearch",
 		"db",
 		"emailService",
 		"erightsMappingService",

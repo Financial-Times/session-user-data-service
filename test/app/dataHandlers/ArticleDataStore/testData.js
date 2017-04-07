@@ -186,7 +186,7 @@ const capiData = {
 			"directType": "http://www.ft.com/ontology/person/Person"
 		},
 		{
-			"predicate": "http://www.ft.com/ontology/annotation/hasAuthor",
+			"predicate": "http://www.ft.com/ontology/annotation/mentions",
 			"prefLabel": "Author2",
 			"type": "PERSON",
 			"directType": "http://www.ft.com/ontology/person/Person"
@@ -212,7 +212,7 @@ const capiData = {
 	]
 };
 
-const defaultTagListCollectionMeta = 'brand.Brand1,person.Author1,author.Author1,person.Author2,author.Author2,section.Section1,section.Section2,organisation.Organisation1';
+const defaultTagListCollectionMeta = 'brand.Brand1,authors.Author1,sections.Section1,sections.Section2';
 
 
 var articleData = {};

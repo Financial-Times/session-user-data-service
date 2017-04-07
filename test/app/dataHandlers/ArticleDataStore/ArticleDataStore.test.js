@@ -119,7 +119,7 @@ describe('ArticleDataStore', function() {
 
 			articleDataStore.getArticleTags(function (err, data) {
 				assert.ok(!err, "Error is not set.");
-				assert.deepEqual(data, ['brand.Brand1', 'person.Author1', 'author.Author1', 'person.Author2', 'author.Author2', 'section.Section1', 'section.Section2', 'organisation.Organisation1'], "Correct tags returned.");
+				assert.deepEqual(data, ['brand.Brand1', 'authors.Author1', 'sections.Section1', 'sections.Section2'], "Correct tags returned.");
 
 				done();
 			});
@@ -192,7 +192,7 @@ describe('ArticleDataStore', function() {
 					});
 
 					assert.equal(articleCache.length, 1, "Only 1 entry exists in DB for the article ID.");
-					assert.deepEqual(articleCache[0].tags.data, ['brand.Brand1', 'person.Author1', 'author.Author1', 'person.Author2', 'author.Author2', 'section.Section1', 'section.Section2', 'organisation.Organisation1'], "Correct tags cached.");
+					assert.deepEqual(articleCache[0].tags.data, ['brand.Brand1', 'authors.Author1', 'sections.Section1', 'sections.Section2'], "Correct tags cached.");
 					assert.ok(articleCache[0].tags.expires >= new Date(startTime.getTime() + testData.mocks.env.cacheExpiryHours.articles * 60 * 60 * 1000) &&
 							articleCache[0].tags.expires <= new Date(endTime.getTime() + testData.mocks.env.cacheExpiryHours.articles * 60 * 60 * 1000), "Expiry time of the cache is around the one specified in the configs.");
 
@@ -218,7 +218,7 @@ describe('ArticleDataStore', function() {
 					});
 
 					assert.equal(articleCache.length, 1, "Only 1 entry exists in DB for the article ID.");
-					assert.deepEqual(articleCache[0].tags.data, ['brand.Brand1', 'person.Author1', 'author.Author1', 'person.Author2', 'author.Author2', 'section.Section1', 'section.Section2', 'organisation.Organisation1'], "Correct tags cached.");
+					assert.deepEqual(articleCache[0].tags.data, ['brand.Brand1', 'authors.Author1', 'sections.Section1', 'sections.Section2'], "Correct tags cached.");
 					assert.ok(articleCache[0].tags.expires >= new Date(startTime.getTime() + testData.mocks.env.cacheExpiryHours.articles * 60 * 60 * 1000) &&
 							articleCache[0].tags.expires <= new Date(endTime.getTime() + testData.mocks.env.cacheExpiryHours.articles * 60 * 60 * 1000), "Expiry time of the cache is around the one specified in the configs.");
 
@@ -471,8 +471,6 @@ describe('ArticleDataStore', function() {
 				title: testData.articles.normal.title,
 				url: testData.articles.normal.url
 			}, function (err, data) {
-				console.log('err', err);
-				console.log('data', data);
 				assert.ok(!err, "Error is not returned.");
 
 				assert.deepEqual(data, {

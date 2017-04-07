@@ -175,18 +175,27 @@ var ArticleDataStore = function (articleId) {
 				var tags = [];
 
 				if (article && article.annotations) {
-					article.annotations.forEach(annotation => {
-						const tag = `${annotation.type.toLowerCase()}.${annotation.prefLabel}`;
-						if (!tags.includes(tag)) {
-							tags.push(tag);
-						}
+					article.annotations
+						.filter(annotation => ['BRAND', 'SECTION'].includes(annotation.type)
+										|| (annotation.type === 'PERSON' && annotation.predicate === 'http://www.ft.com/ontology/annotation/hasAuthor'))
+						.forEach(annotation => {
+							let type;
+							switch (annotation.type) {
+								case 'BRAND':
+									type = 'brand';
+									break;
+								case 'SECTION':
+									type = 'sections';
+									break;
+								case 'PERSON':
+									type = 'authors';
+									break;
+							}
 
-						if (annotation.type === 'PERSON' && annotation.predicate === 'http://www.ft.com/ontology/annotation/hasAuthor') {
-							const tag = `author.${annotation.prefLabel}`;
+							const tag = `${type}.${annotation.prefLabel}`;
 							if (!tags.includes(tag)) {
 								tags.push(tag);
 							}
-						}
 					})
 				}
 

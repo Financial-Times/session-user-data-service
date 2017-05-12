@@ -237,7 +237,7 @@ var ArticleDataStore = function (articleId) {
 
 				fetchCapiTags(function (errFetch, tags) {
 					if (errFetch) {
-						callback(null, getTagsByUrl(url), errFetch.statusCode !== 404 ? true : false);
+						callback(null, getTagsByUrl(url), !tags || !tags.length ? true : false);
 						return;
 					}
 
@@ -256,7 +256,7 @@ var ArticleDataStore = function (articleId) {
 					consoleLogger.log(articleId, 'articleTags', 'data expired, refresh');
 					fetchCapiTags(function (errFetch, tags) {
 						if (errFetch) {
-							if (errFetch.statusCode !== 404) {
+							if (!tags || !tags.length) {
 								upsertArticleTags([], true);
 							}
 							return;
@@ -270,9 +270,9 @@ var ArticleDataStore = function (articleId) {
 				consoleLogger.log(articleId, 'articleTags', 'not found in cache');
 				fetchCapiTags(function (errFetch, tags) {
 					if (errFetch) {
-						callback(null, getTagsByUrl(url), errFetch.statusCode !== 404 ? true : false);
+						callback(null, getTagsByUrl(url), !tags || !tags.length ? true : false);
 
-						if (errFetch.statusCode !== 404) {
+						if (!tags || !tags.length) {
 							upsertArticleTags([], true);
 						}
 						return;
@@ -350,7 +350,7 @@ var ArticleDataStore = function (articleId) {
 			if (errTags) {
 				tags = [];
 
-				if (errTags.statusCode !== 404) {
+				if (!tags || !tags.length) {
 					capiDown = true;
 				}
 			}

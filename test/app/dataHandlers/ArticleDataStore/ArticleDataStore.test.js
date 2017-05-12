@@ -129,11 +129,15 @@ describe('ArticleDataStore', function() {
 		it("should cache data with short TTL for article that is not found in CAPI", function (done) {
 			let articleDataStore = new ArticleDataStore('notfound-capi');
 
+			var startTime = new Date();
+
 			articleDataStore.getArticleTags(function (err, data) {
 				assert.ok(!err, "Error is not set.");
 				assert.deepEqual(data, [], "Empty array is returned.");
 
 				setTimeout(function () {
+					var endTime = new Date();
+
 					var articleCache = testData.mockInstances.mongodb.findInDb('articles', {
 						_id: 'notfound-capi'
 					});

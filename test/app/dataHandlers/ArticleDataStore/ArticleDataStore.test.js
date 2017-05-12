@@ -126,7 +126,7 @@ describe('ArticleDataStore', function() {
 		});
 
 
-		it("should not cache data for article that is not found in CAPI", function (done) {
+		it("should cache data with short TTL for article that is not found in CAPI", function (done) {
 			let articleDataStore = new ArticleDataStore('notfound-capi');
 
 			articleDataStore.getArticleTags(function (err, data) {
@@ -138,7 +138,13 @@ describe('ArticleDataStore', function() {
 						_id: 'notfound-capi'
 					});
 
-					assert.equal(articleCache.length, 0, "No cache is created.");
+					assert.equal(articleCache.length, 1, "Only 1 entry exists in DB for the article ID.");
+					assert.deepEqual(articleCache[0].tags.data, [], "Correct tags cached.");
+					assert.equal(articleCache[0].tags.shortTTL, true, "Short TTL is saved in cache.");
+
+					// expires in 5 minutes
+					assert.ok(articleCache[0].tags.expires >= new Date(startTime.getTime() + 5 * 60 * 1000) &&
+							articleCache[0].tags.expires <= new Date(endTime.getTime() + 5 * 60 * 1000), "Expiry time of the cache is a short TTL.");
 
 					done();
 				}, 10);

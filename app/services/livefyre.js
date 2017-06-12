@@ -238,7 +238,7 @@ exports.getModerationRights = function (token, callback) {
 
 		if (err || !response || response.statusCode < 200 || response.statusCode >= 400 || !response.body) {
 			if (err || !response || response.statusCode !== 404) {
-				consoleLogger.warn('livefyre.getUserDetails error', err || new Error(response ? response.statusCode : 'No response'));
+				consoleLogger.warn('livefyre.getModerationRights error', err || new Error(response ? response.statusCode : 'No response'));
 			}
 
 			callback({

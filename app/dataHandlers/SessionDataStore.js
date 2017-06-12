@@ -356,16 +356,15 @@ var SessionDataStore = function (sessionId) {
 											}
 
 											livefyreService.getModerationRights(authToken.token, function (errModRights, modRights) {
-												if (errModRights) {
-													callbackAsync(errModRights);
-													return;
-												}
-
 												callbackAsync(null, {
 													token: authToken.token,
 													expires: authToken.expires,
 													pseudonym: pseudonymSanitized,
-													moderationRights: modRights
+													moderationRights: modRights || {
+														collections: [],
+														networks: [],
+														sites: []
+													}
 												});
 											});
 										});

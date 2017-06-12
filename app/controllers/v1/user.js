@@ -67,6 +67,7 @@ exports.getAuth = function (req, res, next) {
 
 		sessionDataStore.getAuthMetadata(function (errAuth, data) {
 			if (errAuth) {
+				consoleLogger.warn("Auth service down");
 				res.jsonp({
 					serviceUp: false
 				});

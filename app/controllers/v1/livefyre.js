@@ -201,6 +201,7 @@ exports.init = function (req, res, next) {
 			if (userSession) {
 				sessionDataStore.getAuthMetadata(function (errAuth, data) {
 					if (errAuth) {
+						consoleLogger.warn("Auth service down");
 						callback(null, {
 							serviceUp: false
 						});

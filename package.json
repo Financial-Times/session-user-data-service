@@ -7,6 +7,9 @@
     "test": "node_modules/.bin/mocha",
     "test-watch": "node_modules/.bin/mocha -w"
   },
+  "engines": {
+    "node": "^6"
+  },
   "dependencies": {
     "@financial-times/n-es-client": "^1.0.0-beta.5",
     "async": "^1.4.2",

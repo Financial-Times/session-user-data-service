@@ -83,6 +83,7 @@ var UserDataStore = function (userId) {
 			eRightsId: fetchERightsIdOfUserId
 		}, function (err, results) {
 			if (err) {
+				consoleLogger.warn('initStorage', 'failed to get user IDs', err);
 				callback(err);
 				return;
 			}
@@ -93,6 +94,7 @@ var UserDataStore = function (userId) {
 
 			db.getConnection(env.mongo.uri, function (errConn, connection) {
 				if (errConn) {
+					consoleLogger.warn('initStorage', results.uuid, 'failed to connect to the DB', errConn);
 					callback(errConn);
 					return;
 				}
@@ -105,6 +107,7 @@ var UserDataStore = function (userId) {
 					upsert: true
 				}, function (err, result) {
 					if (err) {
+						consoleLogger.warn('initStorage', results.uuid, 'failed to upsert user data', err);
 						callback(err);
 						return;
 					}
@@ -182,6 +185,7 @@ var UserDataStore = function (userId) {
 						if (!storedData.uuid || !storedData.lfUserId) {
 							initStorage(function (errInit, userIds) {
 								if (errInit) {
+									consoleLogger.warn(userId, 'init storage failed');
 									done(errInit);
 									return;
 								}
@@ -200,6 +204,7 @@ var UserDataStore = function (userId) {
 					} else {
 						initStorage(function (errInit, userIds) {
 							if (errInit) {
+								consoleLogger.warn(userId, 'init storage failed');
 								done(errInit);
 								return;
 							}

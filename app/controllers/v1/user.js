@@ -8,6 +8,8 @@ const livefyreService = require('../../services/livefyre');
 const consoleLogger = require('../../utils/consoleLogger');
 const pseudonymSanitizer = require('../../utils/pseudonymSanitizer');
 const sanitizer = require('sanitizer');
+const db = require('../../services/db');
+const env = require('../../../env');
 
 function sendResponse(req, res, status, json) {
 	var isJsonP = req.query.callback ? true : false;
@@ -582,4 +584,55 @@ exports.updateUserBasicInfo = function (req, res, next) {
 	} else {
 		res.status(403).send("API key is not provided or invalid.");
 	}
+};
+
+exports.deleteUser = function (req, res) {
+	validateApiKey(req, res, function () {
+		// successfully validated
+
+		if (!req.query.user_id) {
+			return res.status(400).json({
+				success: false,
+				reason: 'user_id is missing'
+			});
+		}
+
+		db.getConnection(env.mongo.uri, function (errConn, connection) {
+			if (errConn) {
+				consoleLogger.warn(req.query.user_id, 'delete failed', errConn);
+				return res.status(503).json({
+					success: false,
+					reason: 'Error with the connection to the database'
+				});
+			}
+
+			consoleLogger.log(req.query.user_id, 'delete session cache');
+
+			connection.collection('sessions').remove({
+				"sessionData.uuid": req.query.user_id
+			}, function (errDelete) {
+				if (errDelete) {
+					return res.status(503).json({
+						success: false,
+						reason: 'Error cleaning the session cache'
+					});
+				}
+
+				connection.collection('users').remove({
+					'uuid': req.query.user_id
+				}, function (errDeleteUsers) {
+					if (errDeleteUsers) {
+						return res.status(503).json({
+							success: false,
+							reason: 'Error removing the user from the users collection'
+						});
+					}
+
+					return res.json({
+						success: true
+					});
+				});
+			});
+		});
+	});
 };

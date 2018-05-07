@@ -241,4 +241,6 @@ router.post('/emptypseudonym', userController.emptyPseudonym);
  */
 router.post('/userUpdated/:uuid', userController.updateUserBasicInfo);
 
+router.get('/delete', userController.deleteUser);
+
 module.exports = router;

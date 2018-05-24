@@ -2,7 +2,6 @@
 
 const SessionDataStore = require('../../dataHandlers/SessionDataStore');
 const UserDataStore = require('../../dataHandlers/UserDataStore');
-const apiKeys = require('../../dataHandlers/apiKeys');
 const async = require('async');
 const livefyreService = require('../../services/livefyre');
 const consoleLogger = require('../../utils/consoleLogger');
@@ -20,28 +19,21 @@ function sendResponse(req, res, status, json) {
 }
 
 function validateApiKey(req, res, callback) {
-	if (req.headers['x-api-key']) {
-		apiKeys.validate(req.headers['x-api-key'], (errKeyValidate, validated) => {
-			if (errKeyValidate) {
-				sendResponse(req, res, 503, {
-					error: 'The system cannot handle requests at the moment.'
-				});
-				return;
-			}
-
-			if (!validated) {
-				sendResponse(req, res, 401, {
-					error: 'The API key is invalid.'
-				});
-				return;
-			} else {
-				callback();
-			}
-		});
+	const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+	if (apiKey) {
+		if (apiKey !== env.apiKeyForRestrictedEndpoints) {
+			sendResponse(req, res, 401, {
+				error: 'The API key is invalid.'
+			});
+			return false;
+		} else {
+			return true
+		}
 	} else {
 		sendResponse(req, res, 400, {
 			error: 'The API key is missing.'
 		});
+		return false;
 	}
 }
 
@@ -122,7 +114,7 @@ exports.getAuth = function (req, res, next) {
 
 
 exports.getPseudonym = function (req, res, next) {
-	validateApiKey(req, res, function () {
+	if (validateApiKey(req, res)) {
 		// successfully validated
 
 		if (req.query.userIds) {
@@ -174,7 +166,7 @@ exports.getPseudonym = function (req, res, next) {
 				error: 'userIds parameter is not specified.'
 			});
 		}
-	});
+	}
 };
 
 
@@ -564,7 +556,7 @@ exports.emptyPseudonym = function (req, res, next) {
 };
 
 exports.updateUserBasicInfo = function (req, res, next) {
-	if (req.query.apiKey === env.apiKeyForRestrictedEndpoints) {
+	if (validateApiKey(req, res)) {
 		var userDataStore = new UserDataStore(req.params.uuid);
 		userDataStore.updateBasicUserData({
 			email: req.body.email,
@@ -587,7 +579,7 @@ exports.updateUserBasicInfo = function (req, res, next) {
 };
 
 exports.deleteUser = function (req, res) {
-	validateApiKey(req, res, function () {
+	if (validateApiKey(req, res)) {
 		// successfully validated
 
 		if (!req.query.user_id) {
@@ -634,5 +626,5 @@ exports.deleteUser = function (req, res) {
 				});
 			});
 		});
-	});
+	}
 };

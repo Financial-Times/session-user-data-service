@@ -23,7 +23,7 @@ mongodump -h {primaryHost}:{port} -d {databaseName} -u {user} -p {password} -o {
 ```
 
 ```
-mongorestore -h localhost:27017 -d {databaseName} -u {localUsername} -p {localPassword} --file {localFile}
+mongorestore -h localhost:27017 -d session-user-data -u {localUsername} -p {localPassword} --file {localFile}
 ```
 If you are in trouble, check out the official documentation https://docs.mongodb.com/manual/reference/program/mongorestore/.
 

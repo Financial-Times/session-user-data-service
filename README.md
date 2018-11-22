@@ -2,7 +2,7 @@
 
 Integration service for Livefyre comments.
 
-## Prerequiste
+## Prerequisite
 In order to run the service locally, you will either need to connect to the TEST mongodb on heroku MLab, or set up the database locally.
 If you have to make changes that affects the database as well, you should follow the below steps to set up the database locally.
 

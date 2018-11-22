@@ -39,7 +39,7 @@ heroku config -s  >> .env --app session-user-data-service-test
 If you've installed the database locally, define the local database URL:
 
 ```
-DATABASE_URL=mongodb://localhost:27017/session-user-data-service
+MONGOLAB_URI=mongodb://localhost:27017/session-user-data-service
 ```
 
 Now run the initial npm install on the app

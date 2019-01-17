@@ -1,5 +1,6 @@
 "use strict";
 
+const {default: logger} = require('@financial-times/n-logger');
 const SessionDataStore = require('../../dataHandlers/SessionDataStore');
 const UserDataStore = require('../../dataHandlers/UserDataStore');
 const async = require('async');

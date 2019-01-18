@@ -5,7 +5,7 @@ const router = express.Router();
 const userController = require('../../controllers/v1/user');
 const checkOrigin = require('../../utils/checkOrigin');
 
-router.use(checkOrigin);
+router.use(checkOrigin());
 
 /**
  * @api {get} v1/user/getauth Auth

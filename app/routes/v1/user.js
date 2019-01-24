@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
 const express = require('express');
 const router = express.Router();
 const userController = require('../../controllers/v1/user');
-const checkOrigin = require('../../utils/checkOrigin');
+const checkAccess = require('../../utils/checkAccess');
 
-router.use(checkOrigin());
+router.use(checkAccess());
 
 /**
  * @api {get} v1/user/getauth Auth
@@ -91,7 +91,6 @@ router.get('/getauth', userController.getAuth);
 router.get('/setPseudonym', userController.setPseudonym);
 router.post('/setPseudonym', userController.setPseudonym);
 
-
 /**
  * @api {get} v1/user/getPseudonym Get pseudonym
  * @apiVersion 1.1.0
@@ -136,8 +135,6 @@ router.post('/setPseudonym', userController.setPseudonym);
  */
 router.get('/getPseudonym', userController.getPseudonym);
 
-
-
 /**
  * @api {get / post} v1/user/updateuser Update user
  * @apiVersion 1.1.0
@@ -175,7 +172,6 @@ router.get('/getPseudonym', userController.getPseudonym);
 router.get('/updateuser', userController.updateUser);
 router.post('/updateuser', userController.updateUser);
 
-
 /**
  * @api {get / post} v1/user/emptyPseudonym Empty pseudonym
  * @apiVersion 1.1.0
@@ -207,7 +203,6 @@ router.post('/updateuser', userController.updateUser);
  */
 router.get('/emptypseudonym', userController.emptyPseudonym);
 router.post('/emptypseudonym', userController.emptyPseudonym);
-
 
 /**
  * @api {post} v1/user/userUpdated User updated

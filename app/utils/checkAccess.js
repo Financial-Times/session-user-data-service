@@ -1,8 +1,8 @@
 'use strict';
 
-const {parse} = require('url');
+const { parse } = require('url');
 
-const {default: logger} = require('@financial-times/n-logger');
+const { default: logger } = require('@financial-times/n-logger');
 
 const defaultMethods = [
     'GET',
@@ -17,6 +17,16 @@ module.exports = ({
     methods = defaultMethods,
     domain = defaultDomain
 } = {}) => (request, response, next) => {
+
+    const apiKey = request.get('X-Api-Key')
+    if (apiKey) {
+        if (apiKey === process.env.API_KEY_FOR_RESTRICTED_ENDPOINTS) {
+            return next();
+        } else {
+            logger.warn('Invalid api key given.', { event: 'INVALID_API_KEY' });
+            return response.sendStatus(401);
+        }
+    }
 
     const checkDomain = url =>
         Boolean(url && parse(url).hostname.endsWith(`.${domain}`));

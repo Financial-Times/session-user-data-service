@@ -107,7 +107,7 @@ function expectProtected (method, endpoint) {
 		it('is rejected if the API key is invalid', function (done) {
 			makeRequest()
 				.set('X-Api-Key', 'invalid-api-key')
-				.set('Referer', 'https://www.notft.com')
+				.set('Referer', 'https://www.ft.com')
 				.expect(401, done);
 		});
 	});

@@ -19,8 +19,13 @@ module.exports = ({
 } = {}) => (request, response, next) => {
 
     const apiKey = request.get('X-Api-Key')
-    if (apiKey === process.env.API_KEY_FOR_RESTRICTED_ENDPOINTS) {
-        return next();
+    if (apiKey) {
+        if (apiKey === process.env.API_KEY_FOR_RESTRICTED_ENDPOINTS) {
+            return next();
+        } else {
+            logger.warn('Invalid api key given.', { event: 'INVALID_API_KEY' });
+            return response.sendStatus(401);
+        }
     }
 
     const checkDomain = url =>

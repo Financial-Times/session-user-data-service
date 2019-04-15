@@ -10,9 +10,20 @@ const consoleLogger = require('../../utils/consoleLogger');
 const urlParser = require('url');
 const pseudonymSanitizer = require('../../utils/pseudonymSanitizer');
 const legacySiteMapping = require('../../services/legacySiteMapping');
+const logger = require('@financial-times/n-logger').default;
 
 
 exports.metadata = function(req, res, next) {
+	const origin = req.get('origin');
+	const referer = req.get('referer');
+
+	logger.info({
+		event: "METADATA_REQUEST_ORIGIN",
+		endpoint: 'v1/livefyre/metadata',
+		origin,
+		referer
+	});
+
 	if (!req.query.articleId || !req.query.url) {
 		res.status(400).send('"articleId" and "url" should be provided.');
 		return;

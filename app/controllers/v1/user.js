@@ -172,6 +172,16 @@ exports.getPseudonym = function (req, res, next) {
 
 
 exports.setPseudonym = function (req, res, next) {
+	const origin = req.get('origin');
+	const referer = req.get('referer');
+
+	logger.info({
+		event: "METADATA_REQUEST_ORIGIN",
+		endpoint: 'v1/user/setPseudonym',
+		origin,
+		referer
+	});
+
 	if (!req.query.pseudonym) {
 		sendResponse(req, res, 400, {
 			status: 'error',

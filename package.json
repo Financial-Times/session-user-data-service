@@ -12,6 +12,7 @@
 	},
 	"dependencies": {
 		"@financial-times/n-es-client": "^1.0.0-beta.5",
+		"@financial-times/n-logger": "^6.1.0",
 		"async": "^1.4.2",
 		"body-parser": "~1.13.2",
 		"compression": "^1.6.2",

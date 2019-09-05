@@ -17,7 +17,8 @@ var routes = {
 	__gtg: require('./app/routes/__gtg'),
 	v1: {
 		livefyre: require('./app/routes/v1/livefyre'),
-		user: require('./app/routes/v1/user')
+		user: require('./app/routes/v1/user'),
+		pseudonym: require('./app/routes/v1/pseudonym')
 	},
 	troubleshoot: require('./app/routes/troubleshoot')
 };
@@ -75,8 +76,8 @@ app.use(function(req, res, next) {
 	next();
 });
 app.use(function (req, res, next) {
-    res.set('Cache-Control', 'no-cache');
-    next();
+	res.set('Cache-Control', 'no-cache');
+	next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -87,6 +88,7 @@ if (env.maintenanceModeOn) {
 } else {
 	app.use('/v1/livefyre', routes.v1.livefyre);
 	app.use('/v1/user', routes.v1.user);
+	app.use('/v1/pseudonym', routes.v1.pseudonym);
 	app.use('/', routes.__gtg);
 	app.use('/', routes.__health);
 	app.use('/', routes.__about);

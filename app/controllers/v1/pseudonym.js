@@ -65,7 +65,7 @@ exports.available = function (req, res) {
 					}
 
 					return res.json({
-						"available": !!users.length
+						"available": users.length === 0
 					});
 			});
 		});

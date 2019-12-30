@@ -23,7 +23,7 @@ exports.getSessionData = function (sessionId, callback) {
 
 	var options = {
 		headers: {
-			'FT_Api_Key': env.sessionApi.key
+			'FT-Api-Key': env.sessionApi.key
 		}
 	};
 

@@ -6,7 +6,6 @@
 	"checks": [
 		"elasticsearch",
 		"db",
-		"emailService",
 		"erightsMappingService",
 		"livefyreApi",
 		"siteMapping",

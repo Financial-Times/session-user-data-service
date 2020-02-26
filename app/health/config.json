@@ -4,7 +4,6 @@
 	"name": "session-user-data-service",
 	"description": "session-user-data-service",
 	"checks": [
-		"elasticsearch",
 		"db",
 		"livefyreApi",
 		"siteMapping",

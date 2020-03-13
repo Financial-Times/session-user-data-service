@@ -16,7 +16,6 @@ var routes = {
 	__about: require('./app/routes/__about'),
 	__gtg: require('./app/routes/__gtg'),
 	v1: {
-		livefyre: require('./app/routes/v1/livefyre'),
 		user: require('./app/routes/v1/user'),
 		pseudonym: require('./app/routes/v1/pseudonym')
 	},
@@ -86,7 +85,6 @@ if (env.maintenanceModeOn) {
 		res.status(503).send("Maintenance");
 	});
 } else {
-	app.use('/v1/livefyre', routes.v1.livefyre);
 	app.use('/v1/user', routes.v1.user);
 	app.use('/v1/pseudonym', routes.v1.pseudonym);
 	app.use('/', routes.__gtg);

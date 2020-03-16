@@ -5,7 +5,6 @@
 	"description": "session-user-data-service",
 	"checks": [
 		"db",
-		"livefyreApi",
 		"siteMapping",
 		"userSessionApi"
 	]
